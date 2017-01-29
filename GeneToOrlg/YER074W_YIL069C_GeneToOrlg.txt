@@ -1,0 +1,13 @@
+cerevisiae__YER074W	 1 
+cerevisiae__YIL069C	 2 
+paradoxus__YER074W	 1 
+paradoxus__YIL069C	 2 
+mikatae__YER074W	 1 
+mikatae__YIL069C	 2 
+kudriavzevii__YER074W	 1 
+kudriavzevii__YIL069C	 2 
+bayanus__YER074W	 1 
+bayanus__YIL069C	 2 
+castellii__YER074W	 1 
+castellii__YIL069C	 2 
+kluyveri__YER074W	 0 

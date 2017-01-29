@@ -1,0 +1,13 @@
+cerevisiae__YHR106W	 1 
+cerevisiae__YDR353W	 2 
+paradoxus__YHR106W	 1 
+paradoxus__YDR353W	 2 
+mikatae__YHR106W	 1 
+mikatae__YDR353W	 2 
+kudriavzevii__YHR106W	 1 
+kudriavzevii__YDR353W	 2 
+bayanus__YHR106W	 1 
+bayanus__YDR353W	 2 
+castellii__YHR106W	 1 
+castellii__YDR353W	 2 
+kluyveri__YHR106W	 0 

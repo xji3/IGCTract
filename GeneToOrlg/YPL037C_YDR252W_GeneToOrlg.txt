@@ -1,0 +1,13 @@
+cerevisiae__YPL037C	 1 
+cerevisiae__YDR252W	 2 
+paradoxus__YPL037C	 1 
+paradoxus__YDR252W	 2 
+mikatae__YPL037C	 1 
+mikatae__YDR252W	 2 
+kudriavzevii__YPL037C	 1 
+kudriavzevii__YDR252W	 2 
+bayanus__YPL037C	 1 
+bayanus__YDR252W	 2 
+castellii__YPL037C	 1 
+castellii__YDR252W	 2 
+kluyveri__YPL037C	 0 

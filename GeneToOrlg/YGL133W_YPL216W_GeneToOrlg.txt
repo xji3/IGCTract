@@ -1,0 +1,13 @@
+cerevisiae__YGL133W	 1 
+cerevisiae__YPL216W	 2 
+paradoxus__YGL133W	 1 
+paradoxus__YPL216W	 2 
+mikatae__YGL133W	 1 
+mikatae__YPL216W	 2 
+kudriavzevii__YGL133W	 1 
+kudriavzevii__YPL216W	 2 
+bayanus__YGL133W	 1 
+bayanus__YPL216W	 2 
+castellii__YGL133W	 1 
+castellii__YPL216W	 2 
+kluyveri__YGL133W	 0 

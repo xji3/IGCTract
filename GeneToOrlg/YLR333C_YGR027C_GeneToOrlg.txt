@@ -1,0 +1,13 @@
+cerevisiae__YLR333C	 1 
+cerevisiae__YGR027C	 2 
+paradoxus__YLR333C	 1 
+paradoxus__YGR027C	 2 
+mikatae__YLR333C	 1 
+mikatae__YGR027C	 2 
+kudriavzevii__YLR333C	 1 
+kudriavzevii__YGR027C	 2 
+bayanus__YLR333C	 1 
+bayanus__YGR027C	 2 
+castellii__YLR333C	 1 
+castellii__YGR027C	 2 
+kluyveri__YLR333C	 0 

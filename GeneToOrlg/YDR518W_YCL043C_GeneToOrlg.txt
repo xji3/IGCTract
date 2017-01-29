@@ -1,0 +1,13 @@
+cerevisiae__YDR518W	 1 
+cerevisiae__YCL043C	 2 
+paradoxus__YDR518W	 1 
+paradoxus__YCL043C	 2 
+mikatae__YDR518W	 1 
+mikatae__YCL043C	 2 
+kudriavzevii__YDR518W	 1 
+kudriavzevii__YCL043C	 2 
+bayanus__YDR518W	 1 
+bayanus__YCL043C	 2 
+castellii__YDR518W	 1 
+castellii__YCL043C	 2 
+kluyveri__YDR518W	 0 

@@ -1,0 +1,61 @@
+---
+title: "AminoAcidDifference"
+author: "Xiang Ji"
+date: "May 19, 2016"
+output: html_document
+---
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/Genconv/MafftAlignment/")
+pairs <- c('YLR406C_YDL075W', 'YER131W_YGL189C', 'YML026C_YDR450W', 'YNL301C_YOL120C', 'YNL069C_YIL133C', 'YMR143W_YDL083C', 'YJL177W_YKL180W', 'YBR191W_YPL079W', 'YER074W_YIL069C', 'YDR418W_YEL054C', 'YBL087C_YER117W', 'YLR333C_YGR027C', 'YMR142C_YDL082W', 'YER102W_YBL072C')
+
+species.list <- c("cerevisiae", "paradoxus", "mikatae", "kudriavzevii",
+                  "bayanus", "castellii")
+library(seqinr)
+library(xtable)
+
+AA.summary.table <- NULL
+
+for (pair in pairs){
+  dna.seq <- read.fasta(paste("./", pair, "/", pair, "_input.fasta", sep = ""))
+  new.row <- NULL
+  for(spe in species.list){
+    paralog1.name <- strsplit(pair, "_")[[1]][1]
+    paralog2.name <- strsplit(pair, "_")[[1]][2]
+    paralog.1.seq <- translate(getSequence(get(paste(spe, paralog1.name, sep = ""), dna.seq)))
+    paralog.2.seq <- translate(getSequence(get(paste(spe, paralog2.name, sep = ""), dna.seq)))
+    add.summary <- matrix(c(sum(paralog.1.seq == paralog.2.seq), sum(paralog.1.seq != paralog.2.seq), 
+                     sum(paralog.1.seq == paralog.2.seq) / length(paralog.1.seq)), nrow = 1, ncol = 3)
+    colnames(add.summary) <- paste(c("# AA idn", "# AA dif", "% AA idn"), spe, sep = " ")
+    rownames(add.summary) <- pair
+    new.row <- cbind(new.row, add.summary)
+  }
+  AA.summary.table <- rbind(AA.summary.table, new.row)
+}
+
+AA.summary.table
+print(xtable(AA.summary.table), floating = FALSE)
+
+DNA.summary.table <- NULL
+
+for (pair in pairs){
+  dna.seq <- read.fasta(paste("./", pair, "/", pair, "_input.fasta", sep = ""))
+  new.row <- NULL
+  for(spe in species.list){
+    paralog1.name <- strsplit(pair, "_")[[1]][1]
+    paralog2.name <- strsplit(pair, "_")[[1]][2]
+    paralog.1.seq <- getSequence(get(paste(spe, paralog1.name, sep = ""), dna.seq))
+    paralog.2.seq <- getSequence(get(paste(spe, paralog2.name, sep = ""), dna.seq))
+    add.summary <- matrix(c(sum(paralog.1.seq == paralog.2.seq), sum(paralog.1.seq != paralog.2.seq), 
+                     sum(paralog.1.seq == paralog.2.seq) / length(paralog.1.seq)), nrow = 1, ncol = 3)
+    colnames(add.summary) <- paste(c("# DNA idn", "# DNA dif", "% DNA idn"), spe, sep = " ")
+    rownames(add.summary) <- pair
+    new.row <- cbind(new.row, add.summary)
+  }
+  DNA.summary.table <- rbind(DNA.summary.table, new.row)
+}
+
+DNA.summary.table
+print(xtable(DNA.summary.table), floating = FALSE)
+```

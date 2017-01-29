@@ -1,0 +1,13 @@
+cerevisiae__YPR157W	 1 
+cerevisiae__YGR141W	 2 
+paradoxus__YPR157W	 1 
+paradoxus__YGR141W	 2 
+mikatae__YPR157W	 1 
+mikatae__YGR141W	 2 
+kudriavzevii__YPR157W	 1 
+kudriavzevii__YGR141W	 2 
+bayanus__YPR157W	 1 
+bayanus__YGR141W	 2 
+castellii__YPR157W	 1 
+castellii__YGR141W	 2 
+kluyveri__YPR157W	 0 

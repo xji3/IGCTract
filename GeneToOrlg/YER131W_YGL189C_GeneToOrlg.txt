@@ -1,0 +1,13 @@
+cerevisiae__YER131W	 1 
+cerevisiae__YGL189C	 2 
+paradoxus__YER131W	 1 
+paradoxus__YGL189C	 2 
+mikatae__YER131W	 1 
+mikatae__YGL189C	 2 
+kudriavzevii__YER131W	 1 
+kudriavzevii__YGL189C	 2 
+bayanus__YER131W	 1 
+bayanus__YGL189C	 2 
+castellii__YER131W	 1 
+castellii__YGL189C	 2 
+kluyveri__YER131W	 0 

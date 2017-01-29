@@ -1,0 +1,13 @@
+cerevisiae__YNL049C	 1 
+cerevisiae__YIL109C	 2 
+paradoxus__YNL049C	 1 
+paradoxus__YIL109C	 2 
+mikatae__YNL049C	 1 
+mikatae__YIL109C	 2 
+kudriavzevii__YNL049C	 1 
+kudriavzevii__YIL109C	 2 
+bayanus__YNL049C	 1 
+bayanus__YIL109C	 2 
+castellii__YNL049C	 1 
+castellii__YIL109C	 2 
+kluyveri__YNL049C	 0 

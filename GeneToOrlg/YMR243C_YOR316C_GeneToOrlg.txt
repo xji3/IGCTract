@@ -1,0 +1,13 @@
+cerevisiae__YMR243C	 1 
+cerevisiae__YOR316C	 2 
+paradoxus__YMR243C	 1 
+paradoxus__YOR316C	 2 
+mikatae__YMR243C	 1 
+mikatae__YOR316C	 2 
+kudriavzevii__YMR243C	 1 
+kudriavzevii__YOR316C	 2 
+bayanus__YMR243C	 1 
+bayanus__YOR316C	 2 
+castellii__YMR243C	 1 
+castellii__YOR316C	 2 
+kluyveri__YMR243C	 0 

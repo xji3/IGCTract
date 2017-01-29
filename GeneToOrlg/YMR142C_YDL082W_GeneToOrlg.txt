@@ -1,0 +1,13 @@
+cerevisiae__YMR142C	 1 
+cerevisiae__YDL082W	 2 
+paradoxus__YMR142C	 1 
+paradoxus__YDL082W	 2 
+mikatae__YMR142C	 1 
+mikatae__YDL082W	 2 
+kudriavzevii__YMR142C	 1 
+kudriavzevii__YDL082W	 2 
+bayanus__YMR142C	 1 
+bayanus__YDL082W	 2 
+castellii__YMR142C	 1 
+castellii__YDL082W	 2 
+kluyveri__YMR142C	 0 

@@ -1,0 +1,13 @@
+cerevisiae__YDR438W	 1 
+cerevisiae__YML018C	 2 
+paradoxus__YDR438W	 1 
+paradoxus__YML018C	 2 
+mikatae__YDR438W	 1 
+mikatae__YML018C	 2 
+kudriavzevii__YDR438W	 1 
+kudriavzevii__YML018C	 2 
+bayanus__YDR438W	 1 
+bayanus__YML018C	 2 
+castellii__YDR438W	 1 
+castellii__YML018C	 2 
+kluyveri__YDR438W	 0 

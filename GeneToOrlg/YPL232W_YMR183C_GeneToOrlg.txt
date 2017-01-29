@@ -1,0 +1,13 @@
+cerevisiae__YPL232W	 1 
+cerevisiae__YMR183C	 2 
+paradoxus__YPL232W	 1 
+paradoxus__YMR183C	 2 
+mikatae__YPL232W	 1 
+mikatae__YMR183C	 2 
+kudriavzevii__YPL232W	 1 
+kudriavzevii__YMR183C	 2 
+bayanus__YPL232W	 1 
+bayanus__YMR183C	 2 
+castellii__YPL232W	 1 
+castellii__YMR183C	 2 
+kluyveri__YPL232W	 0 

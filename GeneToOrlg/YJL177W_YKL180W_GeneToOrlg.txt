@@ -1,0 +1,13 @@
+cerevisiae__YJL177W	 1 
+cerevisiae__YKL180W	 2 
+paradoxus__YJL177W	 1 
+paradoxus__YKL180W	 2 
+mikatae__YJL177W	 1 
+mikatae__YKL180W	 2 
+kudriavzevii__YJL177W	 1 
+kudriavzevii__YKL180W	 2 
+bayanus__YJL177W	 1 
+bayanus__YKL180W	 2 
+castellii__YJL177W	 1 
+castellii__YKL180W	 2 
+kluyveri__YJL177W	 0 

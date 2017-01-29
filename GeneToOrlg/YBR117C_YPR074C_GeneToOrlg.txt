@@ -1,0 +1,13 @@
+cerevisiae__YBR117C	 1 
+cerevisiae__YPR074C	 2 
+paradoxus__YBR117C	 1 
+paradoxus__YPR074C	 2 
+mikatae__YBR117C	 1 
+mikatae__YPR074C	 2 
+kudriavzevii__YBR117C	 1 
+kudriavzevii__YPR074C	 2 
+bayanus__YBR117C	 1 
+bayanus__YPR074C	 2 
+castellii__YBR117C	 1 
+castellii__YPR074C	 2 
+kluyveri__YBR117C	 0 

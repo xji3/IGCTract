@@ -1,0 +1,13 @@
+cerevisiae__YLR284C	 1 
+cerevisiae__YOR180C	 2 
+paradoxus__YLR284C	 1 
+paradoxus__YOR180C	 2 
+mikatae__YLR284C	 1 
+mikatae__YOR180C	 2 
+kudriavzevii__YLR284C	 1 
+kudriavzevii__YOR180C	 2 
+bayanus__YLR284C	 1 
+bayanus__YOR180C	 2 
+castellii__YLR284C	 1 
+castellii__YOR180C	 2 
+kluyveri__YLR284C	 0 

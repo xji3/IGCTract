@@ -1,0 +1,13 @@
+cerevisiae__YDR099W	 1 
+cerevisiae__YER177W	 2 
+paradoxus__YDR099W	 1 
+paradoxus__YER177W	 2 
+mikatae__YDR099W	 1 
+mikatae__YER177W	 2 
+kudriavzevii__YDR099W	 1 
+kudriavzevii__YER177W	 2 
+bayanus__YDR099W	 1 
+bayanus__YER177W	 2 
+castellii__YDR099W	 1 
+castellii__YER177W	 2 
+kluyveri__YDR099W	 0 

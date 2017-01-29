@@ -1,0 +1,13 @@
+cerevisiae__YNL301C	 1 
+cerevisiae__YOL120C	 2 
+paradoxus__YNL301C	 1 
+paradoxus__YOL120C	 2 
+mikatae__YNL301C	 1 
+mikatae__YOL120C	 2 
+kudriavzevii__YNL301C	 1 
+kudriavzevii__YOL120C	 2 
+bayanus__YNL301C	 1 
+bayanus__YOL120C	 2 
+castellii__YNL301C	 1 
+castellii__YOL120C	 2 
+kluyveri__YNL301C	 0 
