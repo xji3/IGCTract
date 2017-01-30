@@ -31,13 +31,19 @@ if __name__ == '__main__':
     if not os.path.isdir('../ShFiles'):
         os.mkdir('../ShFiles')
 
+    pairs = []
+    all_pairs = '../Filtered_pairs.txt'
+    with open(all_pairs, 'r') as f:
+        for line in f.readlines():
+            pairs.append(line.replace('\n','').split('_'))
+
     IGC_pm = 'One_rate'
     sh_line = 'sbatch -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
     sh_file_all_name = './PSJS_' + IGC_pm + '_all.sh'
     with open(sh_file_all_name, 'w+') as g:
         g.write('#!/bin/bash' + '\n')
         for paralog in pairs:
-            sh_file_name = 'PSJS_HKY_' + '_'.join(paralog) + '_' + IGC_pm + '_nonclock.sh'
+            sh_file_name = '_'.join(paralog) + '_PSJS_HKY_' + IGC_pm + '_nonclock.sh'
             with open('../ShFiles/' + sh_file_name, 'w+') as f:
                 f.write('#!/bin/bash' + '\n')
                 f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + '\n')
