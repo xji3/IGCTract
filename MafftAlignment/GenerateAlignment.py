@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
         reference_seq_name = 'cerevisiae' + pair[0]
         processed_align, seq_index = processAlignment('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_MAFFT.fa', reference_seq_name)
-        np.savetxt('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_seq_index.txt', np.array(seq_index, dtype = int))
+        np.savetxt('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_seq_index.txt', np.array(seq_index[:-3], dtype = int), fmt = '%i')
         GapRemovedFasta(processed_align, './' + '_'.join(pair) + '/' + '_'.join(pair) + '_input.fasta')
                                          
                                          
