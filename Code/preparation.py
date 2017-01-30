@@ -32,7 +32,7 @@ if __name__ == '__main__':
         os.mkdir('../ShFiles')
 
     IGC_pm = 'One_rate'
-    sh_line = 'sbatch -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/'
+    sh_line = 'sbatch -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
     sh_file_all_name = './PSJS_' + IGC_pm + '_all.sh'
     with open(sh_file_all_name, 'w+') as g:
         g.write('#!/bin/bash' + '\n')
