@@ -1,0 +1,59 @@
+---
+title: "TractMLESummary"
+output: pdf_document
+---
+
+This script is used to summarize IGC tract length model with 14 Yeast data sets.
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/Code/")
+
+finished.pairs <- readLines('./Finished_Pairs.txt')
+
+JS.HKY.nonclock.summary <- NULL
+PSJS.HKY.nonclock.summary <- NULL
+for(pair in finished.pairs){
+  summary.file.name <- paste("JS_HKY", pair, "One_rate_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names,
+                                      col.names = pair))
+  JS.HKY.nonclock.summary <- cbind(JS.HKY.nonclock.summary, summary_mat)
+  
+  summary.file.name <- paste("PSJS_HKY", pair, "One_rate_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names,
+                                      col.names = pair))
+  PSJS.HKY.nonclock.summary <- cbind(PSJS.HKY.nonclock.summary, summary_mat)
+  
+}
+
+
+```
+
+Now show the estimated tract length and IGC initiation rates.
+
+```{r}
+# Estimated Tract length (unit: nucleotide)
+PSJS.HKY.nonclock.summary["tract_length", ]
+
+# initial guess tract length
+JS.HKY.nonclock.summary["Tau",] / exp(-0.6)
+
+# Initiation rate 
+PSJS.HKY.nonclock.summary["init_rate", ]
+
+# Now compare the product of init_rate and tract length with IGC+HKY model estimated Tau value
+illustract.mat <- rbind(PSJS.HKY.nonclock.summary['init_rate', ] * PSJS.HKY.nonclock.summary["tract_length", ], JS.HKY.nonclock.summary['Tau',])
+row.names(illustract.mat) <- c('product', 'estimated Tau')
+illustract.mat
+
+# Now export data
+save.image(file = "./TractSummary.RData")
+```
