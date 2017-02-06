@@ -54,6 +54,43 @@ illustract.mat <- rbind(PSJS.HKY.nonclock.summary['init_rate', ] * PSJS.HKY.nonc
 row.names(illustract.mat) <- c('product', 'estimated Tau')
 illustract.mat
 
+```
+
+Now plot 2 dimensional lnL for 2 pairs
+
+```{r}
+library("lattice")
+plot.pairs <- c("YLR333C_YGR027C", "YLR406C_YDL075W")
+# show estimated tract length
+PSJS.HKY.nonclock.summary["tract_length", plot.pairs]
+for( pair in plot.pairs){
+  plot.file.name <- paste("./plot/", pair, "_PSJS_lnL_TractLength.txt", sep = "")
+  plot.data <- read.table(plot.file.name)
+  plot(plot.data[, 2], plot.data[, 3], xlab = "init rate", ylab = "lnL", main = pair)
+  assign(pair, plot.data)
+  
+  
+  
+  plot.file.name <- paste("./plot/", pair, "_PSJS_lnL_TractLength_zoomed.txt", sep = "")
+  plot.data <- read.table(plot.file.name)
+  plot(plot.data[, 2], plot.data[, 3], xlab = "init rate", ylab = "lnL", main = paste(pair, "_zoomed", sep = ""))
+  assign(paste(pair, ".zoomed", sep = ""), plot.data)
+}
+
+
+x <- 1:12
+y <- 5:19 * 0.1
+z <- matrix(YLR333C_YGR027C[1 : (length(x) * length(y)), 3], nrow = length(x), ncol = length(y), byrow = TRUE)
+wireframe(z, row.values = x, col.values = y, xlab = "tract length", ylab = "init rate", zlab = "lnL", main = "YLR333C_YGR027C")
+
+z <- matrix(YLR406C_YDL075W[1 : (length(x) * length(y)), 3], nrow = length(x), ncol = length(y), byrow = TRUE)
+wireframe(z, row.values = x, col.values = y, xlab = "tract length", ylab = "init rate", zlab = "lnL", main = "YLR406C_YDL075W")
+
+#image(x, y, z)
+```
+
+```{r}
 # Now export data
 save.image(file = "./TractSummary.RData")
 ```
+

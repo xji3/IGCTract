@@ -11,8 +11,9 @@ if __name__ == '__main__':
         for line in f.readlines():
             pairs.append(line.replace('\n','').split('_'))
 
-    tract_length_list = np.log(range(2, 100, 2))
-    for pair in [('YLR333C', 'YGR027C')]:#, ('YLR406C', 'YDL075W')]:    
+    tract_length_list = np.log(np.arange(1.0, 20.0, 1.0))
+    
+    for pair in [('YLR406C', 'YDL075W')]:#('YLR406C', 'YDL075W')]:    
 
         MyStruct = namedtuple('MyStruct', 'paralog1 paralog2 tract_length')
         args = MyStruct(paralog1 = pair[0], paralog2 = pair[1], tract_length = 30.0)
@@ -45,16 +46,20 @@ if __name__ == '__main__':
         if not os.path.isdir('./plot'):
             os.mkdir('./plot')
         plot_file_name = './plot/' + '_'.join(pair) + '_PSJS_lnL_TractLength.txt'
+        #plot_file_name = './plot/' + '_'.join(pair) + '_PSJS_lnL_TractLength_zoomed.txt'
         with open(plot_file_name, 'w+') as f:
             tract_length = np.exp(-x_js[-1])
-            lnL = test.objective_wo_gradient(True, test.x)
-            f.write('\t'.join([str(tract_length), str(lnL), '\n']))
+            #lnL = test.objective_wo_gradient(True, test.x)
+            f.write('\t'.join(['#Tract_length', 'Init_rate', 'lnL', '\n']))
 
         for tract_length in tract_length_list:
-            x_plot[5] = -tract_length
-            x_plot[4] = lnTau - tract_length
-            lnL = test.objective_wo_gradient(False, x_plot)
-            with open(plot_file_name, 'a') as f:
-                f.write('\t'.join([str(np.exp(tract_length)), str(lnL), '\n']))
+            init_rate_list = lnTau - tract_length + np.log(np.arange(0.5, 2.0, 0.1))
+            for init_rate in init_rate_list:
+                x_plot[5] = -tract_length
+                x_plot[4] = init_rate
+                test.unpack_x(x_plot)
+                lnL = test.objective_wo_gradient(True, x_plot)
+                with open(plot_file_name, 'a') as f:
+                    f.write('\t'.join([str(np.exp(tract_length)), str(np.exp(init_rate)), str(lnL), '\n']))
             
         
