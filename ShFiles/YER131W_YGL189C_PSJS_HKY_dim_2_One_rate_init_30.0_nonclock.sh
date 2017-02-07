@@ -1,2 +1,2 @@
 #!/bin/bash
-python Run.py --paralog1 YER131W --paralog2 YGL189C --L 30.0
+python Run.py --paralog1 YER131W --paralog2 YGL189C --D 2

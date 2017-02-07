@@ -63,6 +63,6 @@ if __name__ == '__main__':
                 sh_file_name = '_'.join(paralog) + '_PSJS_HKY_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) +  '_nonclock.sh'
                 with open('../ShFiles/' + sh_file_name, 'w+') as f:
                     f.write('#!/bin/bash' + '\n')
-                    f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --L ' + str(tract_length) + '\n')
+                    f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --D ' + str(dim) + '\n')
                 g.write(sh_line + sh_file_name + '  \n')
             
