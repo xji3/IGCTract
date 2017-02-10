@@ -66,3 +66,30 @@ if __name__ == '__main__':
                     f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --D ' + str(dim) + '\n')
                 g.write(sh_line + sh_file_name + '  \n')
             
+
+    # Rate heterogeneity bash file
+    IGC_pm = 'One_rate'
+    tract_length = 30.0
+    sh_line = 'sbatch -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
+    for allow_same_codon in [True, False]:
+        for dim in [ 1, 2]:
+            if allow_same_codon:
+                sh_file_all_name = './PSJS_RV_SCOK_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
+            else:
+                sh_file_all_name = './PSJS_RV_NOSC_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
+                
+            with open(sh_file_all_name, 'w+') as g:
+                g.write('#!/bin/bash' + '\n')
+                for paralog in pairs:
+                    if allow_same_codon:
+                        sh_file_name = '_'.join(paralog) + '_PSJS_RV_SCOK_HKY_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) +  '_nonclock.sh'
+                    else:
+                        sh_file_name = '_'.join(paralog) + '_PSJS_RV_NOSC_HKY_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) +  '_nonclock.sh'
+                        
+                    with open('../ShFiles/' + sh_file_name, 'w+') as f:
+                        f.write('#!/bin/bash' + '\n')
+                        if allow_same_codon:
+                            f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --samecodon --D ' + str(dim) + '\n')
+                        else:
+                            f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --no-samecodon --D ' + str(dim) + '\n')
+                    g.write(sh_line + sh_file_name + '  \n')

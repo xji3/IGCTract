@@ -9,29 +9,36 @@ This script is used to summarize IGC tract length model with 14 Yeast data sets.
 rm(list=ls())  # clean up workspace
 setwd("/Users/xji3/GitFolders/YeastIGCTract/Code/")
 
-finished.pairs <- readLines('./Finished_Pairs.txt')
+finished.pairs <- readLines('../Filtered_pairs.txt')
 
-JS.HKY.nonclock.summary <- NULL
-PSJS.HKY.nonclock.summary <- NULL
-for(pair in finished.pairs){
-  summary.file.name <- paste("JS_HKY", pair, "One_rate_nonclock_summary.txt", sep = "_")
-  summary_file <- paste("./summary/", summary.file.name, sep = "")
-  all <- readLines(summary_file, n = -1)
-  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
-  summary_mat <- as.matrix(read.table(summary_file, 
-                                      row.names = row.names,
-                                      col.names = pair))
-  JS.HKY.nonclock.summary <- cbind(JS.HKY.nonclock.summary, summary_mat)
-  
-  summary.file.name <- paste("PSJS_HKY", pair, "One_rate_nonclock_summary.txt", sep = "_")
-  summary_file <- paste("./summary/", summary.file.name, sep = "")
-  all <- readLines(summary_file, n = -1)
-  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
-  summary_mat <- as.matrix(read.table(summary_file, 
-                                      row.names = row.names,
-                                      col.names = pair))
-  PSJS.HKY.nonclock.summary <- cbind(PSJS.HKY.nonclock.summary, summary_mat)
-  
+
+for(dim in 1:2){
+  JS.HKY.nonclock.summary <- NULL
+  PSJS.HKY.nonclock.summary <- NULL
+  for(pair in finished.pairs){
+    
+    summary.file.name <- paste("JS_HKY", pair, "One_rate_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file, 
+                                        row.names = row.names,
+                                        col.names = pair))
+    JS.HKY.nonclock.summary <- cbind(JS.HKY.nonclock.summary, summary_mat)
+    
+    
+    
+    summary.file.name <- paste("PSJS_dim" , toString(dim), "HKY", pair, "One_rate_init_30.0_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file, 
+                                        row.names = row.names,
+                                        col.names = pair))
+    PSJS.HKY.nonclock.summary <- cbind(PSJS.HKY.nonclock.summary, summary_mat)
+    
+  }
+  assign(paste("PSJS.HKY.dim", toString(dim), "nonclock.summary", sep = "."), PSJS.HKY.nonclock.summary)
 }
 
 
@@ -41,18 +48,21 @@ Now show the estimated tract length and IGC initiation rates.
 
 ```{r}
 # Estimated Tract length (unit: nucleotide)
-PSJS.HKY.nonclock.summary["tract_length", ]
+rbind(PSJS.HKY.dim.1.nonclock.summary["tract_length", ], PSJS.HKY.dim.2.nonclock.summary["tract_length", ])
 
-# initial guess tract length
-JS.HKY.nonclock.summary["Tau",] / exp(-0.6)
+# Estimated Initial guess rate
+rbind(PSJS.HKY.dim.1.nonclock.summary["init_rate", ], PSJS.HKY.dim.2.nonclock.summary["init_rate", ])
 
-# Initiation rate 
-PSJS.HKY.nonclock.summary["init_rate", ]
+# lnL comparison between 1d and 2d search
+rbind(PSJS.HKY.dim.1.nonclock.summary["ll", ], PSJS.HKY.dim.2.nonclock.summary["ll", ], PSJS.HKY.dim.1.nonclock.summary["ll", ] - PSJS.HKY.dim.2.nonclock.summary["ll", ])
 
-# Now compare the product of init_rate and tract length with IGC+HKY model estimated Tau value
-illustract.mat <- rbind(PSJS.HKY.nonclock.summary['init_rate', ] * PSJS.HKY.nonclock.summary["tract_length", ], JS.HKY.nonclock.summary['Tau',])
-row.names(illustract.mat) <- c('product', 'estimated Tau')
-illustract.mat
+# lnL comparison between 1d and previous model
+#rbind(PSJS.HKY.dim.1.nonclock.summary["ll", ], JS.HKY.nonclock.summary["ll", ], PSJS.HKY.dim.1.nonclock.summary["ll", ] - JS.HKY.nonclock.summary["ll", ])
+
+
+# Compare estimated Tau value
+rbind(JS.HKY.nonclock.summary["Tau", ], PSJS.HKY.dim.1.nonclock.summary["tract_length", ] * PSJS.HKY.dim.1.nonclock.summary["init_rate", ],
+      PSJS.HKY.dim.2.nonclock.summary["tract_length", ] * PSJS.HKY.dim.2.nonclock.summary["init_rate", ])
 
 ```
 
@@ -78,14 +88,17 @@ for( pair in plot.pairs){
 }
 
 
-x <- 1:12
+x <- 1:19
 y <- 5:19 * 0.1
 z <- matrix(YLR333C_YGR027C[1 : (length(x) * length(y)), 3], nrow = length(x), ncol = length(y), byrow = TRUE)
 wireframe(z, row.values = x, col.values = y, xlab = "tract length", ylab = "init rate", zlab = "lnL", main = "YLR333C_YGR027C")
+# plot the ridge
+plot(z[, 6])
 
 z <- matrix(YLR406C_YDL075W[1 : (length(x) * length(y)), 3], nrow = length(x), ncol = length(y), byrow = TRUE)
 wireframe(z, row.values = x, col.values = y, xlab = "tract length", ylab = "init rate", zlab = "lnL", main = "YLR406C_YDL075W")
-
+# plot the ridge
+plot(z[, 6])
 #image(x, y, z)
 ```
 
