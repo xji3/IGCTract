@@ -2,6 +2,7 @@ import os
 import subprocess
 from Bio import Seq, SeqIO, AlignIO
 import numpy as np
+from math import floor
 
 def translateDNAtoAA(input_fasta, output_fasta):  
     with open(input_fasta, 'r') as f:
@@ -74,7 +75,7 @@ def processAlignment(input_file, reference_seq_name):
         else:
             i=i+1
             ref_pos += 1
-            seq_index.append(ref_pos)
+            seq_index.append([ref_pos, floor((ref_pos - 0.5) / 3.0) + 1, ref_pos - floor((ref_pos - 0.5) / 3.0) * 3.0])
     assert(align.get_alignment_length()%3==0)
     return align, seq_index
 
@@ -89,6 +90,7 @@ def GapRemovedFasta(align, output_fasta):
     
 if __name__ == '__main__':
     path = '/Users/xji3/GitFolders/YeastIGCTract/MafftAlignment/'
+    #path = '/Users/Xiang/GitFolders/YeastIGCTract/MafftAlignment/'
     pairs = []
     with open('../All_Pairs.txt', 'r') as f:
         for line in f.readlines():
