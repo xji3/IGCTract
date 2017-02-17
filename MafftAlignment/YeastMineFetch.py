@@ -36,7 +36,7 @@ if __name__ == '__main__':
                 genes_feature_list[row['ORF.secondaryIdentifier']] = [dict(row)]
 
     
-    gene_to_cds = {gene:[[int(genes_feature_list[gene][i][feat]) for feat in desired_features] for i in range(len(genes_feature_list[gene]))] for gene in genes}
+    gene_to_cds = {gene:sorted([[int(genes_feature_list[gene][i][feat]) for feat in desired_features] for i in range(len(genes_feature_list[gene]))]) for gene in genes}
     for pair in pairs:
         print pair[0], gene_to_cds[pair[0]]
         print pair[1], gene_to_cds[pair[1]]
