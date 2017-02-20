@@ -65,7 +65,17 @@ if __name__ == '__main__':
                     f.write('#!/bin/bash' + '\n')
                     f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --D ' + str(dim) + '\n')
                 g.write(sh_line + sh_file_name + '  \n')
-            
+
+        plot_sh_file_all_name = './Plot_PSJS_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
+        with open(plot_sh_file_all_name, 'w+') as g:
+            g.write('#!/bin/bash' + '\n')
+            for paralog in pairs:
+                sh_file_name = 'plot_' + '_'.join(paralog) + '_PSJS_HKY_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) +  '_nonclock.sh'
+                with open('../ShFiles/' + sh_file_name, 'w+') as f:
+                    f.write('#!/bin/bash' + '\n')
+                    f.write('python plot.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --homogeneity --coding --zoom --D ' + str(dim) + '\n')
+                    f.write('python plot.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --homogeneity --coding --no-zoom --D ' + str(dim) + '\n')
+                g.write(sh_line + sh_file_name + '  \n')            
 
     # Rate heterogeneity bash file
     IGC_pm = 'One_rate'
@@ -75,8 +85,10 @@ if __name__ == '__main__':
         for dim in [ 1, 2]:
             if allow_same_codon:
                 sh_file_all_name = './PSJS_RV_SCOK_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
+                plot_sh_file_all_name = './Plot_PSJS_RV_SCOK_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
             else:
                 sh_file_all_name = './PSJS_RV_NOSC_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
+                plot_sh_file_all_name = './Plot_PSJS_RV_NOSC_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
                 
             with open(sh_file_all_name, 'w+') as g:
                 g.write('#!/bin/bash' + '\n')
@@ -92,4 +104,22 @@ if __name__ == '__main__':
                             f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --samecodon --D ' + str(dim) + '\n')
                         else:
                             f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --no-samecodon --D ' + str(dim) + '\n')
+                    g.write(sh_line + sh_file_name + '  \n')
+
+            with open(plot_sh_file_all_name, 'w+') as g:
+                g.write('#!/bin/bash' + '\n')
+                for paralog in pairs:
+                    if allow_same_codon:
+                        sh_file_name = 'plot_' + '_'.join(paralog) + '_PSJS_RV_SCOK_HKY_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) +  '_nonclock.sh'
+                    else:
+                        sh_file_name = 'plot_' + '_'.join(paralog) + '_PSJS_RV_NOSC_HKY_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) +  '_nonclock.sh'
+                        
+                    with open('../ShFiles/' + sh_file_name, 'w+') as f:
+                        f.write('#!/bin/bash' + '\n')
+                        if allow_same_codon:
+                            f.write('python plot.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --samecodon --zoom --D ' + str(dim) + '\n')
+                            f.write('python plot.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --samecodon --no-zoom --D ' + str(dim) + '\n')
+                        else:
+                            f.write('python plot.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --no-samecodon --zoom --D ' + str(dim) + '\n')
+                            f.write('python plot.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --no-samecodon --no-zoom --D ' + str(dim) + '\n')
                     g.write(sh_line + sh_file_name + '  \n')
