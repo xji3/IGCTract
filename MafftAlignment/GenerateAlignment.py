@@ -52,12 +52,15 @@ def translateAAAlignmentDNAAlignment(AA_alignment, DNA_fasta, output_fasta):
                             new_line += dna_seq[(3 * (i - gap)):(3 * (i - gap) + 3)]
                     g.write(new_line + '\n')
 
-def processAlignment(input_file, reference_seq_name):
+def processAlignment(input_file, reference_seq_name, CDS):
+    assert(len(CDS) > 0)
     align = AlignIO.read(input_file,'fasta')
     # now get reference_seq_row_num
     ref_row_num = [rec.id for rec in align].index(reference_seq_name)    
     i=0
     ref_pos = 0
+    CDS_num = 0
+    nt_pos = CDS[CDS_num][0] - 1
     seq_index = []
     while(i<align.get_alignment_length()):
         if not align[:,i].find('-') == -1:
@@ -65,6 +68,10 @@ def processAlignment(input_file, reference_seq_name):
                 # ref seq does not have gap in this column
                 # this column is deleted and ref_pos should move by 1
                 ref_pos += 1
+                nt_pos += 1
+                if nt_pos > CDS[CDS_num][1]:
+                    CDS_num += 1
+                    nt_pos = CDS[CDS_num][0]
                 
             if i==0:
                 align = align[:,1:]
@@ -75,7 +82,11 @@ def processAlignment(input_file, reference_seq_name):
         else:
             i=i+1
             ref_pos += 1
-            seq_index.append([ref_pos, floor((ref_pos - 0.5) / 3.0) + 1, ref_pos - floor((ref_pos - 0.5) / 3.0) * 3.0])
+            nt_pos += 1
+            if nt_pos > CDS[CDS_num][1]:
+                CDS_num += 1
+                nt_pos = CDS[CDS_num][0]
+            seq_index.append([nt_pos, floor((ref_pos - 0.5) / 3.0) + 1, ref_pos - floor((ref_pos - 0.5) / 3.0) * 3.0])
     assert(align.get_alignment_length()%3==0)
     return align, seq_index
 
@@ -87,140 +98,59 @@ def GapRemovedFasta(align, output_fasta):
             f.write('>' + spe + '__' + paralog + '\n')
             f.write(str(rec.seq)[:-3] + '\n')
 
-def get_seq_index(name_to_seq, ref_seq_name, ref_input_file, idx_seq_file):
-    ref_seq_dict = SeqIO.to_dict(SeqIO.parse(ref_input_file, 'fasta'))
-    ref_name_to_seq = {name:str(ref_seq_dict[name].seq) for name in ref_seq_dict.keys()}
-    ref_seq = ref_name_to_seq[ref_seq_name]
-    
-    idx_seq_aligned_file = idx_seq_file.replace('ref_seq', 'ref_seq_aligned')
-    with open(idx_seq_file, 'w+') as f:
-        f.write('>' + ref_seq_name + '\n')
-        f.write(ref_seq + '\n')
-        f.write('>' + ref_seq_name + '_ref\n')
-        f.write(name_to_seq[pair[0]] + '\n')
+def get_gene_to_CDS(cds_position_file):
+    gene_to_CDS = dict()
+    gene_to_strand = dict()
+    with open(cds_position_file, 'rb') as f:
+        for line in f:
+            items = line.replace('\n', '').split('\t')
+            pair = items[0].split('_')
+            strand = int(items[1])
+            CDS = [(int(items[2*i + 2]), int(items[2*i + 3])) for i in range(len(items) / 2 - 1)]
+            gene_to_CDS[pair[0]] = CDS
+            gene_to_strand[pair[0]] = strand
 
-    # now perform alignment using MAFFT
-    mafft_cmd = ['/usr/local/bin/mafft', '--auto', idx_seq_file, '>', idx_seq_aligned_file]
-    #os.system(' '.join(mafft_cmd))
-
-    # now generate seq_idx file
-    align = AlignIO.read(idx_seq_aligned_file,'fasta')
-    # now get reference_seq_row_num
-    ref_row_num = [rec.id for rec in align].index(ref_seq_name)    
-    i=0
-    ref_pos = 0
-    seq_index = []
-    while(i<align.get_alignment_length()):
-        if not align[:,i].find('-') == -1:
-            if align[ref_row_num, i] == '-':
-                # ref seq does not have gap in this column
-                # this column is deleted and ref_pos should move by 1
-                ref_pos += 1                
-            if i==0:
-                align = align[:,1:]
-            elif i==(align.get_alignment_length()-1):
-                align = align[:,:-1]
-            else:
-                align = align[:,:i]+align[:,(i+1):]
-        else:
-            i=i+1
-            ref_pos += 1
-            seq_index.append([ref_pos, int(floor((ref_pos - 0.5) / 3.0) + 1), int(ref_pos - floor((ref_pos - 0.5) / 3.0) * 3.0)])
-    return seq_index
-
+    return gene_to_CDS, gene_to_strand
     
 if __name__ == '__main__':
     path = '/Users/xji3/GitFolders/YeastIGCTract/MafftAlignment/'
     #path = '/Users/Xiang/GitFolders/YeastIGCTract/MafftAlignment/'
     pairs = []
-    with open('../All_Pairs.txt', 'r') as f:
+    with open('../Filtered_pairs.txt', 'r') as f:
         for line in f.readlines():
             pairs.append(line.replace('\n','').split('_'))
 
-    pairs.remove(['YLR028C', 'YMR120C'])
+    #pairs.remove(['YLR028C', 'YMR120C'])
 
-    dna_seq_file = '/Users/xji3/Documents/YeastGenome/orf_genomic.fasta'
-    dna_seq_dict = SeqIO.to_dict(SeqIO.parse(dna_seq_file, 'fasta'))
-    dna_name_to_seq = {name:str(dna_seq_dict[name].seq) for name in dna_seq_dict.keys()}
+    cds_position_file = './Filtered_pairs_CDS_positions.txt'
+    gene_to_CDS, gene_to_strand = get_gene_to_CDS(cds_position_file)
 
-    cdna_seq_file = '/Users/xji3/Documents/YeastGenome/orf_coding.fasta'
-    cdna_seq_dict = SeqIO.to_dict(SeqIO.parse(cdna_seq_file, 'fasta'))
-    cdna_name_to_seq = {name:str(cdna_seq_dict[name].seq) for name in cdna_seq_dict.keys()}
 
-    pair = ['YLR406C', 'YDL075W']
-    ref_input_file = './' + '_'.join(pair) + '/' + '_'.join(pair) + '_input.fasta'
-    ref_seq_name = 'cerevisiae__' + pair[0]
+    for pair in pairs:
+        mkdir_cmd = ['mkdir', '_'.join(pair)]
+        MAFFT_cmd = ['/usr/local/bin/mafft', '--auto',
+                     path + '_'.join(pair) + '/' + '_'.join(pair) + '_AA.fa', '>',
+                     path + '_'.join(pair) + '/' + '_'.join(pair) + '_AA_MAFFT.fa']
+        cp_cmd = ['cp',
+                  '../PairsAlignemt/' + '_'.join(pair) + '/' + '_'.join(pair) + '.fa',
+                  './' + '_'.join(pair) + '/' + '_'.join(pair) + '.fa']
+        subprocess.call(mkdir_cmd)
+        subprocess.call(cp_cmd)
+        
+        translateDNAtoAA('./' + '_'.join(pair) + '/' + '_'.join(pair) + '.fa',
+                         './' + '_'.join(pair) + '/' + '_'.join(pair) + '_AA.fa')
+        #os.system(' '.join(MAFFT_cmd))
+        format_fasta(path + '_'.join(pair) + '/' + '_'.join(pair) + '_AA_MAFFT.fa',
+                     path + '_'.join(pair) + '/' + '_'.join(pair) + '_AA_MAFFT_formated.fa')
+        translateAAAlignmentDNAAlignment('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_AA_MAFFT_formated.fa',
+                                         './' + '_'.join(pair) + '/' + '_'.join(pair) + '.fa',
+                                         './' + '_'.join(pair) + '/' + '_'.join(pair) + '_MAFFT.fa')
 
-    idx_seq_file = path + '_'.join(pair) + '/' + pair[0] + '_ref_seq.fasta'
-
-    #seq_index = get_seq_index(name_to_seq, ref_seq_name, ref_input_file, idx_seq_file)
-
-    ref_seq_dict = SeqIO.to_dict(SeqIO.parse(ref_input_file, 'fasta'))
-    ref_name_to_seq = {name:str(ref_seq_dict[name].seq) for name in ref_seq_dict.keys()}
-    ref_seq = ref_name_to_seq[ref_seq_name]
-    
-    idx_seq_aligned_file = idx_seq_file.replace('ref_seq', 'ref_seq_aligned')
-    with open(idx_seq_file, 'w+') as f:
-#        f.write('>' + ref_seq_name + '\n')
-#        f.write(ref_seq + '\n')
-        f.write('>' + ref_seq_name + '_dna\n')
-        f.write(dna_name_to_seq[pair[0]] + '\n')
-        f.write('>' + ref_seq_name + '_cdna\n')
-        f.write(cdna_name_to_seq[pair[0]] + '\n')
-
-    # now perform alignment using MAFFT
-    mafft_cmd = ['/usr/local/bin/mafft', '--auto', idx_seq_file, '>', idx_seq_aligned_file]
-    os.system(' '.join(mafft_cmd))
-
-    # now generate seq_idx file
-    align = AlignIO.read(idx_seq_aligned_file,'fasta')
-    # now get reference_seq_row_num
-    ref_row_num = [rec.id for rec in align].index(ref_seq_name)    
-    i=0
-    ref_pos = 0
-    seq_index = []
-    while(i<align.get_alignment_length()):
-        if not align[:,i].find('-') == -1:
-            if align[ref_row_num, i] == '-':
-                # ref seq does not have gap in this column
-                # this column is deleted and ref_pos should move by 1
-                ref_pos += 1                
-            if i==0:
-                align = align[:,1:]
-            elif i==(align.get_alignment_length()-1):
-                align = align[:,:-1]
-            else:
-                align = align[:,:i]+align[:,(i+1):]
-        else:
-            i=i+1
-            ref_pos += 1
-            seq_index.append([ref_pos, int(floor((ref_pos - 0.5) / 3.0) + 1), int(ref_pos - floor((ref_pos - 0.5) / 3.0) * 3.0)])
-   
-
-##    for pair in pairs:
-##        mkdir_cmd = ['mkdir', '_'.join(pair)]
-##        MAFFT_cmd = ['/usr/local/bin/mafft', '--auto',
-##                     path + '_'.join(pair) + '/' + '_'.join(pair) + '_AA.fa', '>',
-##                     path + '_'.join(pair) + '/' + '_'.join(pair) + '_AA_MAFFT.fa']
-##        cp_cmd = ['cp',
-##                  '../PairsAlignemt/' + '_'.join(pair) + '/' + '_'.join(pair) + '.fa',
-##                  './' + '_'.join(pair) + '/' + '_'.join(pair) + '.fa']
-##        subprocess.call(mkdir_cmd)
-##        subprocess.call(cp_cmd)
-##        
-##        translateDNAtoAA('./' + '_'.join(pair) + '/' + '_'.join(pair) + '.fa',
-##                         './' + '_'.join(pair) + '/' + '_'.join(pair) + '_AA.fa')
-##        #os.system(' '.join(MAFFT_cmd))
-##        format_fasta(path + '_'.join(pair) + '/' + '_'.join(pair) + '_AA_MAFFT.fa',
-##                     path + '_'.join(pair) + '/' + '_'.join(pair) + '_AA_MAFFT_formated.fa')
-##        translateAAAlignmentDNAAlignment('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_AA_MAFFT_formated.fa',
-##                                         './' + '_'.join(pair) + '/' + '_'.join(pair) + '.fa',
-##                                         './' + '_'.join(pair) + '/' + '_'.join(pair) + '_MAFFT.fa')
-##
-##        reference_seq_name = 'cerevisiae' + pair[0]
-##        processed_align, seq_index = processAlignment('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_MAFFT.fa', reference_seq_name)
-##        np.savetxt('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_seq_index.txt', np.array(seq_index[:-3], dtype = int), fmt = '%i')
-##        GapRemovedFasta(processed_align, './' + '_'.join(pair) + '/' + '_'.join(pair) + '_input.fasta')
+        reference_seq_name = 'cerevisiae' + pair[0]
+        processed_align, seq_index = processAlignment('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_MAFFT.fa', reference_seq_name,
+                                                      gene_to_CDS[pair[0]])
+        np.savetxt('./' + '_'.join(pair) + '/' + '_'.join(pair) + '_seq_index.txt', np.array(seq_index[:-3], dtype = int), fmt = '%i')
+        GapRemovedFasta(processed_align, './' + '_'.join(pair) + '/' + '_'.join(pair) + '_input.fasta')
                                          
                                          
 ##    reference_seq_name = 'cerevisiae' + pair[0]
