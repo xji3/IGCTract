@@ -3,6 +3,7 @@
 # Xiang Ji
 # xji3@ncsu.edu
 import os
+import numpy as np
 
 if __name__ == '__main__':
  
@@ -37,6 +38,16 @@ if __name__ == '__main__':
         for line in f.readlines():
             pairs.append(line.replace('\n','').split('_'))
 
+    # Now get an averaged parameter value list for initial guess
+    averaged_parameters = 0.0
+    for pair in pairs:
+        JS_save_file = './save/JS_HKY_' + '_'.join(pair) + '_One_rate_nonclock_save.txt'
+        single_parameters = np.exp(np.loadtxt(JS_save_file))
+        averaged_parameters += single_parameters
+    averaged_parameters = averaged_parameters / len(pairs)
+    np.savetxt('./averaged_JS_HKY_One_rate_nonclock_save.txt', np.log(averaged_parameters))
+    
+
     IGC_pm = 'One_rate'
     
     sh_line = 'sbatch -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
@@ -49,6 +60,34 @@ if __name__ == '__main__':
                 with open('../ShFiles/' + sh_file_name, 'w+') as f:
                     f.write('#!/bin/bash' + '\n')
                     f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --L ' + str(tract_length) + '\n')
+                g.write(sh_line + sh_file_name + '  \n')
+
+    sh_line = 'sbatch -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
+    for guess in [ 1, 2]:
+        sh_file_all_name = './PSJS_' + IGC_pm +'_guess_' + str(guess) + '_all.sh'
+        with open(sh_file_all_name, 'w+') as g:
+            g.write('#!/bin/bash' + '\n')
+            for paralog in pairs:
+                sh_file_name = '_'.join(paralog) + '_PSJS_HKY_' + IGC_pm +'_guess_' + str(guess) +  '_nonclock.sh'
+                with open('../ShFiles/' + sh_file_name, 'w+') as f:
+                    f.write('#!/bin/bash' + '\n')
+                    f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
+                            + ' --homogeneity --coding --samecodon \n')
+                g.write(sh_line + sh_file_name + '  \n')
+
+    sh_line = 'sbatch -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
+    for guess in [ 1, 2]:
+        sh_file_all_name = './PSJS_' + IGC_pm +'_RV_guess_' + str(guess) + '_all.sh'
+        with open(sh_file_all_name, 'w+') as g:
+            g.write('#!/bin/bash' + '\n')
+            for paralog in pairs:
+                sh_file_name = '_'.join(paralog) + '_PSJS_HKY_' + IGC_pm +'_RV_guess_' + str(guess) +  '_nonclock.sh'
+                with open('../ShFiles/' + sh_file_name, 'w+') as f:
+                    f.write('#!/bin/bash' + '\n')
+                    f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
+                            + ' --heterogeneity --coding --no-samecodon \n')
+                    f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
+                            + ' --heterogeneity --coding --samecodon \n')
                 g.write(sh_line + sh_file_name + '  \n')
 
 

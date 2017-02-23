@@ -5,7 +5,7 @@ output: pdf_document
 
 This script is used to summarize IGC tract length model with 14 Yeast data sets.
 
-```{r}
+```{r setup, include=FALSE}
 rm(list=ls())  # clean up workspace
 setwd("/Users/xji3/GitFolders/YeastIGCTract/Code/")
 
@@ -14,92 +14,151 @@ finished.pairs <- readLines('../Filtered_pairs.txt')
 
 for(dim in 1:2){
   JS.HKY.nonclock.summary <- NULL
+  JS.HKY.rv.nonclock.summary <- NULL
   PSJS.HKY.nonclock.summary <- NULL
+  PSJS.HKY.rv.SCOK.nonclock.summary <- NULL
+  PSJS.HKY.rv.NOSC.nonclock.summary <- NULL
   for(pair in finished.pairs){
-    
+    # read in JS model estimates
     summary.file.name <- paste("JS_HKY", pair, "One_rate_nonclock_summary.txt", sep = "_")
     summary_file <- paste("./summary/", summary.file.name, sep = "")
     all <- readLines(summary_file, n = -1)
     row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
-    summary_mat <- as.matrix(read.table(summary_file, 
+    summary_mat <- as.matrix(read.table(summary_file,
                                         row.names = row.names,
                                         col.names = pair))
     JS.HKY.nonclock.summary <- cbind(JS.HKY.nonclock.summary, summary_mat)
     
+    # read in JS Rate Heterogeneous model estimates
+    summary.file.name <- paste("JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file,
+                                        row.names = row.names,
+                                        col.names = pair))
+    JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)
     
-    
+    # read in PSJS dimensional search estimates
     summary.file.name <- paste("PSJS_dim" , toString(dim), "HKY", pair, "One_rate_init_30.0_nonclock_summary.txt", sep = "_")
     summary_file <- paste("./summary/", summary.file.name, sep = "")
     all <- readLines(summary_file, n = -1)
     row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
-    summary_mat <- as.matrix(read.table(summary_file, 
+    summary_mat <- as.matrix(read.table(summary_file,
                                         row.names = row.names,
                                         col.names = pair))
     PSJS.HKY.nonclock.summary <- cbind(PSJS.HKY.nonclock.summary, summary_mat)
     
+    # read in PSJS rate variation allow same codon dimensional search estimates
+    summary.file.name <- paste("PSJS_dim" , toString(dim), "HKY", pair, "One_rate_init_30.0_rv_SCOK_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file,
+                                        row.names = row.names,
+                                        col.names = pair))
+    PSJS.HKY.rv.SCOK.nonclock.summary <- cbind(PSJS.HKY.rv.SCOK.nonclock.summary, summary_mat)
+    
+    # read in PSJS rate variation not allow same codon dimensional search estimates
+    summary.file.name <- paste("PSJS_dim" , toString(dim), "HKY", pair, "One_rate_init_30.0_rv_NOSC_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file,
+                                        row.names = row.names,
+                                        col.names = pair))
+    PSJS.HKY.rv.NOSC.nonclock.summary <- cbind(PSJS.HKY.rv.NOSC.nonclock.summary, summary_mat)
   }
   assign(paste("PSJS.HKY.dim", toString(dim), "nonclock.summary", sep = "."), PSJS.HKY.nonclock.summary)
+  assign(paste("PSJS.HKY.rv.SCOK.dim", toString(dim), "nonclock.summary", sep = "."), PSJS.HKY.rv.SCOK.nonclock.summary)
+  assign(paste("PSJS.HKY.rv.NOSC.dim", toString(dim), "nonclock.summary", sep = "."), PSJS.HKY.rv.NOSC.nonclock.summary)
 }
-
-
 ```
 
 Now show the estimated tract length and IGC initiation rates.
 
 ```{r}
 # Estimated Tract length (unit: nucleotide)
-rbind(PSJS.HKY.dim.1.nonclock.summary["tract_length", ], PSJS.HKY.dim.2.nonclock.summary["tract_length", ])
+seq.length <- JS.HKY.nonclock.summary["length", ]
+PSJS.HKY.dim.1.nonclock.eff.lnL <- PSJS.HKY.dim.1.nonclock.summary["ll", ] / (seq.length - 1)
+PSJS.HKY.dim.2.nonclock.eff.lnL <- PSJS.HKY.dim.2.nonclock.summary["ll", ] / (seq.length - 1)
+PSJS.HKY.rv.NOSC.dim.1.nonclock.eff.lnL <- PSJS.HKY.rv.NOSC.dim.1.nonclock.summary["ll", ]/ (seq.length - 3)
+PSJS.HKY.rv.NOSC.dim.2.nonclock.eff.lnL <- PSJS.HKY.rv.NOSC.dim.2.nonclock.summary["ll", ]/ (seq.length - 3)
+PSJS.HKY.rv.SCOK.dim.1.nonclock.eff.lnL <- PSJS.HKY.rv.SCOK.dim.1.nonclock.summary["ll", ]/ (seq.length - 3)
+PSJS.HKY.rv.SCOK.dim.2.nonclock.eff.lnL <- PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["ll", ]/ (seq.length - 3)
 
-# Estimated Initial guess rate
-rbind(PSJS.HKY.dim.1.nonclock.summary["init_rate", ], PSJS.HKY.dim.2.nonclock.summary["init_rate", ])
+show.mat <- rbind(PSJS.HKY.dim.1.nonclock.summary["tract_length", ],
+                  PSJS.HKY.dim.2.nonclock.summary["tract_length", ],
+                  PSJS.HKY.dim.1.nonclock.eff.lnL - PSJS.HKY.dim.2.nonclock.eff.lnL,
+                  PSJS.HKY.rv.NOSC.dim.1.nonclock.summary["tract_length",],
+                  PSJS.HKY.rv.NOSC.dim.2.nonclock.summary["tract_length",],
+                  PSJS.HKY.rv.NOSC.dim.1.nonclock.eff.lnL - PSJS.HKY.rv.NOSC.dim.2.nonclock.eff.lnL,
+                  PSJS.HKY.rv.SCOK.dim.1.nonclock.summary["tract_length",],
+                  PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["tract_length",],
+                  PSJS.HKY.rv.SCOK.dim.1.nonclock.eff.lnL - PSJS.HKY.rv.SCOK.dim.2.nonclock.eff.lnL
+)
+row.names(show.mat) <- c("Homo D1", "Homo D2", "lnL (D1 - D2)" ,
+                         "Heter NOSC D1", "Heter NOSC D2", "lnL (D1 - D2)", 
+                         "Heter SCOK D1", "Heter SCOK D2", "lnL (D1 - D2)"
+)
+show.mat
 
-# lnL comparison between 1d and 2d search
-rbind(PSJS.HKY.dim.1.nonclock.summary["ll", ], PSJS.HKY.dim.2.nonclock.summary["ll", ], PSJS.HKY.dim.1.nonclock.summary["ll", ] - PSJS.HKY.dim.2.nonclock.summary["ll", ])
-
-# lnL comparison between 1d and previous model
-#rbind(PSJS.HKY.dim.1.nonclock.summary["ll", ], JS.HKY.nonclock.summary["ll", ], PSJS.HKY.dim.1.nonclock.summary["ll", ] - JS.HKY.nonclock.summary["ll", ])
-
-
+# Now show equivalent lnL matrix
+show.mat <- rbind(JS.HKY.nonclock.summary["ll", ], 
+                  PSJS.HKY.dim.1.nonclock.eff.lnL, PSJS.HKY.dim.2.nonclock.eff.lnL, 
+                  JS.HKY.rv.nonclock.summary["ll", ], 
+                  PSJS.HKY.rv.NOSC.dim.1.nonclock.eff.lnL, PSJS.HKY.rv.NOSC.dim.2.nonclock.eff.lnL, 
+                  PSJS.HKY.rv.SCOK.dim.1.nonclock.eff.lnL, PSJS.HKY.rv.SCOK.dim.1.nonclock.eff.lnL)
+row.names(show.mat) <- c("Homo JS", "Homo PSJS D1", "Homo PSJS D2", 
+                         "Heter JS", 
+                         "Heter NOSC D1", "Heter NOSC D2", "Heter SCOK D1", "Heter SCOK D2")
+show.mat
 # Compare estimated Tau value
-rbind(JS.HKY.nonclock.summary["Tau", ], PSJS.HKY.dim.1.nonclock.summary["tract_length", ] * PSJS.HKY.dim.1.nonclock.summary["init_rate", ],
-      PSJS.HKY.dim.2.nonclock.summary["tract_length", ] * PSJS.HKY.dim.2.nonclock.summary["init_rate", ])
-
+# Estimated Tract length (unit: nucleotide) 
+show.mat <- rbind(
+  JS.HKY.nonclock.summary["Tau",],
+  PSJS.HKY.dim.2.nonclock.summary["tract_length", ] * PSJS.HKY.dim.2.nonclock.summary["init_rate",],
+  JS.HKY.rv.nonclock.summary["Tau",] * 3.0 / colSums(rbind(1, JS.HKY.rv.nonclock.summary[c("r2", "r3"),])),
+  (PSJS.HKY.rv.NOSC.dim.2.nonclock.summary["tract_length",] * PSJS.HKY.rv.NOSC.dim.2.nonclock.summary["init_rate", ]
+   * 3.0 / colSums(rbind(1,  PSJS.HKY.rv.NOSC.dim.2.nonclock.summary[c("r2", "r3"), ]))), 
+  PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["tract_length",] * PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["init_rate", ]
+  * 3.0 / colSums(rbind(1, PSJS.HKY.rv.SCOK.dim.2.nonclock.summary[c("r2", "r3"), ]))
+)
+row.names(show.mat) <- c("Homo JS Tau", "Homo PSJS D2 Tau", "Heter JS Tau", "Heter PSJS NOSC Tau", "Heter PSJS SCOK Tau")
+show.mat
 ```
 
 Now plot 2 dimensional lnL for 2 pairs
 
 ```{r}
-library("lattice")
-plot.pairs <- c("YLR333C_YGR027C", "YLR406C_YDL075W")
-# show estimated tract length
-PSJS.HKY.nonclock.summary["tract_length", plot.pairs]
-for( pair in plot.pairs){
-  plot.file.name <- paste("./plot/", pair, "_PSJS_lnL_TractLength.txt", sep = "")
-  plot.data <- read.table(plot.file.name)
-  plot(plot.data[, 2], plot.data[, 3], xlab = "init rate", ylab = "lnL", main = pair)
-  assign(pair, plot.data)
-  
-  
-  
-  plot.file.name <- paste("./plot/", pair, "_PSJS_lnL_TractLength_zoomed.txt", sep = "")
-  plot.data <- read.table(plot.file.name)
-  plot(plot.data[, 2], plot.data[, 3], xlab = "init rate", ylab = "lnL", main = paste(pair, "_zoomed", sep = ""))
-  assign(paste(pair, ".zoomed", sep = ""), plot.data)
-}
+# library("lattice")
+# plot.pairs <- c("YLR333C_YGR027C", "YLR406C_YDL075W")
+# plot.pairs <- finished.pairs
+# # show estimated tract length
+# PSJS.HKY.nonclock.summary["tract_length", plot.pairs]
+# for( pair in plot.pairs){
+#   print(PSJS.HKY.rv.NOSC.nonclock.summary["tract_length", pair])
+#   plot.file.name <- paste("./plot/", pair, "/", pair, "_PSJS_HKY_lnL_rv_NOSC_nonclock_dim_1_offratio_0.5.txt", sep = "")
+#   plot.data <- read.table(plot.file.name)
+#   #plot(plot.data[, 2], plot.data[, 3], xlab = "init rate", ylab = "lnL", main = pair)
+#   assign(pair, plot.data)
+#   
+#   
+#   
+#   plot.file.name <- paste("./plot/", pair, "/", pair, "_PSJS_HKY_lnL_rv_NOSC_nonclock_dim_1_offratio_0.1_zoomed_in.txt", sep = "")
+#   plot.data <- read.table(plot.file.name)
+#   #plot(plot.data[, 2], plot.data[, 3], xlab = "init rate", ylab = "lnL", main = paste(pair, "_zoomed", sep = ""))
+#   assign(paste(pair, ".zoomed", sep = ""), plot.data)
+#   
+#   x <- 1:6 * 6 + 9
+#   y <- 1:4 * 0.05 + 0.85
+#   to.plot.mat <- get(pair)
+#   z <- matrix(to.plot.mat[1 : (length(x) * length(y)), 3], nrow = length(x), ncol = length(y), byrow = TRUE)
+#   wireframe(z, row.values = x, col.values = y, xlab = "tract length", ylab = "init rate", zlab = "lnL", main = pair)
+#   # plot the ridge
+#   plot(x, z[, 3])
+# }
 
-
-x <- 1:19
-y <- 5:19 * 0.1
-z <- matrix(YLR333C_YGR027C[1 : (length(x) * length(y)), 3], nrow = length(x), ncol = length(y), byrow = TRUE)
-wireframe(z, row.values = x, col.values = y, xlab = "tract length", ylab = "init rate", zlab = "lnL", main = "YLR333C_YGR027C")
-# plot the ridge
-plot(z[, 6])
-
-z <- matrix(YLR406C_YDL075W[1 : (length(x) * length(y)), 3], nrow = length(x), ncol = length(y), byrow = TRUE)
-wireframe(z, row.values = x, col.values = y, xlab = "tract length", ylab = "init rate", zlab = "lnL", main = "YLR406C_YDL075W")
-# plot the ridge
-plot(z[, 6])
-#image(x, y, z)
 ```
 
 ```{r}

@@ -14,7 +14,7 @@ if __name__ == '__main__':
     "CDSs.locations.start", "CDSs.locations.end")
 
     pairs = []
-    with open('../Filtered_pairs.txt', 'r') as f:
+    with open('../All_Pairs.txt', 'r') as f:
         for line in f.readlines():
             pairs.append(line.replace('\n','').split('_'))
 
@@ -40,4 +40,20 @@ if __name__ == '__main__':
     for pair in pairs:
         print pair[0], gene_to_cds[pair[0]]
         print pair[1], gene_to_cds[pair[1]]
-        print 
+        print
+
+    with open('./all_pairs_CDS_positions.txt', 'w+') as f:
+        for pair in pairs:
+            to_write = ['_'.join(pair), str(gene_to_cds[pair[0]][0][0])]
+            if gene_to_cds[pair[0]][0][0] == 1:
+                start_pos = gene_to_cds[pair[0]][0][1] - 1
+                pos_list = [str(abs(item[1] - start_pos)) + '\t' + str(abs(item[2] - start_pos)) for item in gene_to_cds[pair[0]]]
+            else:
+                start_pos = gene_to_cds[pair[0]][-1][2] + 1
+                pos_list = [str(abs(item[2] - start_pos)) + '\t' + str(abs(item[1] - start_pos)) for item in gene_to_cds[pair[0]]]
+
+            if not gene_to_cds[pair[0]][0][0] == 1:
+                pos_list.reverse()
+            to_write.extend(pos_list)
+                
+            f.write('\t'.join(to_write) + '\n')
