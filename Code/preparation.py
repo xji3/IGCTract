@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     IGC_pm = 'One_rate'
     
-    sh_line = 'sbatch -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
+    sh_line = 'sbatch -p long -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
     for tract_length in [ 5.0, 30.0, 200.0]:
         sh_file_all_name = './PSJS_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
         with open(sh_file_all_name, 'w+') as g:
@@ -62,7 +62,7 @@ if __name__ == '__main__':
                     f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --L ' + str(tract_length) + '\n')
                 g.write(sh_line + sh_file_name + '  \n')
 
-    sh_line = 'sbatch -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
+    sh_line = 'sbatch -p long -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
     for guess in [ 1, 2]:
         sh_file_all_name = './PSJS_' + IGC_pm +'_guess_' + str(guess) + '_all.sh'
         with open(sh_file_all_name, 'w+') as g:
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                             + ' --homogeneity --coding --samecodon \n')
                 g.write(sh_line + sh_file_name + '  \n')
 
-    sh_line = 'sbatch -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
+    sh_line = 'sbatch -p long -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
     for guess in [ 1, 2]:
         sh_file_all_name = './PSJS_' + IGC_pm +'_RV_guess_' + str(guess) + '_all.sh'
         with open(sh_file_all_name, 'w+') as g:
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     IGC_pm = 'One_rate'
     tract_length = 30.0
-    sh_line = 'sbatch -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
+    sh_line = 'sbatch -p long -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
     for dim in [ 1, 2]:
         sh_file_all_name = './PSJS_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
         with open(sh_file_all_name, 'w+') as g:
@@ -102,7 +102,8 @@ if __name__ == '__main__':
                 sh_file_name = '_'.join(paralog) + '_PSJS_HKY_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) +  '_nonclock.sh'
                 with open('../ShFiles/' + sh_file_name, 'w+') as f:
                     f.write('#!/bin/bash' + '\n')
-                    f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --D ' + str(dim) + '\n')
+                    f.write('python Run.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --D ' + str(dim)\
+                            + ' --homogeneity --coding --samecodon \n')
                 g.write(sh_line + sh_file_name + '  \n')
 
         plot_sh_file_all_name = './Plot_PSJS_dim_' + str(dim) + '_' + IGC_pm +'_init_' + str(tract_length) + '_all.sh'
@@ -119,7 +120,7 @@ if __name__ == '__main__':
     # Rate heterogeneity bash file
     IGC_pm = 'One_rate'
     tract_length = 30.0
-    sh_line = 'sbatch -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
+    sh_line = 'sbatch -p long -o PSJS-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ../ShFiles/'
     for allow_same_codon in [True, False]:
         for dim in [ 1, 2]:
             if allow_same_codon:

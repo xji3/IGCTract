@@ -1,2 +1,2 @@
 #!/bin/bash
-python Run.py --paralog1 YDR418W --paralog2 YEL054C --D 1
+python Run.py --paralog1 YDR418W --paralog2 YEL054C --D 1 --homogeneity --coding --samecodon 
