@@ -15,6 +15,6 @@ if __name__ == '__main__':
     lnL_array = test.Forward(True, x)
     result = test.get_mle()
 
-    test.Force_sitewise_lnL = np.array(test.Force_sitewise_lnL) * 0.001
+    test.IGC_sitewise_lnL = np.array(test.IGC_sitewise_lnL) * 0.001
 
     lnL_array, state_array = test.Viterbi()

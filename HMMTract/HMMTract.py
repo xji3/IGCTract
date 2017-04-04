@@ -88,7 +88,7 @@ class HMMTract:
         # Now do the forward step
         for i in range(len(self.IGC_sitewise_lnL)):
             emission_0 = self.Force_sitewise_lnL[i]
-            emission_1 = self.IGC_sitewise_lnL[i]
+            emission_1 = self.IGC_sitewise_lnL[i] + np.log(1.0 - np.exp(emission_0 - self.IGC_sitewise_lnL[i]) * distn[0]) - np.log(distn[1])
 
             new_cond_lnL_0 = emission_0 + (lnL_array[0, i] + self.Ptr[0, 0]) + np.log(sum(np.exp([0.0, lnL_array[1, i] + self.Ptr[1, 0] - (lnL_array[0, i] + self.Ptr[0, 0])])))
             new_cond_lnL_1 = emission_1 + (lnL_array[0, i] + self.Ptr[0, 1]) + np.log(sum(np.exp([0.0, lnL_array[1, i] + self.Ptr[1, 1] - (lnL_array[0, i] + self.Ptr[0, 1])])))
@@ -135,7 +135,7 @@ class HMMTract:
         # Now do the Viterbi algorithm
         for i in range(len(self.IGC_sitewise_lnL)):
             emission_0 = self.Force_sitewise_lnL[i]
-            emission_1 = self.IGC_sitewise_lnL[i]
+            emission_1 = self.IGC_sitewise_lnL[i] + np.log(1.0 - np.exp(emission_0 - self.IGC_sitewise_lnL[i]) * distn[0]) - np.log(distn[1])
 
             new_cond_lnL_0_list = [emission_0 + lnL_array[0, i] + self.Ptr[0, 0], emission_0 + lnL_array[1, i] + self.Ptr[1, 0]]
             lnL_array[0, i + 1] = max(new_cond_lnL_0_list)
