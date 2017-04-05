@@ -24,33 +24,36 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model', required = True, help = 'Substitution Model')
-    parser.add_argument('--paralog1', required = True, help = 'Name of the 1st paralog')
-    parser.add_argument('--paralog2', required = True, help = 'Name of the 2nd paralog')
-    parser.add_argument('--force', dest = 'force', action = 'store_true', help = 'Tau parameter control')
-    parser.add_argument('--no-force', dest = 'force', action = 'store_false', help = 'Tau parameter control')
-    parser.add_argument('--clock', dest = 'clock', action = 'store_true', help = 'clock control')
-    parser.add_argument('--no-clock', dest = 'clock', action = 'store_false', help = 'clock control')
-    
-    main(parser.parse_args())
+##    parser = argparse.ArgumentParser()
+##    parser.add_argument('--model', required = True, help = 'Substitution Model')
+##    parser.add_argument('--paralog1', required = True, help = 'Name of the 1st paralog')
+##    parser.add_argument('--paralog2', required = True, help = 'Name of the 2nd paralog')
+##    parser.add_argument('--force', dest = 'force', action = 'store_true', help = 'Tau parameter control')
+##    parser.add_argument('--no-force', dest = 'force', action = 'store_false', help = 'Tau parameter control')
+##    parser.add_argument('--clock', dest = 'clock', action = 'store_true', help = 'clock control')
+##    parser.add_argument('--no-clock', dest = 'clock', action = 'store_false', help = 'clock control')
+##    
+##    main(parser.parse_args())
 
-##    pairs = []
-##    all_pairs = './Filtered_pairs.txt'
-##    with open(all_pairs, 'r') as f:
-##        for line in f.readlines():
-##            pairs.append(line.replace('\n','').split('_'))
-##
-##    for pair in pairs[1:2]:
-##        paralog = pair
-##        Force = None
-##        Force = {5:0.0}
-##        alignment_file = '/Users/xji3/GitFolders/JGT_MBE_2016/MafftAlignment/' + '_'.join(paralog) + '/' + '_'.join(paralog) + '_input.fasta'
-##        newicktree = '../YeastTree.newick'
-##        test = ReCodonGeneconv( newicktree, alignment_file, paralog, Model = 'MG94', Force = Force, clock = None)
-##        test.get_mle(True, True, 0, 'BFGS')
-##        if Force == None:
-##            test.get_sitewise_loglikelihood_summary('./summary/' + '_'.join(paralog) + '_MG94_nonclock_sw_lnL.txt')
-##        else:
-##            test.get_sitewise_loglikelihood_summary('./summary/Force_' + '_'.join(paralog) + '_MG94_nonclock_sw_lnL.txt')
-        
+    pairs = []
+    all_pairs = './Filtered_pairs.txt'
+    with open(all_pairs, 'r') as f:
+        for line in f.readlines():
+            pairs.append(line.replace('\n','').split('_'))
+
+    for pair in pairs[:1]:
+        paralog = pair
+        Force = None
+        #Force = {5:0.0}
+        alignment_file = './MafftAlignment/' + '_'.join(paralog) + '/' + '_'.join(paralog) + '_input.fasta'
+        newicktree = './YeastTree.newick'
+        test = ReCodonGeneconv( newicktree, alignment_file, paralog, Model = 'MG94', Force = Force, clock = None)
+        test.get_mle(True, True, 0, 'BFGS')
+        test.get_sitewise_loglikelihood_summary('./summary/' + '_'.join(paralog) + '_MG94_nonclock_sw_lnL.txt')
+
+        Force = {5:0.0}
+        test_force = ReCodonGeneconv( newicktree, alignment_file, paralog, Model = 'MG94', Force = Force, clock = None)
+        test_force.update_by_x(test.x)
+        test_force._loglikelihood2()
+        test_force.get_sitewise_loglikelihood_summary('./summary/Force_' + '_'.join(paralog) + '_MG94_nonclock_sw_lnL.txt')
+
