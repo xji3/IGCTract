@@ -1,0 +1,34 @@
+---
+title: "HMM Tract Summary"
+author: "Xiang Ji"
+date: "April 6, 2017"
+output: pdf_document
+geometry: paperwidth = 12in
+---
+
+Now plot posterior log likelihood ratio: $log(\frac{Pr(S_i = 1 | x)}{Pr(S_i = 0 | x)}$.
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/HMMTract/")
+filtered.pairs <- readLines('../Filtered_pairs.txt')
+
+summary.mat <- read.table("./HMM_tract_MG94_nonclock_summary.txt")
+rownames(summary.mat) <- filtered.pairs
+colnames(summary.mat) <- c("lnL", "max lnL", "tract length", "Pr(S_0)", "Pr(S_1)")
+
+for (paralog in filtered.pairs){
+  lnL.ratio <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_HMM_log_posterior_ratio.txt", sep = "")))
+  Viterbi.path <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_HMM_Viterbi_path.txt", sep = "")))
+  
+  plot(lnL.ratio[, 1], type = "l", col = "black", lty = 1,
+       main = paste(paralog, " HMM result"),
+       ylim = c(min(-0.5, min(lnL.ratio)), max(lnL.ratio)))
+  lines(1:dim(Viterbi.path)[1], Viterbi.path[, 1], lty = 2, col = "blue")
+  legend(1, max(lnL.ratio), legend = c("log posterior ratio", "Viterbi path"),
+         lty = c(1, 2), col = c("black", "blue"))
+  print(summary.mat[paralog, ])
+}
+
+
+```

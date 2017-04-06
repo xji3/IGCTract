@@ -3,7 +3,8 @@
 # xji3@ncsu.edu
 
 import numpy as np
-import scipy, scipy.optimize, scipy.linalg 
+import scipy, scipy.optimize, scipy.linalg
+from scipy.misc import logsumexp
 from scipy.linalg import expm
 from functools import partial
 import os, sys
@@ -25,6 +26,9 @@ class HMMTract:
 
         self.x      = None        # log array to store eta and tract_p values
         self.is_mle = False
+
+        self.Forward_mat  = None   # To store values in Forward algorithm
+        self.Backward_mat = None   # To store values in Backward algorithm
 
         self.init_parameters()
 
@@ -50,7 +54,8 @@ class HMMTract:
     def update_by_x(self, x):
         assert(len(x) == 2)
         self.x = x
-        self.eta, self.tract_p = np.exp(x)
+        self.eta = np.exp(x[0])
+        self.tract_p = np.exp(x[1])
         self.get_Ptr_analytical()
         self.get_Emi()
         
@@ -102,22 +107,22 @@ class HMMTract:
         distn = self.get_marginal_state_distn()
 
         # Now create a 2 by nsites array for the dynamic programing
-        lnL_array = np.zeros((len(self.StateList), len(self.IGC_sitewise_lnL) + 1), dtype = float)
+        lnL_array = np.zeros((len(self.StateList), len(self.IGC_sitewise_lnL)), dtype = float)
 
         # Now add in initial distribution
-        lnL_array[:, 0] = np.log(distn)
+        lnL_array[:, 0] = np.log(distn) + self.Emi[:, 0]
 
         # Now do the forward step
-        for i in range(len(self.IGC_sitewise_lnL)):
-            emission_0 = self.Emi[0, i]
-            emission_1 = self.Emi[1, i]
+        for i in range(len(self.IGC_sitewise_lnL) - 1):
+            emission_0 = self.Emi[0, i + 1]
+            emission_1 = self.Emi[1, i + 1]
             
-            new_cond_lnL_0 = emission_0 + (lnL_array[0, i] + self.Ptr[0, 0]) + np.log(sum(np.exp([0.0, lnL_array[1, i] + self.Ptr[1, 0] - (lnL_array[0, i] + self.Ptr[0, 0])])))
-            new_cond_lnL_1 = emission_1 + (lnL_array[0, i] + self.Ptr[0, 1]) + np.log(sum(np.exp([0.0, lnL_array[1, i] + self.Ptr[1, 1] - (lnL_array[0, i] + self.Ptr[0, 1])])))
-
+            new_cond_lnL_0 = emission_0 + logsumexp([lnL_array[0, i] + self.Ptr[0, 0], lnL_array[1, i] + self.Ptr[1, 0]])
+            new_cond_lnL_1 = emission_1 + logsumexp([lnL_array[0, i] + self.Ptr[0, 1], lnL_array[1, i] + self.Ptr[1, 1]])
             lnL_array[:, i + 1] = np.array([new_cond_lnL_0, new_cond_lnL_1])
 
-        ll = sum(lnL_array[:, -1])
+        self.Forward_mat = lnL_array
+        ll = lnL_array[0, -1] + np.log(sum(np.exp(lnL_array[:, -1] - lnL_array[0, -1])))
         if display:
             print '\t'.join([ str(item) for item in [ll] + list(np.exp(self.x))])
 
@@ -125,6 +130,7 @@ class HMMTract:
 
     def objective_1D(self, display, ln_p):
         x = np.array([np.log(self.tau) + ln_p[0], ln_p[0]])
+        self.update_by_x(x)
         return self.Forward(display, x)
     
 
@@ -145,7 +151,6 @@ class HMMTract:
         if display:
             print(result)
         if result['success']:
-            self.update_by_x(self.x)
             self.is_mle = True
         return result
 
@@ -156,16 +161,16 @@ class HMMTract:
         distn = self.get_marginal_state_distn()
 
         # Now create a 2 by nsites array for the Viterbi algorithm
-        lnL_array = np.zeros((len(self.StateList), len(self.IGC_sitewise_lnL) + 1), dtype = float)
+        lnL_array = np.zeros((len(self.StateList), len(self.IGC_sitewise_lnL)), dtype = float)
         state_array = [[], []]
 
         # Now add in initial distribution
-        lnL_array[:, 0] = np.log(distn)
+        lnL_array[:, 0] = np.log(distn) + self.Emi[:, 0]
 
         # Now do the Viterbi algorithm
-        for i in range(len(self.IGC_sitewise_lnL)):
-            emission_0 = self.Emi[0, i]
-            emission_1 = self.Emi[1, i]
+        for i in range(len(self.IGC_sitewise_lnL) - 1):
+            emission_0 = self.Emi[0, i + 1]
+            emission_1 = self.Emi[1, i + 1]
             
             new_cond_lnL_0_list = [emission_0 + lnL_array[0, i] + self.Ptr[0, 0], emission_0 + lnL_array[1, i] + self.Ptr[1, 0]]
             lnL_array[0, i + 1] = max(new_cond_lnL_0_list)
@@ -175,16 +180,52 @@ class HMMTract:
             lnL_array[1, i + 1] = max(new_cond_lnL_1_list)
             state_array[1].append(new_cond_lnL_1_list.index(lnL_array[1, i + 1]))
 
-
-
 ##        if display:
 ##            print
 
         return lnL_array, state_array
         
-        
-            
-        
 
-                
+    def Backward(self):
+        assert(self.is_mle)
+
+        # S state distribution
+        distn = self.get_marginal_state_distn()
+
+        # create a 2 by nsites array for Backward algorithm storage
+        # it will be passed to self.Backward_mat later
+        lnL_array = np.zeros((len(self.StateList), len(self.IGC_sitewise_lnL)), dtype = float)
+
+        # Now add in initial distribution
+        lnL_array[0, -1] = logsumexp([self.Emi[0, -1] + self.Ptr[0, 0], self.Emi[1, -1] + self.Ptr[0, 1]])
+        lnL_array[1, -1] = logsumexp([self.Emi[0, -1] + self.Ptr[1, 0], self.Emi[1, -1] + self.Ptr[1, 1]])
+        # Now do the backward steps
+        for i in range(len(self.IGC_sitewise_lnL) - 1):
+            emission_0 = self.Emi[0, -(2 + i)]
+            emission_1 = self.Emi[1, -(2 + i)]
+
+            new_cond_lnL_0 = logsumexp([emission_0 + self.Ptr[0, 0] + lnL_array[0, -(i + 1)], \
+                                        emission_1 + self.Ptr[0, 1] + lnL_array[1, -(i + 1)]])
+            new_cond_lnL_1 = logsumexp([emission_0 + self.Ptr[1, 0] + lnL_array[0, -(i + 1)], \
+                                        emission_1 + self.Ptr[1, 1] + lnL_array[1, -(i + 1)]])
+            
+            lnL_array[:, -(i + 2)] = np.array([new_cond_lnL_0, new_cond_lnL_1])
+        self.Backward_mat = lnL_array
+        return lnL_array
+
+    def get_posterior(self):
+        self.Backward()
+
+        # initialize lnL array
+        lnL_array = np.zeros((len(self.StateList), len(self.IGC_sitewise_lnL)), dtype = float)
+
+        # Fill in the end position first
+        lnL_array[:, -1] = self.Forward_mat[:, -1]
+
+        # Fill in other positions
+        lnL_array[:, :-1] = self.Backward_mat[:, 1:] + self.Forward_mat[:, :-1]
+        lnL_array[0, :]   = lnL_array[0, :] - self.IGC_sitewise_lnL
+        lnL_array[1, :]   = lnL_array[1, :] - self.IGC_sitewise_lnL
+
+        return lnL_array
         
