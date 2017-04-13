@@ -1,5 +1,6 @@
 from HMMTract import *
 from IGCexpansion.CodonGeneconv import ReCodonGeneconv
+import numdifftools as nd
 
 if __name__ == '__main__':
     pairs = []
@@ -14,7 +15,7 @@ if __name__ == '__main__':
     Force = None
     output_ctrl = ''
     summary_mat = []
-    for paralog in pairs[:]:
+    for paralog in pairs[:1]:
         print 
         print '**' + '_'.join(paralog)+ '**', output_ctrl
         
@@ -23,9 +24,10 @@ if __name__ == '__main__':
         IGC_sitewise_lnL_file = './summary/' + '_'.join(paralog) + '_MG94_nonclock_sw_lnL.txt'
         Force_sitewise_lnL_file = './summary/Force_' + '_'.join(paralog) + '_MG94_nonclock_sw_lnL.txt'
         Total_blen = sum([MG94_IGC.edge_to_blen[edge] for edge in MG94_IGC.edge_list if edge != ('N0', 'kluyveri')])
+        seq_index_file = '../MafftAlignment/' + '_'.join(paralog) + '/' + '_'.join(paralog) + '_seq_index.txt'
 
         test = HMMTract(IGC_sitewise_lnL_file, Force_sitewise_lnL_file, state_list,
-                        Total_blen, MG94_IGC.tau)
+                        Total_blen, MG94_IGC.tau, seq_index_file)
         MG94_IGC_lnL = -test.objective_1D(False, [0.0])
 
         print 
@@ -44,6 +46,16 @@ if __name__ == '__main__':
         np.savetxt('./summary/' + '_'.join(paralog) + '_MG94_nonclock_HMM_log_posterior_ratio.txt', lnL_arr[1, :] - lnL_arr[0, :])
         np.savetxt('./summary/' + '_'.join(paralog) + '_MG94_nonclock_HMM_Viterbi_path.txt', state_array[list(lnL_array[:, -1]).index(max(lnL_array[:, -1]))])
 
-        
+##        lnL_surf = []
+##        tract_p_list = np.log(3.0 / np.arange(3, 501))
+##        for ln_tract_p in tract_p_list:
+##            lnL_surf.append(test.objective_1D(False, [ln_tract_p]))
+##        np.savetxt('./summary/' + '_'.join(paralog) + '_MG94_nonclock_HMM_lnL_surface.txt', np.array(lnL_surf))
+##
+##        # Now use numdifftools to get Hessian (it's rather 2nd derivative though)
+##        f = nd.Hessian(partial(test.objective_1D, False))
+##        ff = nd.Derivative(partial(test.objective_1D, False), n = 2)
+##        fisher_info = f(test.x[1:])[0,0]
+##        second_deriv = ff(test.x[1:])
 
     np.savetxt('./HMM_tract_MG94_nonclock_summary.txt', np.matrix(summary_mat), delimiter = '\t')

@@ -11,15 +11,19 @@ import os, sys
 
 class HMMTract:
     def __init__(self, IGC_sitewise_lnL_file, Force_sitewise_lnL_file,
-                 State_List, Total_blen, tau):
+                 State_List, Total_blen, tau, seq_index_file):
         self.IGC_sitewise_lnL   = self.read_lnL(IGC_sitewise_lnL_file)
         self.Force_sitewise_lnL = self.read_lnL(Force_sitewise_lnL_file)
         self.StateList          = State_List
         self.L                  = Total_blen
+        self.seq_index          = self.read_seq_index_file(seq_index_file)       
 
         # Now inferrence related parameters
         self.tau = tau         # estimated Tau value from MG94+IGC independent site model
-        self.Ptr = None        # Transition probability matrix
+        # Ptr is a function of the neighboring codon's distance on the chromosome
+        # For example, when two codons have an intron between them, the Ptr is different
+        # Decided not to have this stored
+#        self.Ptr = None        # Transition probability matrix
         self.Emi = None        # Emission probability matrix
         self.eta = None        # IGC initiation rate
         self.tract_p = None    # IGC tract distribution p as in Geo(p)
@@ -32,6 +36,13 @@ class HMMTract:
 
         self.init_parameters()
 
+    def read_seq_index_file(self, seq_index_file):
+        # The index should have columns:
+        # nt_index, codon #, codon site for coding sequence
+        seq_index = np.loadtxt(seq_index_file, dtype = int)
+        # Dimension should match
+        assert(seq_index.shape[0] == len(self.IGC_sitewise_lnL) * 3)
+        return seq_index
 
     def init_parameters(self):
         self.update_by_x(np.log([self.tau * 0.05, 0.05]))
@@ -78,6 +89,30 @@ class HMMTract:
                          [P_mat[0, 2] / distn[1], P_mat[0, 3] / distn[1] ]])
 
         self.Ptr = np.log(Ptr)
+
+    def get_Ptr_n(self, n):
+        p = self.tract_p
+        Q = self.eta * np.matrix([[-(2.0 - (1-p)**n)/p, (1.0 - (1-p)**n)/p, (1.0 - (1-p)**n)/p, (1 - p)**n/p],
+                                  [0.0, -1.0/p, 0.0, 1.0/p],
+                                  [0.0, 0.0, -1.0/p, 1.0/p],
+                                  [0.0, 0.0, 0.0, 0.0]], dtype = float)
+        P_mat = scipy.linalg.expm2(2 * Q * self.L)
+        
+        distn = self.get_marginal_state_distn()
+        Ptr = np.matrix([[P_mat[0, 0] / distn[0], P_mat[0, 1] / distn[0] ],
+                         [P_mat[0, 2] / distn[1], P_mat[0, 3] / distn[1] ]])
+
+        return np.log(Ptr)
+
+#        self.Ptr = np.log(Ptr)
+
+    def get_Ptr_n_analytical(self, n):
+        etl = np.exp(-2 * self.L * self.eta / self.tract_p)
+        eel = np.exp(-2 * self.L * self.eta * (1.0 - (1.0 - self.tract_p)**n) / self.tract_p)
+        Ptr = np.matrix([[eel, 1.0 - eel], [etl*(1.0 - eel)/(1.0 - etl), (1.0 - etl - (1.0 - eel) * etl)/(1.0 - etl)]], dtype = float)
+
+        return np.log(Ptr)
+#        self.Ptr = np.log(Ptr)
 
     def get_Ptr_analytical(self):
         etl = np.exp(-2 * self.L * self.eta / self.tract_p)
