@@ -6,28 +6,58 @@ output: pdf_document
 geometry: paperwidth = 12in
 ---
 
-Now plot posterior log likelihood ratio: $log(\frac{Pr(S_i = 1 | x)}{Pr(S_i = 0 | x)}$.
+Now plot posterior log likelihood ratio: $ln(\frac{Pr(S_i = 1 | x)}{Pr(S_i = 0 | x)}$.
 
-```{r}
+The derivatives are $\frac{{\partial \ln L}}{{\partial \ln {p_{tract}}}}$ for 
+the first order and $\frac{{\partial^2 \ln L}}{{\partial \ln {p_{tract}}}^2}$ for
+second order. 
+
+The variance is calculated by:
+$Var(ln(p_{tract}))=\frac{1}{I(ln(p_{tract}))} \approx - \frac{1}{\frac{{\partial^2 \ln L}}{{\partial \ln {p_{tract}}}^2}}$
+
+95% confidence interval for $ln(p_{tract})$ is $ln(p_{tract}) \pm 1.96 * \sqrt {Var(\ln ({p_{tract}}))}$
+
+By transforming to $3.0 / p_{tract}$ to get the average tract length in nucleotide.
+```{r, fig.width = 10, fig.height = 6}
 rm(list=ls())  # clean up workspace
 setwd("/Users/xji3/GitFolders/YeastIGCTract/HMMTract/")
 filtered.pairs <- readLines('../Filtered_pairs.txt')
 
 summary.mat <- read.table("./HMM_tract_MG94_nonclock_summary.txt")
 rownames(summary.mat) <- filtered.pairs
-colnames(summary.mat) <- c("lnL", "max lnL", "tract length", "Pr(S_0)", "Pr(S_1)")
+# Now calculate standard deviation of lnP
+lnP <- log(3.0 / summary.mat[, 3])
+sd.lnP <- 1.0 / sqrt(-summary.mat[, 7])
+low.cf <- exp(lnP - 1.96 * sd.lnP)
+up.cf  <- exp(lnP + 1.96 * sd.lnP)
+up.cf[up.cf > 1] <- 1.0
+summary.mat <- cbind(summary.mat, 3.0 / up.cf, 3.0 / low.cf)
 
+colnames(summary.mat) <- c("lnL", "max lnL", "tract length",
+                           "Pr(S_0)", "Pr(S_1)",
+                           "df", "d^2f", "c.i. tract length", "c.i tract length")
+par(mfrow=c(1, 1))
 for (paralog in filtered.pairs){
   lnL.ratio <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_HMM_log_posterior_ratio.txt", sep = "")))
   Viterbi.path <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_HMM_Viterbi_path.txt", sep = "")))
-  
-  plot(lnL.ratio[, 1], type = "l", col = "black", lty = 1,
+  lnL.surface <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_HMM_lnL_surface.txt", sep = "")))
+  IGC.sw.lnL <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_sw_lnL.txt", sep = "")))
+  Force.sw.lnL <- as.vector(read.table(paste("./summary/Force_", paralog, "_MG94_nonclock_sw_lnL.txt", sep = "")))
+
+  plot(lnL.ratio[, 1], xlab = "codon number", ylab = "log values",
+       type = "l", col = "black", lty = 1,
        main = paste(paralog, " HMM result"),
        ylim = c(min(-0.5, min(lnL.ratio)), max(lnL.ratio)))
-  lines(1:dim(Viterbi.path)[1], Viterbi.path[, 1], lty = 2, col = "blue")
-  legend(1, max(lnL.ratio), legend = c("log posterior ratio", "Viterbi path"),
-         lty = c(1, 2), col = c("black", "blue"))
+  lines(1:dim(Viterbi.path)[1], Viterbi.path[, 1], type = "S", lty = 2, col = "blue")
+  lines(1:dim(IGC.sw.lnL)[1], IGC.sw.lnL[, 2] - Force.sw.lnL[, 2], type = "l", lty = 3, col = "red")
+  legend(1, max(lnL.ratio), legend = c("log posterior ratio", "Viterbi path", "emission lnL diff"),
+         lty = c(1, 2, 3), col = c("black", "blue", "red"))
+
   print(summary.mat[paralog, ])
+  plot(-lnL.surface[, 1], xlab = "tract length in nucleotide", ylab= "lnL", type = "l", col = "black", lty = 1,
+       main = paste(paralog, " lnL surface"))
+  print(summary.mat[paralog, ])
+
 }
 
 

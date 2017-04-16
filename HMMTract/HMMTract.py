@@ -7,6 +7,7 @@ import scipy, scipy.optimize, scipy.linalg
 from scipy.misc import logsumexp
 from scipy.linalg import expm
 from functools import partial
+from math import floor
 import os, sys
 
 class HMMTract:
@@ -88,7 +89,8 @@ class HMMTract:
         Ptr = np.matrix([[P_mat[0, 0] / distn[0], P_mat[0, 1] / distn[0] ],
                          [P_mat[0, 2] / distn[1], P_mat[0, 3] / distn[1] ]])
 
-        self.Ptr = np.log(Ptr)
+        #self.Ptr = np.log(Ptr)
+        return np.log(Ptr)
 
     def get_Ptr_n(self, n):
         p = self.tract_p
@@ -118,7 +120,8 @@ class HMMTract:
         etl = np.exp(-2 * self.L * self.eta / self.tract_p)
         eel = np.exp(-2 * self.L * self.eta)
         Ptr = np.matrix([[eel, 1.0 - eel], [etl*(1.0 - eel)/(1.0 - etl), (1.0 - etl - (1.0 - eel) * etl)/(1.0 - etl)]], dtype = float)
-        self.Ptr = np.log(Ptr)
+        #self.Ptr = np.log(Ptr)
+        return np.log(Ptr)
 
     def get_Emi(self):
         self.Emi = np.zeros((len(self.StateList), len(self.IGC_sitewise_lnL)), dtype = float)
@@ -147,13 +150,19 @@ class HMMTract:
         # Now add in initial distribution
         lnL_array[:, 0] = np.log(distn) + self.Emi[:, 0]
 
+
+
         # Now do the forward step
         for i in range(len(self.IGC_sitewise_lnL) - 1):
+            # Now calculate ln transition probabilities
+            n = floor((self.seq_index[3*i + 3, 0] - self.seq_index[3*i, 0]) / 3)
+            Ptr = self.get_Ptr_n_analytical(n)
+            
             emission_0 = self.Emi[0, i + 1]
             emission_1 = self.Emi[1, i + 1]
             
-            new_cond_lnL_0 = emission_0 + logsumexp([lnL_array[0, i] + self.Ptr[0, 0], lnL_array[1, i] + self.Ptr[1, 0]])
-            new_cond_lnL_1 = emission_1 + logsumexp([lnL_array[0, i] + self.Ptr[0, 1], lnL_array[1, i] + self.Ptr[1, 1]])
+            new_cond_lnL_0 = emission_0 + logsumexp([lnL_array[0, i] + Ptr[0, 0], lnL_array[1, i] + Ptr[1, 0]])
+            new_cond_lnL_1 = emission_1 + logsumexp([lnL_array[0, i] + Ptr[0, 1], lnL_array[1, i] + Ptr[1, 1]])
             lnL_array[:, i + 1] = np.array([new_cond_lnL_0, new_cond_lnL_1])
 
         self.Forward_mat = lnL_array
@@ -204,21 +213,32 @@ class HMMTract:
 
         # Now do the Viterbi algorithm
         for i in range(len(self.IGC_sitewise_lnL) - 1):
+            # Now calculate ln transition probabilities
+            n = floor((self.seq_index[3*i + 3, 0] - self.seq_index[3*i, 0]) / 3)
+            Ptr = self.get_Ptr_n_analytical(n)
+            
             emission_0 = self.Emi[0, i + 1]
             emission_1 = self.Emi[1, i + 1]
             
-            new_cond_lnL_0_list = [emission_0 + lnL_array[0, i] + self.Ptr[0, 0], emission_0 + lnL_array[1, i] + self.Ptr[1, 0]]
+            new_cond_lnL_0_list = [emission_0 + lnL_array[0, i] + Ptr[0, 0], emission_0 + lnL_array[1, i] + Ptr[1, 0]]
             lnL_array[0, i + 1] = max(new_cond_lnL_0_list)
-            state_array[0].append(new_cond_lnL_0_list.index(lnL_array[0, i + 1]))
+            new_state = new_cond_lnL_0_list.index(max(new_cond_lnL_0_list))
+            new_state_array_0 = state_array[new_state] + [new_state]
 
-            new_cond_lnL_1_list = [emission_1 + lnL_array[0, i] + self.Ptr[0, 1], emission_1 + lnL_array[1, i] + self.Ptr[1, 1]]
+            new_cond_lnL_1_list = [emission_1 + lnL_array[0, i] + Ptr[0, 1], emission_1 + lnL_array[1, i] + Ptr[1, 1]]
             lnL_array[1, i + 1] = max(new_cond_lnL_1_list)
-            state_array[1].append(new_cond_lnL_1_list.index(lnL_array[1, i + 1]))
+            new_state = new_cond_lnL_1_list.index(max(new_cond_lnL_1_list))
+            new_state_array_1 = state_array[new_state] + [new_state]
+
+            state_array = [new_state_array_0, new_state_array_1]
+
+        last_state = list(lnL_array[:, -1]).index(max(lnL_array[:, -1]))
+        Viterbi_path = state_array[last_state] + [last_state]
 
 ##        if display:
 ##            print
 
-        return lnL_array, state_array
+        return lnL_array, Viterbi_path
         
 
     def Backward(self):
@@ -232,17 +252,23 @@ class HMMTract:
         lnL_array = np.zeros((len(self.StateList), len(self.IGC_sitewise_lnL)), dtype = float)
 
         # Now add in initial distribution
-        lnL_array[0, -1] = logsumexp([self.Emi[0, -1] + self.Ptr[0, 0], self.Emi[1, -1] + self.Ptr[0, 1]])
-        lnL_array[1, -1] = logsumexp([self.Emi[0, -1] + self.Ptr[1, 0], self.Emi[1, -1] + self.Ptr[1, 1]])
+        n = floor((self.seq_index[-3, 0] - self.seq_index[-6, 0]) / 3)
+        Ptr = self.get_Ptr_n_analytical(n)
+        lnL_array[0, -1] = logsumexp([self.Emi[0, -1] + Ptr[0, 0], self.Emi[1, -1] + Ptr[0, 1]])
+        lnL_array[1, -1] = logsumexp([self.Emi[0, -1] + Ptr[1, 0], self.Emi[1, -1] + Ptr[1, 1]])
         # Now do the backward steps
         for i in range(len(self.IGC_sitewise_lnL) - 1):
+            # Now calculate ln transition probabilities
+            n = floor((self.seq_index[-3*i - 3, 0] - self.seq_index[-3*i - 6, 0]) / 3)
+            Ptr = self.get_Ptr_n_analytical(n)
+            
             emission_0 = self.Emi[0, -(2 + i)]
             emission_1 = self.Emi[1, -(2 + i)]
 
-            new_cond_lnL_0 = logsumexp([emission_0 + self.Ptr[0, 0] + lnL_array[0, -(i + 1)], \
-                                        emission_1 + self.Ptr[0, 1] + lnL_array[1, -(i + 1)]])
-            new_cond_lnL_1 = logsumexp([emission_0 + self.Ptr[1, 0] + lnL_array[0, -(i + 1)], \
-                                        emission_1 + self.Ptr[1, 1] + lnL_array[1, -(i + 1)]])
+            new_cond_lnL_0 = logsumexp([emission_0 + Ptr[0, 0] + lnL_array[0, -(i + 1)], \
+                                        emission_1 + Ptr[0, 1] + lnL_array[1, -(i + 1)]])
+            new_cond_lnL_1 = logsumexp([emission_0 + Ptr[1, 0] + lnL_array[0, -(i + 1)], \
+                                        emission_1 + Ptr[1, 1] + lnL_array[1, -(i + 1)]])
             
             lnL_array[:, -(i + 2)] = np.array([new_cond_lnL_0, new_cond_lnL_1])
         self.Backward_mat = lnL_array
