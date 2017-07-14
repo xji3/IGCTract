@@ -36,7 +36,7 @@ def main(args):
             summary_file = summary_file.replace('_nonclock', '_rv_SCOK_nonclock')
         else:
             save_file = save_file.replace('_nonclock', '_rv_NOSC_nonclock')
-            log_file = log_file.replace('_nonclock', '_rv_SCOK_nonclock')
+            log_file = log_file.replace('_nonclock', '_rv_NOSC_nonclock')
             summary_file = summary_file.replace('_nonclock', '_rv_NOSC_nonclock')
     else:
         x_js = np.concatenate((averaged_x_js[:-1], [averaged_x_js[-1] + guess_lnp, guess_lnp]))
@@ -46,8 +46,8 @@ def main(args):
      
     test = PSJSGeneconv(alignment_file, gene_to_orlg_file, seq_index_file, args.cdna, args.allow_same_codon, tree_newick, DupLosList, x_js, pm_model, IGC_pm,
                       args.rate_variation, node_to_pos, terminal_node_list, save_file, log_file)
-    x = np.concatenate((x_js, averaged_x_rates))
-    test.unpack_x(x)
+    #x = np.concatenate((x_js, averaged_x_rates))
+    #test.unpack_x(x)
 
 
     test.get_mle()
@@ -70,10 +70,10 @@ if __name__ == '__main__':
     main(parser.parse_args())
 
   
-##
+
 ##    MyStruct = namedtuple('MyStruct', 'paralog1 paralog2 tract_length dim cdna rate_variation allow_same_codon guess')
 ##    args = MyStruct(paralog1 = 'YDR418W', paralog2 = 'YEL054C', tract_length = 30.0, dim = 1,
-##                    cdna = True, rate_variation = False, allow_same_codon = False,
+##                    cdna = True, rate_variation = True, allow_same_codon = True,
 ##                    guess = 1)
 ##
 ##    paralog = [args.paralog1, args.paralog2]
@@ -93,6 +93,7 @@ if __name__ == '__main__':
 ##    averaged_x_js, averaged_x_rates = averaged_x[:5], averaged_x[5:]
 ##
 ##    save_file = './save/PSJS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_Guess_' + str(args.guess) + '_nonclock_save.txt'
+##    log_file  = './log/PSJS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_Guess_' + str(args.guess) + '_nonclock_log.txt'
 ##    summary_file = './summary/PSJS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_Guess_' + str(args.guess) + '_nonclock_summary.txt'
 ##
 ##    initial_tract_length_list = np.log([30.0, 200.0])
@@ -102,9 +103,11 @@ if __name__ == '__main__':
 ##        x_js = np.concatenate((averaged_x_js[:-1], np.log([0.7, 3.0]), [averaged_x_js[-1] + guess_lnp, guess_lnp]))
 ##        if args.allow_same_codon:
 ##            save_file = save_file.replace('_nonclock', '_rv_SCOK_nonclock')
+##            log_file = log_file.replace('_nonclock', '_rv_SCOK_nonclock')
 ##            summary_file = summary_file.replace('_nonclock', '_rv_SCOK_nonclock')
 ##        else:
 ##            save_file = save_file.replace('_nonclock', '_rv_NOSC_nonclock')
+##            log_file = log_file.replace('_nonclock', '_rv_NOSC_nonclock')
 ##            summary_file = summary_file.replace('_nonclock', '_rv_NOSC_nonclock')
 ##    else:
 ##        x_js = np.concatenate((averaged_x_js[:-1], [averaged_x_js[-1] + guess_lnp, guess_lnp]))
@@ -113,20 +116,10 @@ if __name__ == '__main__':
 ##
 ##     
 ##    test = PSJSGeneconv(alignment_file, gene_to_orlg_file, seq_index_file, args.cdna, args.allow_same_codon, tree_newick, DupLosList, x_js, pm_model, IGC_pm,
-##                      args.rate_variation, node_to_pos, terminal_node_list, save_file)
-##    x = np.concatenate((x_js, averaged_x_rates))
-##    test.unpack_x(x)
+##                      args.rate_variation, node_to_pos, terminal_node_list, save_file, log_file)
+##    #x = np.concatenate((x_js, averaged_x_rates))
+##    #test.unpack_x(x)
 ##
 ##
 ##    test.get_mle()
 ##    test.get_individual_summary(summary_file)
-
-
-
-##    pairs = []
-##    all_pairs = './Finished_Pairs.txt'
-##    with open(all_pairs, 'r') as f:
-##        for line in f.readlines():
-##            pairs.append(line.replace('\n','').split('_'))
-##
-##    for pair in pairs:  

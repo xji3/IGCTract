@@ -85,9 +85,9 @@ if __name__ == '__main__':
                 with open('../ShFiles/' + sh_file_name, 'w+') as f:
                     f.write('#!/bin/bash' + '\n')
                     f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
-                            + ' --heterogeneity --coding --no-samecodon \n')
-                    f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
                             + ' --heterogeneity --coding --samecodon \n')
+                    f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
+                            + ' --heterogeneity --coding --no-samecodon \n')
                 g.write(sh_line + sh_file_name + '  \n')
 
 

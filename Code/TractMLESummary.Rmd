@@ -18,6 +18,14 @@ read.summary.mat <- function(summary_file, col_names){
                                       col.names = col_names))  
   return (summary_mat)
 }
+Force.HKY.rv.nonclock.summary <- NULL
+for (pair in finished.pairs){
+    summary.file.name <- paste("Force_JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/", summary.file.name, sep = "")
+    summary_mat <- read.summary.mat(summary_file, pair)
+    Force.HKY.rv.nonclock.summary <- cbind(Force.HKY.rv.nonclock.summary, summary_mat)  
+}
+
 for(dim in 1:2){
   JS.HKY.nonclock.summary <- NULL
   JS.HKY.rv.nonclock.summary <- NULL
@@ -154,79 +162,79 @@ show.mat
 Now plot triangular lnL increase for pairs
 
 ```{r}
-pair <- "YER074W_YIL069C"
-pair <- "YBL087C_YER117W"
-dim <- 1
-plot.pairs <- c("YNL301C_YOL120C", "YNL069C_YIL133C")
-library(fields)
-#for (pair in finished.pairs[-6]){
-for (pair in plot.pairs){
-  for (dim in 1:2){
-    # JS.lnL <- get(paste(pair, "JS_HKY_nonclock_lnL", sep = "_"))
-    # row.lnL <- JS.lnL[, 2] %*% matrix(1, 1, dim(JS.lnL)[1])
-    # col.lnL <- t(row.lnL)
-    # JS.mat <- row.lnL + col.lnL
-    #
-    # PSJS.lnL <- get(paste(pair, "PSJS_dim", toString(dim), "HKY_nonclock_lnL", sep = "_"))
-    # PSJS.mat <- matrix(0, dim(JS.lnL)[1], dim(JS.lnL)[1])
-    # for(i in 1:dim(PSJS.lnL)[1]){
-    #   PSJS.mat[PSJS.lnL[i, 1] + 1, PSJS.lnL[i, 2] + 1] <- PSJS.lnL[i, 3]
-    # }
-    # PSJS.mat <- PSJS.mat + t(PSJS.mat)
-    #
-    # diff.lnL.mat <- PSJS.mat - JS.mat
-    # image.plot(1:dim(PSJS.mat)[1], 1:dim(PSJS.mat)[2], diff.lnL.mat, breaks = quantile(diff.lnL.mat))
-    # breaks <- c(0:20 * max(diff.lnL.mat) / 20, 0:19 * (-min(diff.lnL.mat) / 20) + min(diff.lnL.mat))
-    # hist(diff.lnL.mat, breaks = breaks)
-
-    # Now PSJS RV SCOK model
-
-    JS.rv.lnL <- get(paste(pair, "JS_HKY_rv_nonclock_lnL", sep = "_"))
-    row.lnL <- JS.rv.lnL[, 2] %*% matrix(1, 1, dim(JS.rv.lnL)[1])
-    col.lnL <- t(row.lnL)
-    JS.rv.mat <- row.lnL + col.lnL
-    diag(JS.rv.mat) <- 0.0
-
-    PSJS.rv.lnL <- get(paste(pair, "PSJS_dim", toString(dim), "HKY_rv_SCOK_nonclock_lnL", sep = "_"))
-    PSJS.rv.mat <- matrix(0, dim(JS.rv.lnL)[1], dim(JS.rv.lnL)[1])
-    for(i in 1:dim(PSJS.rv.lnL)[1]){
-      PSJS.rv.mat[PSJS.rv.lnL[i, 1] + 1, PSJS.rv.lnL[i, 2] + 1] <- PSJS.rv.lnL[i, 3]
-    }
-    PSJS.rv.mat <- PSJS.rv.mat + t(PSJS.rv.mat)
-
-
-    diff.lnL.mat <- PSJS.rv.mat - JS.rv.mat
-    to.plot.mat <- diff.lnL.mat
-    to.plot.mat[to.plot.mat < 0.01] <- 0
-    # brk = quantile( c(diff.lnL.mat), c(0., 0.98, 1.0))
-    # #lab.brk = paste(names(brk), round(brk, digits = 2), sep = ":")
-    # lab.brk = names(brk)
-
-    # tract.length <- get(paste("PSJS.HKY.dim.", toString(dim), ".nonclock.summary", sep = ""))["tract_length", pair]
-    # lnL.threshold <- 1.0 / tract.length * 2
-
-    gene.length <- get(paste("PSJS.HKY.dim.", toString(dim), ".nonclock.summary", sep = ""))["length", pair]
-    lnL.threshold <- 1.0 / (gene.length - 1) * 2
-    if(lnL.threshold > max(diff.lnL.mat)){
-      brk = quantile( c(diff.lnL.mat), c(0., 0.99, 1.0))
-    }else{
-      brk = c(min(diff.lnL.mat), lnL.threshold, max(diff.lnL.mat))
-    }
-
-
-    Fn <- ecdf(diff.lnL.mat)
-    lab.brk = c("0%", paste(toString(round(Fn(lnL.threshold) * 100, digits = 4)), "%", sep = ""), "100%")
-    #pdf(paste(pair, "PSJS_dim", toString(dim), "HKY_rv_SCOK.pdf", sep = "_"))
-    image.plot(1:dim(PSJS.rv.mat)[1], 1:dim(PSJS.rv.mat)[2], diff.lnL.mat, breaks = brk, col = rainbow(2),
-               lab.breaks = lab.brk, main = paste(pair, "PSJS_dim", toString(dim), "HKY_rv_SCOK", sep = "_"))
-    #dev.off()
-    print(brk)
-    
-    #hist(diff.lnL.mat)
-    #write.table(diff.lnL.mat, paste("./", pair, "_matlab_test.txt", sep = ""), row.names = FALSE, col.names = FALSE, sep = "\t")
-
-  }
-}
+# pair <- "YER074W_YIL069C"
+# pair <- "YBL087C_YER117W"
+# dim <- 1
+# plot.pairs <- c("YNL301C_YOL120C", "YNL069C_YIL133C")
+# library(fields)
+# #for (pair in finished.pairs[-6]){
+# for (pair in plot.pairs){
+#   for (dim in 1:2){
+#     # JS.lnL <- get(paste(pair, "JS_HKY_nonclock_lnL", sep = "_"))
+#     # row.lnL <- JS.lnL[, 2] %*% matrix(1, 1, dim(JS.lnL)[1])
+#     # col.lnL <- t(row.lnL)
+#     # JS.mat <- row.lnL + col.lnL
+#     #
+#     # PSJS.lnL <- get(paste(pair, "PSJS_dim", toString(dim), "HKY_nonclock_lnL", sep = "_"))
+#     # PSJS.mat <- matrix(0, dim(JS.lnL)[1], dim(JS.lnL)[1])
+#     # for(i in 1:dim(PSJS.lnL)[1]){
+#     #   PSJS.mat[PSJS.lnL[i, 1] + 1, PSJS.lnL[i, 2] + 1] <- PSJS.lnL[i, 3]
+#     # }
+#     # PSJS.mat <- PSJS.mat + t(PSJS.mat)
+#     #
+#     # diff.lnL.mat <- PSJS.mat - JS.mat
+#     # image.plot(1:dim(PSJS.mat)[1], 1:dim(PSJS.mat)[2], diff.lnL.mat, breaks = quantile(diff.lnL.mat))
+#     # breaks <- c(0:20 * max(diff.lnL.mat) / 20, 0:19 * (-min(diff.lnL.mat) / 20) + min(diff.lnL.mat))
+#     # hist(diff.lnL.mat, breaks = breaks)
+# 
+#     # Now PSJS RV SCOK model
+# 
+#     JS.rv.lnL <- get(paste(pair, "JS_HKY_rv_nonclock_lnL", sep = "_"))
+#     row.lnL <- JS.rv.lnL[, 2] %*% matrix(1, 1, dim(JS.rv.lnL)[1])
+#     col.lnL <- t(row.lnL)
+#     JS.rv.mat <- row.lnL + col.lnL
+#     diag(JS.rv.mat) <- 0.0
+# 
+#     PSJS.rv.lnL <- get(paste(pair, "PSJS_dim", toString(dim), "HKY_rv_SCOK_nonclock_lnL", sep = "_"))
+#     PSJS.rv.mat <- matrix(0, dim(JS.rv.lnL)[1], dim(JS.rv.lnL)[1])
+#     for(i in 1:dim(PSJS.rv.lnL)[1]){
+#       PSJS.rv.mat[PSJS.rv.lnL[i, 1] + 1, PSJS.rv.lnL[i, 2] + 1] <- PSJS.rv.lnL[i, 3]
+#     }
+#     PSJS.rv.mat <- PSJS.rv.mat + t(PSJS.rv.mat)
+# 
+# 
+#     diff.lnL.mat <- PSJS.rv.mat - JS.rv.mat
+#     to.plot.mat <- diff.lnL.mat
+#     to.plot.mat[to.plot.mat < 0.01] <- 0
+#     # brk = quantile( c(diff.lnL.mat), c(0., 0.98, 1.0))
+#     # #lab.brk = paste(names(brk), round(brk, digits = 2), sep = ":")
+#     # lab.brk = names(brk)
+# 
+#     # tract.length <- get(paste("PSJS.HKY.dim.", toString(dim), ".nonclock.summary", sep = ""))["tract_length", pair]
+#     # lnL.threshold <- 1.0 / tract.length * 2
+# 
+#     gene.length <- get(paste("PSJS.HKY.dim.", toString(dim), ".nonclock.summary", sep = ""))["length", pair]
+#     lnL.threshold <- 1.0 / (gene.length - 1) * 2
+#     if(lnL.threshold > max(diff.lnL.mat)){
+#       brk = quantile( c(diff.lnL.mat), c(0., 0.99, 1.0))
+#     }else{
+#       brk = c(min(diff.lnL.mat), lnL.threshold, max(diff.lnL.mat))
+#     }
+# 
+# 
+#     Fn <- ecdf(diff.lnL.mat)
+#     lab.brk = c("0%", paste(toString(round(Fn(lnL.threshold) * 100, digits = 4)), "%", sep = ""), "100%")
+#     #pdf(paste(pair, "PSJS_dim", toString(dim), "HKY_rv_SCOK.pdf", sep = "_"))
+#     image.plot(1:dim(PSJS.rv.mat)[1], 1:dim(PSJS.rv.mat)[2], diff.lnL.mat, breaks = brk, col = c("white", "red"),#rainbow(2),
+#                lab.breaks = lab.brk, main = paste(pair, "PSJS_dim", toString(dim), "HKY_rv_SCOK", sep = "_"))
+#     #dev.off()
+#     print(brk)
+#     
+#     #hist(diff.lnL.mat)
+#     #write.table(diff.lnL.mat, paste("./", pair, "_matlab_test.txt", sep = ""), row.names = FALSE, col.names = FALSE, sep = "\t")
+# 
+#   }
+# }
 
 ```
 
@@ -265,25 +273,25 @@ Now plot 2 dimensional lnL for 2 pairs
 ```
 
 ```{r}
-# Now export data
-save.image(file = "/Users/xji3/Dropbox/Public/SharedWithJeff/TractSummary.RData")
+# # Now export data
+# save.image(file = "/Users/xji3/Dropbox/Public/SharedWithJeff/TractSummary.RData")
 ```
 
 03232017 construct a table for my talk
 
 ```{r}
-library(xtable)
-show.mat <- NULL
-show.mat <- cbind(JS.HKY.rv.nonclock.summary["ll",],
-                  PSJS.HKY.rv.SCOK.dim.2.nonclock.eff.lnL,
-                  JS.HKY.rv.nonclock.summary["Tau",] * 3.0 / colSums(rbind(1, JS.HKY.rv.nonclock.summary[c("r2", "r3"),])),
-                  PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["tract_length",] * PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["init_rate", ]
-  * 3.0 / colSums(rbind(1, PSJS.HKY.rv.SCOK.dim.2.nonclock.summary[c("r2", "r3"), ])),
-                  PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["tract_length",]
-                  )
-colnames(show.mat) <- c("HKY + RV + SSJS lnL", "HKY + RV + PSJS IGC", "Tau", "Effective Tau",
-                        "Estimated Tract Length")
-show.mat
-x.rescale <- xtable(show.mat)
-print(x.rescale, scalebox = 0.7)
+# library(xtable)
+# show.mat <- NULL
+# show.mat <- cbind(JS.HKY.rv.nonclock.summary["ll",],
+#                   PSJS.HKY.rv.SCOK.dim.2.nonclock.eff.lnL,
+#                   JS.HKY.rv.nonclock.summary["Tau",] * 3.0 / colSums(rbind(1, JS.HKY.rv.nonclock.summary[c("r2", "r3"),])),
+#                   PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["tract_length",] * PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["init_rate", ]
+#   * 3.0 / colSums(rbind(1, PSJS.HKY.rv.SCOK.dim.2.nonclock.summary[c("r2", "r3"), ])),
+#                   PSJS.HKY.rv.SCOK.dim.2.nonclock.summary["tract_length",]
+#                   )
+# colnames(show.mat) <- c("HKY + RV + SSJS lnL", "HKY + RV + PSJS IGC", "Tau", "Effective Tau",
+#                         "Estimated Tract Length")
+# show.mat
+# x.rescale <- xtable(show.mat)
+# print(x.rescale, scalebox = 0.7)
 ```

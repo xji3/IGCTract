@@ -57,8 +57,27 @@ for (paralog in filtered.pairs){
   plot(-lnL.surface[, 1], xlab = "tract length in nucleotide", ylab= "lnL", type = "l", col = "black", lty = 1,
        main = paste(paralog, " lnL surface"))
   print(summary.mat[paralog, ])
-
+  
 }
 
+# plot one paralog
+paralog = "YER102W_YBL072C"
+paralog = "YBR191W_YPL079W"
+lnL.ratio <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_HMM_log_posterior_ratio.txt", sep = "")))
+Viterbi.path <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_HMM_Viterbi_path.txt", sep = "")))
+lnL.surface <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_HMM_lnL_surface.txt", sep = "")))
+IGC.sw.lnL <- as.vector(read.table(paste("./summary/", paralog, "_MG94_nonclock_sw_lnL.txt", sep = "")))
+Force.sw.lnL <- as.vector(read.table(paste("./summary/Force_", paralog, "_MG94_nonclock_sw_lnL.txt", sep = "")))
 
+plot(lnL.ratio[, 1], xlab = "codon number", ylab = "log values",
+     type = "l", col = "black", lty = 1,
+     main = paste(paralog, " HMM result"),
+     ylim = c(min(-0.5, min(lnL.ratio)), max(lnL.ratio)))
+lines(1:dim(Viterbi.path)[1], Viterbi.path[, 1], type = "S", lty = 2, col = "red")
+#lines(1:dim(IGC.sw.lnL)[1], IGC.sw.lnL[, 2] - Force.sw.lnL[, 2], type = "l", lty = 3, col = "red")
+legend(1, max(lnL.ratio), legend = c("log posterior ratio", "Viterbi path"),
+       lty = c(1, 2), col = c( "black", "red"))
+
+plot(-lnL.surface[, 1], xlab = "tract length in nucleotide", ylab= "lnL", type = "l", col = "black", lty = 1,
+     main = paste(paralog, " lnL surface"))
 ```
