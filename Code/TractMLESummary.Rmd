@@ -20,11 +20,25 @@ read.summary.mat <- function(summary_file, col_names){
 }
 Force.HKY.rv.nonclock.summary <- NULL
 for (pair in finished.pairs){
-    summary.file.name <- paste("Force_JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
-    summary_file <- paste("./summary/", summary.file.name, sep = "")
-    summary_mat <- read.summary.mat(summary_file, pair)
-    Force.HKY.rv.nonclock.summary <- cbind(Force.HKY.rv.nonclock.summary, summary_mat)  
+  summary.file.name <- paste("Force_JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  summary_mat <- read.summary.mat(summary_file, pair)
+  Force.HKY.rv.nonclock.summary <- cbind(Force.HKY.rv.nonclock.summary, summary_mat)  
 }
+
+# PSJS.HKY.rv.guess1.nonclock.summary <- NULL
+# PSJS.HKY.rv.guess2.nonclock.summary <- NULL
+# for (pair in finished.pairs){
+#   summary.file.name <- paste("PSJS_HKY", pair, "One_rate_Guess_1_rv_SCOK_nonclock_summary.txt", sep = "_")
+#   summary_file <- paste("./summary/", summary.file.name, sep = "")
+#   summary_mat <- read.summary.mat(summary_file, pair)
+#   PSJS.HKY.rv.guess1.nonclock.summary <- cbind(PSJS.HKY.rv.guess1.nonclock.summary, summary_mat)  
+#   
+#   summary.file.name <- paste("PSJS_HKY", pair, "One_rate_Guess_2_rv_SCOK_nonclock_summary.txt", sep = "_")
+#   summary_file <- paste("./summary/", summary.file.name, sep = "")
+#   summary_mat <- read.summary.mat(summary_file, pair)
+#   PSJS.HKY.rv.guess2.nonclock.summary <- cbind(PSJS.HKY.rv.guess2.nonclock.summary, summary_mat)
+# }
 
 for(dim in 1:2){
   JS.HKY.nonclock.summary <- NULL
