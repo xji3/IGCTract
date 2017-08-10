@@ -104,3 +104,32 @@ if __name__ == '__main__':
                             f.write('python plot.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --no-samecodon --zoom --D ' + str(dim) + '\n')
                             f.write('python plot.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --heterogeneity --coding --no-samecodon --no-zoom --D ' + str(dim) + '\n')
                     g.write(sh_line + sh_file_name + '  \n')
+
+
+    sh_line = 'sbatch -p long -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/'
+    for guess in [ 1, 2]:
+        sh_file_all_name = './PSJS_' + IGC_pm +'_guess_' + str(guess) + '_all.sh'
+        with open(sh_file_all_name, 'w+') as g:
+            g.write('#!/bin/bash' + '\n')
+            for paralog in pairs:
+                sh_file_name = '_'.join(paralog) + '_PSJS_HKY_' + IGC_pm +'_guess_' + str(guess) +  '_nonclock.sh'
+                with open('./ShFiles/' + sh_file_name, 'w+') as f:
+                    f.write('#!/bin/bash' + '\n')
+                    f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
+                            + ' --homogeneity --coding --samecodon \n')
+                g.write(sh_line + sh_file_name + '  \n')
+
+    sh_line = 'sbatch -p long -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/'
+    for guess in [ 1, 2]:
+        sh_file_all_name = './PSJS_' + IGC_pm +'_RV_guess_' + str(guess) + '_all.sh'
+        with open(sh_file_all_name, 'w+') as g:
+            g.write('#!/bin/bash' + '\n')
+            for paralog in pairs:
+                sh_file_name = '_'.join(paralog) + '_PSJS_HKY_' + IGC_pm +'_RV_guess_' + str(guess) +  '_nonclock.sh'
+                with open('./ShFiles/' + sh_file_name, 'w+') as f:
+                    f.write('#!/bin/bash' + '\n')
+                    f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
+                            + ' --heterogeneity --coding --samecodon \n')
+                    f.write('python Guess.py --paralog1 ' + paralog[0] + ' --paralog2 ' + paralog[1] + ' --G ' + str(guess)\
+                            + ' --heterogeneity --coding --no-samecodon \n')
+                g.write(sh_line + sh_file_name + '  \n')
