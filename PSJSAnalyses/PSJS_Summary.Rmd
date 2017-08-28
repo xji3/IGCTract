@@ -1,0 +1,23 @@
+---
+title: "PSJS_Summary"
+author: "Xiang Ji"
+date: "8/22/2017"
+output: html_document
+---
+
+This R markdown file summarizes the PSJS analysis results. 
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/PSJSAnalyses/")
+filtered.pairs <- readLines('../Filtered_pairs.txt')
+
+# Now read in individual summary of gene pairs
+PSJS.HKY.rv.nonclock.summary <- NULL
+for (pair in finished.pairs){
+  summary.file.name <- paste("Force_JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  summary_mat <- read.summary.mat(summary_file, pair)
+  Force.HKY.rv.nonclock.summary <- cbind(Force.HKY.rv.nonclock.summary, summary_mat)  
+}
+```
