@@ -29,7 +29,7 @@ def main(args):
     summary_file_1D = './summary/HMM_' + '_'.join(paralog) + '_MG94_nonclock_1D_summary.txt'
     summary_file_all_Dimension = './summary/HMM_' + '_'.join(paralog) + '_MG94_nonclock_all_summary.txt'
 
-    log_p_list = np.log(1.0/np.array(range(1, 1001)))
+    log_p_list = np.log(3.0/np.array(range(3, 1001)))
     plot_file = './plot/HMM_' + '_'.join(paralog) + '_lnL_1D_surface.txt'
     test.plot_tract_p(log_p_list, plot_file)
 
