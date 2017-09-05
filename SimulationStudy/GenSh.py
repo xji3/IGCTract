@@ -10,7 +10,7 @@ if __name__ == '__main__':
     sh_line = 'sbatch -o HMM-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/Sim_'
 
     
-    mean_tract_list = [3.0, 10.0, 50.0, 100.0, 500.0]
+    mean_tract_list = [3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0]
     for geo in mean_tract_list:
         IGC_bash_file = './Sim_Tract_' + str(geo) + '.sh'
         with open(IGC_bash_file, 'w+') as f:
