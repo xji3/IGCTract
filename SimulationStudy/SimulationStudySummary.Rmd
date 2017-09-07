@@ -1,0 +1,163 @@
+---
+title: "SimulationStudySummary"
+author: "Xiang Ji"
+date: "9/7/2017"
+output: pdf_document
+---
+
+This R markdown file summarizes Simulation Study results. 
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
+filtered.pairs <- readLines('../Filtered_pairs.txt')
+
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
+# First read in HMM results
+# from summary file
+for(tract in Tract.list){
+  hmm.tract.summary <- NULL
+  for(sim in 1:100){
+    hmm.summary <- paste("./summary/Tract_", toString(tract), '.0/sim_', 
+                         toString(sim), '/HMM_YDR418W_YEL054C_MG94_nonclock_sim_',
+                         toString(sim), '_1D_summary.txt', sep = "")
+    if (file.exists(hmm.summary)){
+      all <- readLines(hmm.summary, n = -1)
+      col.names <- paste("sim_", toString(sim), sep = "")
+      row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+      summary_mat <- as.matrix(read.table(hmm.summary, 
+                                          row.names = row.names, 
+                                          col.names = col.names))
+      hmm.tract.summary <- cbind(hmm.tract.summary, summary_mat)     
+    }
+    
+  }
+  assign(paste("HMM_Tract_", toString(tract), "_summary", sep = ""), hmm.tract.summary)
+}
+
+# from plots
+for(tract in Tract.list){
+  hmm.tract.plots <- NULL
+  for(sim in 1:100){
+    hmm.plot <- paste("./plot/Tract_", toString(tract), '.0/sim_', 
+                         toString(sim), '/HMM_YDR418W_YEL054C_lnL_sim_',
+                         toString(sim), '_1D_surface.txt', sep = "")
+    if (file.exists(hmm.plot)){
+      lnL.surface <- read.table(hmm.plot)
+      max.idx <- which.max(lnL.surface[, 2])
+      new.summary <- matrix(c(3.0*exp(-lnL.surface[max.idx, 1]), lnL.surface[max.idx, 2]), 2, 1)
+      rownames(new.summary) <- c("tract in nt", "lnL")
+      colnames(new.summary) <- paste("sim_", toString(sim), sep = "")
+      hmm.tract.plots <- cbind(hmm.tract.plots, new.summary)     
+    }
+  }
+  assign(paste("HMM_Tract_", toString(tract), "_plot", sep = ""), hmm.tract.plots)
+}
+
+# Now read in PSJS summary results
+for(tract in Tract.list){
+  PSJS.tract.summary <- NULL
+  for(sim in 1:100){
+    PSJS.summary <- paste("./summary/Tract_", toString(tract), '.0/sim_', 
+                         toString(sim), '/PSJS_HKY_rv_sim_',
+                         toString(sim), "_Tract_", toString(tract), '.0_summary.txt', sep = "")
+    if (file.exists(PSJS.summary)){
+      all <- readLines(PSJS.summary, n = -1)
+      col.names <- paste("sim_", toString(sim), sep = "")
+      row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+      summary_mat <- as.matrix(read.table(PSJS.summary, 
+                                          row.names = row.names, 
+                                          col.names = col.names))
+      PSJS.tract.summary <- cbind(PSJS.tract.summary, summary_mat)     
+    }
+    
+  }
+  assign(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""), PSJS.tract.summary)
+}
+```
+
+OK, Now show the performance summary
+
+```{r}
+# HMM results
+for (tract in Tract.list){
+  # show how many stuck at boundary 1000 nt first
+  print(paste("Tract = ", toString(tract), sep = ""))
+  summary_mat <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
+  
+  # histogram of inferred tract length
+  hist(summary_mat[1, summary_mat[1, ] < 999.], main = paste("Tract = ", toString(tract), sep = ""))
+  print(paste("Among total 100 simulated data sets, ", toString(sum(summary_mat[1, ] > 999)), 
+              " datasets stuck at 1000", sep = ""))
+  print(c("mean", mean(summary_mat[1, summary_mat[1, ] < 999.]), 
+          "sd", sd(summary_mat[1, summary_mat[1, ] < 999.])))
+}
+
+# PSJS results
+for(tract in Tract.list){
+  summary_mat <- get(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""))
+  # histogram of inferred tract length
+  hist(summary_mat["tract_length", ], main = paste("Tract = ", toString(tract), sep = ""))
+  print(c("mean", mean(summary_mat["tract_length", ]), 
+          "sd", sd(summary_mat["tract_length", ])))  
+}
+
+# exclude suspiciously long inferred tract length, plot again
+for(tract in Tract.list){
+  summary_mat <- get(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""))
+  # histogram of inferred tract length
+  hist(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0], main = paste("Tract = ", toString(tract), sep = ""))
+  print(c("mean", mean(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0]), 
+          "sd", sd(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0])))  
+}
+```
+
+A plot of HMM surface that infer tract length at boundary from each tract length condition
+
+```{r}
+# plot the first two datasets that HMM inferred tract length stuck at boundary of 1000.0 
+for (tract in Tract.list){
+  print(paste("Tract = ", toString(tract), sep = ""))
+  summary_mat <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
+  count = 0
+  for(iter in 1:99){
+    if(summary_mat[1, iter] > 999. & count < 2){
+      to.plot <- read.table(paste("./plot/Tract_", toString(tract), ".0/", colnames(summary_mat)[iter], 
+                                  "/HMM_YDR418W_YEL054C_lnL_", colnames(summary_mat)[iter],
+                                  "_1D_surface.txt", sep = ""))
+      plot(3.0*exp(-to.plot[, 1]), to.plot[, 2], main = paste("Tract = ", toString(tract), " ",colnames(summary_mat)[iter], sep = "" ), type = "l", xlab = "tract length in nucleotides", 
+           ylab = "lnL")
+      count = count + 1
+    }
+  }
+}
+
+```
+
+Now plot the two plots of lnL
+```{r}
+library(ggplot2)
+# Tract length = 10
+hmm.plot <- read.table("./plot/Tract_10.0/sim_1/HMM_YDR418W_YEL054C_lnL_sim_1_1D_surface.txt")
+PSJS.plot <- read.table("./plot/Tract_10.0/sim_1/PSJS_HKY_rv_sim_1_Tract_10.0_lnL_1D_surface.txt")
+ggplot(mapping = aes(x = 3.0*exp(-hmm.plot[,1]), y = hmm.plot[, 2], colour = "blue")) + geom_line() +
+  geom_line(aes(x = exp(-PSJS.plot[,1]), y = PSJS.plot[, 2]/488 + min(hmm.plot[, 2]) - min(PSJS.plot[, 2]/488),
+                colour = "red")) +
+  xlab("Tract length in nucleotides") + 
+  ylab("lnL") + 
+  ggtitle("Tract length = 10, simulated dataet 1")
+
+hmm.plot <- read.table("./plot/Tract_10.0/sim_100/HMM_YDR418W_YEL054C_lnL_sim_100_1D_surface.txt")
+PSJS.plot <- read.table("./plot/Tract_10.0/sim_100/PSJS_HKY_rv_sim_100_Tract_10.0_lnL_1D_surface.txt")
+ggplot(mapping = aes(x = 3.0*exp(-hmm.plot[,1]), y = hmm.plot[, 2], colour = "blue")) + geom_line() +
+  geom_line(aes(x = exp(-PSJS.plot[,1]), y = PSJS.plot[, 2]/488 + min(hmm.plot[, 2]) - min(PSJS.plot[, 2]/488),
+                colour = "red")) +
+  xlab("Tract length in nucleotides") + 
+  ylab("lnL") + 
+  ggtitle("Tract length = 10, simulated dataet 100")
+```
+save workspace now
+
+```{r}
+save.image("./SimulationStudy.RData")
+```
