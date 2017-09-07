@@ -13,11 +13,30 @@ setwd("/Users/xji3/GitFolders/YeastIGCTract/PSJSAnalyses/")
 filtered.pairs <- readLines('../Filtered_pairs.txt')
 
 # Now read in individual summary of gene pairs
-PSJS.HKY.rv.nonclock.summary <- NULL
-for (pair in finished.pairs){
-  summary.file.name <- paste("Force_JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+PSJS.HKY.rv.nonclock.summary.guess.1 <- NULL
+PSJS.HKY.rv.nonclock.summary.guess.2 <- NULL
+for (pair in filtered.pairs){
+  summary.file.name <- paste("PSJS_HKY", pair, "One_rate_Guess_1_rv_SCOK_nonclock_summary.txt", sep = "_")
   summary_file <- paste("./summary/", summary.file.name, sep = "")
-  summary_mat <- read.summary.mat(summary_file, pair)
-  Force.HKY.rv.nonclock.summary <- cbind(Force.HKY.rv.nonclock.summary, summary_mat)  
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  PSJS.HKY.rv.nonclock.summary.guess.1 <- cbind(PSJS.HKY.rv.nonclock.summary.guess.1, summary_mat)  
+  
+  summary.file.name <- paste("PSJS_HKY", pair, "One_rate_Guess_2_rv_SCOK_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  PSJS.HKY.rv.nonclock.summary.guess.2 <- cbind(PSJS.HKY.rv.nonclock.summary.guess.2, summary_mat)  
+
+  #YER102W_YBL072C guess 2 file is a fake copy of guess 1 file  
 }
 ```
+
