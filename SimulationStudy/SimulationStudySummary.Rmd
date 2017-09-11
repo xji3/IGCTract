@@ -10,7 +10,6 @@ This R markdown file summarizes Simulation Study results.
 ```{r}
 rm(list=ls())  # clean up workspace
 setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
-filtered.pairs <- readLines('../Filtered_pairs.txt')
 
 Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
 # First read in HMM results
@@ -73,6 +72,24 @@ for(tract in Tract.list){
     
   }
   assign(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""), PSJS.tract.summary)
+}
+
+# Now read in actual mean tract length in each simulated dataset
+for (tract in Tract.list){
+  sim.tract <- NULL
+  for(sim in 1:100){
+    sim_log <- paste("./Tract_", toString(tract), ".0/sim_", toString(sim), 
+                     "/YDR418W_YEL054C_sim_", toString(sim), "_IGC.log", sep = "")
+    # now read in log file
+    log_info <- read.table(sim_log, header = TRUE)
+    #tract.length <- log_info[, "stop_pos"] - log_info[, "start_pos"] + 1
+    tract.length <- log_info[, "tract_length"]
+    new.info <- matrix(c(mean(tract.length), sd(tract.length)), 2, 1)
+    rownames(new.info) <- c("mean tract length", "sd tract length")
+    colnames(new.info) <- paste("sim_", toString(sim), sep = "")
+    sim.tract <- cbind(sim.tract, new.info)
+  }
+  assign(paste("sim.tract.", toString(tract), sep = ""), sim.tract)
 }
 ```
 
@@ -156,6 +173,36 @@ ggplot(mapping = aes(x = 3.0*exp(-hmm.plot[,1]), y = hmm.plot[, 2], colour = "bl
   ylab("lnL") + 
   ggtitle("Tract length = 10, simulated dataet 100")
 ```
+
+Now see how estimates from the two approaches differ from the actual mean tract length in each simulated data set.
+
+```{r}
+for(tract in Tract.list){
+  sim.info <- get(paste("sim.tract.", toString(tract), sep = ""))
+  # Show mean and sd
+  print(c("empirical mean", mean(sim.info["mean tract length", ]),
+          "geometric mean", tract,
+          "empirical sd", mean(sim.info["sd tract length",], na.rm = TRUE),
+          "geometric sd", sqrt(tract^2-tract*3.0)))
+  hmm.info <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
+  PSJS.info <- get(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""))
+  shared.col <- intersect(colnames(hmm.info), colnames(PSJS.info))
+  
+  # Now show the ratio of HMM estimated tract / actual mean tracts in simulation
+  hmm.ratio <- hmm.info[1, shared.col]/sim.info[1, shared.col]
+  hist(hmm.ratio, main = paste("HMM ratio Tract = ", toString(tract), sep = ""))
+  print(c("HMM mean", mean(hmm.ratio), "HMM sd", sd(hmm.ratio)))
+  
+  # Now show the ratio of PSJS estimated tract / actual mean tracts in simulation
+  PSJS.ratio <- PSJS.info["tract_length", shared.col]/sim.info[1, shared.col]
+  hist(PSJS.ratio, main = paste("PSJS ratio Tract = ", toString(tract), sep = ""))
+  print(c("PSJS mean", mean(PSJS.ratio), "PSJS sd", sd(PSJS.ratio)))
+  
+}
+
+
+```
+
 save workspace now
 
 ```{r}
