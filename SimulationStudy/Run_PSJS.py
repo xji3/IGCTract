@@ -97,6 +97,7 @@ if __name__ == '__main__':
     parser.add_argument('--sim_num', required = True, help = 'simulation number')
     parser.add_argument('--heterogeneity', dest = 'rate_variation', action = 'store_true', help = 'rate heterogeneity control')
     parser.add_argument('--homogeneity', dest = 'rate_variation', action = 'store_false', help = 'rate heterogeneity control')
+
     
     main(parser.parse_args())
 

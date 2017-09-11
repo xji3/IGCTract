@@ -1,2 +1,2 @@
 #!/bin/bash
-python Run_PSJS.py --geo 50.0 --sim_num 82 --heterogeneity 
+python Run_HKY_PSJS.py --geo 50.0 --sim_num 82 --heterogeneity 
