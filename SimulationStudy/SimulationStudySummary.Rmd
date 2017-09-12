@@ -39,8 +39,8 @@ for(tract in Tract.list){
   hmm.tract.plots <- NULL
   for(sim in 1:100){
     hmm.plot <- paste("./plot/Tract_", toString(tract), '.0/sim_', 
-                         toString(sim), '/HMM_YDR418W_YEL054C_lnL_sim_',
-                         toString(sim), '_1D_surface.txt', sep = "")
+                      toString(sim), '/HMM_YDR418W_YEL054C_lnL_sim_',
+                      toString(sim), '_1D_surface.txt', sep = "")
     if (file.exists(hmm.plot)){
       lnL.surface <- read.table(hmm.plot)
       max.idx <- which.max(lnL.surface[, 2])
@@ -58,8 +58,8 @@ for(tract in Tract.list){
   PSJS.tract.summary <- NULL
   for(sim in 1:100){
     PSJS.summary <- paste("./summary/Tract_", toString(tract), '.0/sim_', 
-                         toString(sim), '/PSJS_HKY_rv_sim_',
-                         toString(sim), "_Tract_", toString(tract), '.0_summary.txt', sep = "")
+                          toString(sim), '/PSJS_HKY_rv_sim_',
+                          toString(sim), "_Tract_", toString(tract), '.0_summary.txt', sep = "")
     if (file.exists(PSJS.summary)){
       all <- readLines(PSJS.summary, n = -1)
       col.names <- paste("sim_", toString(sim), sep = "")
@@ -90,6 +90,51 @@ for (tract in Tract.list){
     sim.tract <- cbind(sim.tract, new.info)
   }
   assign(paste("sim.tract.", toString(tract), sep = ""), sim.tract)
+}
+
+# read in simulated tract info of simulated datasets with shrinked tau 
+for (tract in Tract.list){
+  HKY.shrinked.tract <- NULL
+  for(sim in 1:100){
+    sim_log <- paste("./Shrinked_Tau_HKY_Simulation/Tract_", toString(tract), ".0_HKY/sim_", toString(sim), 
+                     "/YDR418W_YEL054C_sim_", toString(sim), "_IGC.log", sep = "")
+    # now read in log file
+    log_info <- read.table(sim_log, header = TRUE)
+    proposed.tract.length <- log_info[, "tract_length"]
+    performed.tract.length <- log_info[, "stop_pos"] - log_info[, "start_pos"] + 1
+    new.info <- matrix(c(mean(proposed.tract.length), sd(proposed.tract.length), 
+                         mean(performed.tract.length), sd(performed.tract.length)), 4, 1)
+    rownames(new.info) <- c("mean proposed tract length", "sd proposed tract length", 
+                            "mean performed tract length", "sd performed tract length")
+    colnames(new.info) <- paste("sim_", toString(sim), sep = "")
+    HKY.shrinked.tract <- cbind(HKY.shrinked.tract, new.info)
+  }
+  assign(paste("HKY.shrinked.tract.", toString(tract), sep = ""), HKY.shrinked.tract)
+}
+
+# Now read in PSJS summary results of shrined tau datasets
+for(tract in c(3.0, 10.0)){
+  for(guess in c(50.0, 100.0)){
+    PSJS.tract.summary <- NULL
+    for(sim in 1:100){
+      
+      PSJS.summary <- paste("./Shrinked_Tau_HKY_Simulation/summary/Tract_", toString(tract), '.0_HKY/sim_', 
+                            toString(sim), '/PSJS_HKY_rv_sim_',
+                            toString(sim), "_Tract_", toString(tract), '.0_guess_',
+                            toString(guess),'.0_nt_summary.txt', sep = "")
+      if (file.exists(PSJS.summary)){
+        all <- readLines(PSJS.summary, n = -1)
+        col.names <- paste("sim_", toString(sim), sep = "")
+        row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+        summary_mat <- as.matrix(read.table(PSJS.summary, 
+                                            row.names = row.names, 
+                                            col.names = col.names))
+        PSJS.tract.summary <- cbind(PSJS.tract.summary, summary_mat)
+      }
+    }
+    assign(paste("PSJS_Shrinked_HKY_Tract_", toString(tract), "_guess_", 
+                 toString(guess), "_summary", sep = ""), PSJS.tract.summary)
+  }
 }
 ```
 

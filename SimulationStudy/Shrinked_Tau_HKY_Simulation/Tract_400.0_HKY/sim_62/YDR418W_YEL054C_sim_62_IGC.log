@@ -1,0 +1,2 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+N4_mikatae	0.00206394855341	1	2	21	0	20	1	CCCGGGAACACAATAAGTTAG	CCCGGGAACACAATAAGCTAG
