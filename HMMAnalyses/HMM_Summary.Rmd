@@ -11,9 +11,37 @@ This R markdown file summarizes the MG94+IS-IGC+HMM analysis results.
 
 ```{r}
 rm(list=ls())  # clean up workspace
-setwd("/Users/xji3/GitFolders/YeastIGCTract/HMMAnalyses/")
+#setwd("/Users/xji3/GitFolders/YeastIGCTract/HMMAnalyses/")
+setwd("/Users/Xiang/GitFolders/YeastIGCTract/HMMAnalyses/")
 filtered.pairs <- readLines('./Filtered_pairs.txt')
+```
 
+Now read in estimated parameter values
+
+```{r}
+HMM.Yeast.1D <- NULL
+HMM.Yeast.all <- NULL
+for(pair in filtered.pairs){
+  summary.file.1D.name <- paste("HMM", pair, "MG94_nonclock_1D_summary.txt", sep = "_")
+  summary.file.1D <- paste("./summary/", summary.file.1D.name, sep = "")
+  summary.file.all <- paste("./summary/HMM", pair, "MG94_nonclock_all_summary.txt", sep = "_")
+  all <- readLines(summary.file.1D, n = -1)
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  col.name <- pair
+  summary_mat <- as.matrix(read.table(summary.file.1D, 
+                                      row.names = row.names,
+                                      col.names = col.name))
+  HMM.Yeast.1D <- cbind(HMM.Yeast.1D, summary_mat)
+  summary_mat <- as.matrix(read.table(summary.file.all, 
+                                      row.names = row.names,
+                                      col.names = col.name))
+  HMM.Yeast.all <- cbind(HMM.Yeast.all, summary_mat)
+}
+```
+
+Plot the lnL surface
+
+```{r}
 tract.length.list <- 3:1000
 # Now plot individual lnL surface along mean tract length of each gene pair
 # all other parameters are fixed at MLE
@@ -26,5 +54,28 @@ for (pair in filtered.pairs){
        main = paste(pair, "lnL_surface", sep = "_"), 
        xlab = "mean tract length in nucleotides", 
        ylab = "lnL")
+  print(3.0 / HMM.Yeast.1D["tract_p", pair])
 }
 ```
+
+Now show the maximum log likelihood difference between search in only tract_p (one dimensional) with all other
+paramters fixed at their MLE in from the MG94+IS-IGC model and that from the search in all parameters
+
+```{r}
+# lnL difference (minus sign because -lnL was recorded)
+-(HMM.Yeast.1D["ll", ] - HMM.Yeast.all["ll", ])
+```
+
+Now show the estimated average tract length in 1D case
+
+```{r}
+3.0/HMM.Yeast.1D["tract_p", ]
+```
+
+Now show the estimated average tract length in 'all parameter search' case
+
+```{r}
+3.0/HMM.Yeast.all["tract_p", ]
+save.image("./HMM_Summary.RData")
+```
+

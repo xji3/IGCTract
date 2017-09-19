@@ -7,15 +7,15 @@ output: html_document
 
 ```{r}
 rm(list=ls())  # clean up workspace
-setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
+setwd("/Users/Xiang/GitFolders/YeastIGCTract/SimulationStudy/")
 
 Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
-Tract.list <- c(3.0, 10.0)
+#Tract.list <- c(3.0, 10.0)
 # Now read in actual mean tract length in each simulated dataset
 for (tract in Tract.list){
   sim.tract <- NULL
   for(sim in 1:100){
-    pos.list <- rep(0, 492)
+    pos.list <- matrix(0, 492, 1)
     sim_log <- paste("./Tract_", toString(tract), ".0_HKY/sim_", toString(sim), 
                      "/YDR418W_YEL054C_sim_", toString(sim), "_IGC.log", sep = "")
     # now read in log file
@@ -31,12 +31,61 @@ for (tract in Tract.list){
                             "mean performed tract length", "sd performed tract length", 
                             "mean proposed nonidentical tract length", "mean performed nonidentical tract length")
     colnames(new.info) <- paste("sim_", toString(sim), sep = "")
-    sim.tract <- cbind(sim.tract, new.info)
+    
+    # Now add number of IGC events of the 492 sites
+    for(i in 1:dim(log_info)[1]){
+      pos_from <- log_info[i, "start_pos"] + 1
+      pos_to   <- log_info[i, "stop_pos"] + 1
+      pos.list[pos_from:pos_to] <- pos.list[pos_from:pos_to] + 1
+    }
+    rownames(pos.list) <- paste("site_", 1:492, sep = "")
+    colnames(pos.list) <- paste("sim_", toString(sim), sep = "")
+    sim.tract <- cbind(sim.tract, rbind(new.info, pos.list))
   }
   assign(paste("sim.tract.", toString(tract), sep = ""), sim.tract)
 }
 
-
 ```
 
-Total post duplication 0.056233707053073859. 
+Total post duplication 0.056233707053073859. Tau = 22.58153.
+
+```{r}
+Tau = 22.58153
+blen = 0.056233707053073859
+for(tract in Tract.list){
+  sim.summary <- get(paste("sim.tract.", toString(tract), sep = ""))
+  plot(rowMeans(sim.summary[8:499, ]), 
+       main = paste("Mean Experienced # IGC across sites, Tract = ", toString(tract), ""))
+  abline(h = 22.58153 * 2 * 0.056233707053073859, col = 2)
+
+  plot(rowMeans(sim.summary[8:499, ]^2) - rowMeans(sim.summary[8:499, ])^2, 
+       main = paste("Var Experienced # IGC across sites, Tract = ", toString(tract), ""))
+  abline(h = 22.58153 * 2 * 0.056233707053073859, col = 2)
+  
+  # All sites
+  x =  0:(max(sim.summary[8:499,]) + 1)
+  hist(sim.summary[8:499,], prob=TRUE, breaks = x - 0.5,
+        main = paste("Histogram, Tract = ", toString(tract), sep = ""))
+  lines(x, dpois(x, Tau * 2 * blen))  
+  
+  # First site
+  x =  0:(max(sim.summary[8,]) + 1)
+  hist(sim.summary[8,], prob=TRUE, breaks = x - 0.5,
+        main = paste("Histogram of 1st site, Tract = ", toString(tract), sep = ""))
+  lines(x, dpois(x, Tau * 2 * blen))  
+
+  # Site 200
+  x =  0:(max(sim.summary[207,]) + 1)
+  hist(sim.summary[207,], prob=TRUE, breaks = x - 0.5,
+        main = paste("Histogram of 200th site, Tract = ", toString(tract), sep = ""))
+  lines(x, dpois(x, Tau * 2 * blen))  
+
+  # Site 400
+  x =  0:(max(sim.summary[407,]) + 1)
+  hist(sim.summary[407,], prob=TRUE, breaks = x - 0.5,
+        main = paste("Histogram of 400th site, Tract = ", toString(tract), sep = ""))
+  lines(x, dpois(x, Tau * 2 * blen)) 
+  #ks.test(sim.summary[8:499,], "ppois", Tau*2*blen)
+}
+
+```

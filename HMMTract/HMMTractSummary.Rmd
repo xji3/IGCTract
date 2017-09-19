@@ -20,7 +20,8 @@ $Var(ln(p_{tract}))=\frac{1}{I(ln(p_{tract}))} \approx - \frac{1}{\frac{{\partia
 By transforming to $3.0 / p_{tract}$ to get the average tract length in nucleotide.
 ```{r, fig.width = 10, fig.height = 6}
 rm(list=ls())  # clean up workspace
-setwd("/Users/xji3/GitFolders/YeastIGCTract/HMMTract/")
+#setwd("/Users/xji3/GitFolders/YeastIGCTract/HMMTract/")
+setwd("/Users/Xiang/GitFolders/YeastIGCTract/HMMTract/")
 filtered.pairs <- readLines('../Filtered_pairs.txt')
 
 summary.mat <- read.table("./HMM_tract_MG94_nonclock_summary.txt")
