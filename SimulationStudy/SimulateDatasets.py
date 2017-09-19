@@ -113,62 +113,62 @@ if __name__ == '__main__':
     sim_num = 1
     seed_number_start = 27606
     
-    for geo in mean_tract_list[:1]:
-        for sim_num in range(1, 101):
-##    geo = 3.0
-##    sim_num = 5
+##    for geo in mean_tract_list[:1]:
+##        for sim_num in range(1, 101):
+    geo = 10.0
+    sim_num = 1
 
-            seed_number = seed_number_start + sim_num
+    seed_number = seed_number_start + sim_num
 
-            if not os.path.isdir('./Tract_' + str(geo) + '_HKY'):
-                os.mkdir('./Tract_' + str(geo) + '_HKY')
-            if not os.path.isdir('./Tract_' + str(geo) + '_HKY' + '/sim_' + str(sim_num)):
-                os.mkdir('./Tract_' + str(geo) + '_HKY/sim_' + str(sim_num))
-            seq_file = './Tract_' + str(geo) + '_HKY/sim_' + str(sim_num) + '/YDR418W_YEL054C_sim_' + str(sim_num) + '.fasta'
-            IGC_log_file = './Tract_' + str(geo) + '_HKY/sim_' + str(sim_num) + '/YDR418W_YEL054C_sim_' + str(sim_num) + '_IGC.log'
-            PM_log_file = './Tract_' + str(geo) + '_HKY/sim_' + str(sim_num) + '/YDR418W_YEL054C_sim_' + str(sim_num) + '_PM.log'
+    if not os.path.isdir('./Tract_' + str(geo) + '_HKY'):
+        os.mkdir('./Tract_' + str(geo) + '_HKY')
+    if not os.path.isdir('./Tract_' + str(geo) + '_HKY' + '/sim_' + str(sim_num)):
+        os.mkdir('./Tract_' + str(geo) + '_HKY/sim_' + str(sim_num))
+    seq_file = './Tract_' + str(geo) + '_HKY/sim_' + str(sim_num) + '/YDR418W_YEL054C_sim_' + str(sim_num) + '.fasta'
+    IGC_log_file = './Tract_' + str(geo) + '_HKY/sim_' + str(sim_num) + '/YDR418W_YEL054C_sim_' + str(sim_num) + '_IGC.log'
+    PM_log_file = './Tract_' + str(geo) + '_HKY/sim_' + str(sim_num) + '/YDR418W_YEL054C_sim_' + str(sim_num) + '_PM.log'
 
-            pm_model_name = 'HKY'
-            #x_pm = np.log([0.4, 0.5, 0.2, 9.2, 1.0])
-            x_pm = test_JS.jsmodel.x_pm
-            rate_variation = True
+    pm_model_name = 'HKY'
+    #x_pm = np.log([0.4, 0.5, 0.2, 9.2, 1.0])
+    x_pm = test_JS.jsmodel.x_pm
+    rate_variation = True
 
-            x_IGC = [test_JS.jsmodel.IGCModel.parameters['Tau'] * 1.0 / geo, 1.0 / geo]
-            init_pm = 'One rate'
-            tract_pm = 'One rate'
-            pm_IGC = [init_pm, tract_pm]
+    x_IGC = [test_JS.jsmodel.IGCModel.parameters['Tau'] * 1.0 / geo, 1.0 / geo]
+    init_pm = 'One rate'
+    tract_pm = 'One rate'
+    pm_IGC = [init_pm, tract_pm]
 
-        ##            x_rates = [-4.170654939766711422e+00,
-        ##                       -5.674236262981605883e+00,
-        ##                       -4.140979602575983520e+00,
-        ##                       -4.344239699023852097e+00,
-        ##                       -6.496123290482403334e+00,
-        ##                       -6.063647134296714647e+00,
-        ##                       -6.043806966727234276e+00,
-        ##                       -5.111657692573940537e+00,
-        ##                       -6.404488905061815451e+00,
-        ##                       -5.467996717925044159e+00,
-        ##                       -5.460686727891754799e+00,
-        ##                       -6.459940982759793116e+00]
-            
-            if test_JS.root_by_dup:
-                x_rates = test_JS.x[-len(test_JS.tree.edge_list):]
-            else:
-                x_rates = test_JS.x[-(len(test_JS.tree.edge_list) - 1):]
-            
-            test = Simulator(pm_model_name, x_pm, rate_variation,
-                             x_IGC, pm_IGC, newicktree, DupLosList, x_rates,
-                             terminal_node_list, node_to_pos, gene_to_orlg_file, seq_file, IGC_log_file, PM_log_file, seed_number, seq_index_file)
+##            x_rates = [-4.170654939766711422e+00,
+##                       -5.674236262981605883e+00,
+##                       -4.140979602575983520e+00,
+##                       -4.344239699023852097e+00,
+##                       -6.496123290482403334e+00,
+##                       -6.063647134296714647e+00,
+##                       -6.043806966727234276e+00,
+##                       -5.111657692573940537e+00,
+##                       -6.404488905061815451e+00,
+##                       -5.467996717925044159e+00,
+##                       -5.460686727891754799e+00,
+##                       -6.459940982759793116e+00]
+    
+    if test_JS.root_by_dup:
+        x_rates = test_JS.x[-len(test_JS.tree.edge_list):]
+    else:
+        x_rates = test_JS.x[-(len(test_JS.tree.edge_list) - 1):]
+    
+    test = Simulator(pm_model_name, x_pm, rate_variation,
+                     x_IGC, pm_IGC, newicktree, DupLosList, x_rates,
+                     terminal_node_list, node_to_pos, gene_to_orlg_file, seq_file, IGC_log_file, PM_log_file, seed_number, seq_index_file)
 
-            self = test
-            print test
-            
-            test.sim_root()
-            #edge = ('N0', 'kluyveri')
-            #test.sim_one_branch(edge, True)
+    self = test
+    print test
+    
+    test.sim_root()
+    #edge = ('N0', 'kluyveri')
+    #test.sim_one_branch(edge, True)
 
-            test.sim(display = display)
-            test.output_seq()
+    test.sim(display = display)
+    test.output_seq()
 
-            test.seq_file = './Tract_' + str(geo) + '_HKY/sim_' + str(sim_num) + '/YDR418W_YEL054C_sim_' + str(sim_num) + '_newformat.fasta'
-            test.output_seq(True)
+    test.seq_file = './Tract_' + str(geo) + '_HKY/sim_' + str(sim_num) + '/YDR418W_YEL054C_sim_' + str(sim_num) + '_newformat.fasta'
+    test.output_seq(True)

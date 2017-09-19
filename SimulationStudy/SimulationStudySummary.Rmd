@@ -2,7 +2,9 @@
 title: "SimulationStudySummary"
 author: "Xiang Ji"
 date: "9/7/2017"
-output: pdf_document
+output:
+html_document: default
+pdf_document: default
 ---
 
 This R markdown file summarizes Simulation Study results. 
@@ -53,72 +55,38 @@ for(tract in Tract.list){
   assign(paste("HMM_Tract_", toString(tract), "_plot", sep = ""), hmm.tract.plots)
 }
 
-# Now read in PSJS summary results
-for(tract in Tract.list){
-  PSJS.tract.summary <- NULL
-  for(sim in 1:100){
-    PSJS.summary <- paste("./summary/Tract_", toString(tract), '.0/sim_', 
-                          toString(sim), '/PSJS_HKY_rv_sim_',
-                          toString(sim), "_Tract_", toString(tract), '.0_summary.txt', sep = "")
-    if (file.exists(PSJS.summary)){
-      all <- readLines(PSJS.summary, n = -1)
-      col.names <- paste("sim_", toString(sim), sep = "")
-      row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
-      summary_mat <- as.matrix(read.table(PSJS.summary, 
-                                          row.names = row.names, 
-                                          col.names = col.names))
-      PSJS.tract.summary <- cbind(PSJS.tract.summary, summary_mat)     
-    }
-    
-  }
-  assign(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""), PSJS.tract.summary)
-}
-
 # Now read in actual mean tract length in each simulated dataset
 for (tract in Tract.list){
   sim.tract <- NULL
   for(sim in 1:100){
-    sim_log <- paste("./Tract_", toString(tract), ".0/sim_", toString(sim), 
+    sim_log <- paste("./Tract_", toString(tract), ".0_HKY/sim_", toString(sim), 
                      "/YDR418W_YEL054C_sim_", toString(sim), "_IGC.log", sep = "")
     # now read in log file
     log_info <- read.table(sim_log, header = TRUE)
-    #tract.length <- log_info[, "stop_pos"] - log_info[, "start_pos"] + 1
-    tract.length <- log_info[, "tract_length"]
-    new.info <- matrix(c(mean(tract.length), sd(tract.length)), 2, 1)
-    rownames(new.info) <- c("mean tract length", "sd tract length")
+    performed.tract.length <- log_info[, "stop_pos"] - log_info[, "start_pos"] + 1
+    proposed.tract.length <- log_info[, "tract_length"]
+    diff.tracts <- log_info[, "num_diff"] > 0
+    new.info <- matrix(c(dim(log_info)[1], mean(proposed.tract.length), sd(proposed.tract.length), 
+                         mean(performed.tract.length), sd(performed.tract.length),
+                         mean(proposed.tract.length[diff.tracts]), 
+                         mean(performed.tract.length[diff.tracts])), 7, 1)
+    rownames(new.info) <- c("num IGC", "mean proposed tract length", "sd proposed tract length", 
+                            "mean performed tract length", "sd performed tract length", 
+                            "mean proposed nonidentical tract length", "mean performed nonidentical tract length")
     colnames(new.info) <- paste("sim_", toString(sim), sep = "")
     sim.tract <- cbind(sim.tract, new.info)
   }
   assign(paste("sim.tract.", toString(tract), sep = ""), sim.tract)
 }
 
-# read in simulated tract info of simulated datasets with shrinked tau 
-for (tract in Tract.list){
-  HKY.shrinked.tract <- NULL
-  for(sim in 1:100){
-    sim_log <- paste("./Shrinked_Tau_HKY_Simulation/Tract_", toString(tract), ".0_HKY/sim_", toString(sim), 
-                     "/YDR418W_YEL054C_sim_", toString(sim), "_IGC.log", sep = "")
-    # now read in log file
-    log_info <- read.table(sim_log, header = TRUE)
-    proposed.tract.length <- log_info[, "tract_length"]
-    performed.tract.length <- log_info[, "stop_pos"] - log_info[, "start_pos"] + 1
-    new.info <- matrix(c(mean(proposed.tract.length), sd(proposed.tract.length), 
-                         mean(performed.tract.length), sd(performed.tract.length)), 4, 1)
-    rownames(new.info) <- c("mean proposed tract length", "sd proposed tract length", 
-                            "mean performed tract length", "sd performed tract length")
-    colnames(new.info) <- paste("sim_", toString(sim), sep = "")
-    HKY.shrinked.tract <- cbind(HKY.shrinked.tract, new.info)
-  }
-  assign(paste("HKY.shrinked.tract.", toString(tract), sep = ""), HKY.shrinked.tract)
-}
-
-# Now read in PSJS summary results of shrined tau datasets
-for(tract in c(3.0, 10.0)){
-  for(guess in c(50.0, 100.0)){
+guess.list <- c(50.0, 100.0, 250.0, 500.0)
+# Now read in PSJS summary results 
+for(tract in Tract.list){
+  for(guess in guess.list){
     PSJS.tract.summary <- NULL
     for(sim in 1:100){
       
-      PSJS.summary <- paste("./Shrinked_Tau_HKY_Simulation/summary/Tract_", toString(tract), '.0_HKY/sim_', 
+      PSJS.summary <- paste("./summary/Tract_", toString(tract), '.0_HKY/sim_', 
                             toString(sim), '/PSJS_HKY_rv_sim_',
                             toString(sim), "_Tract_", toString(tract), '.0_guess_',
                             toString(guess),'.0_nt_summary.txt', sep = "")
@@ -132,119 +100,287 @@ for(tract in c(3.0, 10.0)){
         PSJS.tract.summary <- cbind(PSJS.tract.summary, summary_mat)
       }
     }
-    assign(paste("PSJS_Shrinked_HKY_Tract_", toString(tract), "_guess_", 
+    assign(paste("PSJS_HKY_Tract_", toString(tract), "_guess_", 
                  toString(guess), "_summary", sep = ""), PSJS.tract.summary)
   }
+}
+
+# Now combine all initial guess results
+for(tract in Tract.list){
+  combined.PSJS.tract.summary <- NULL
+  col.list <- NULL
+  for ( sim_num in 1:100){
+    sim_col <- paste("sim_", toString(sim_num), sep = "")
+    best.lnL <- -Inf
+    best.guess <- NULL
+    for(guess in guess.list){
+      target_summary <- get(paste("PSJS_HKY_Tract_", toString(tract), "_guess_", toString(guess), "_summary", sep = ""))
+      if(sim_col %in% colnames(target_summary) ){
+        if (target_summary["ll", sim_col] > best.lnL){
+          best.lnL <- target_summary["ll", sim_col]
+          best.guess <- guess        
+        }
+      }
+    }
+    if(! is.null(best.guess)){
+      combined.PSJS.tract.summary <- cbind(combined.PSJS.tract.summary, 
+                                           get(paste("PSJS_HKY_Tract_", toString(tract), "_guess_", toString(best.guess), "_summary", sep = ""))[, sim_col]) 
+      col.list <- c(col.list, sim_col)
+    }
+    
+  }
+  colnames(combined.PSJS.tract.summary) <- col.list
+  assign(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""), combined.PSJS.tract.summary)
 }
 ```
 
 OK, Now show the performance summary
 
 ```{r}
-# HMM results
-for (tract in Tract.list){
-  # show how many stuck at boundary 1000 nt first
-  print(paste("Tract = ", toString(tract), sep = ""))
-  summary_mat <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
-  
-  # histogram of inferred tract length
-  hist(summary_mat[1, summary_mat[1, ] < 999.], main = paste("Tract = ", toString(tract), sep = ""))
-  print(paste("Among total 100 simulated data sets, ", toString(sum(summary_mat[1, ] > 999)), 
-              " datasets stuck at 1000", sep = ""))
-  print(c("mean", mean(summary_mat[1, summary_mat[1, ] < 999.]), 
-          "sd", sd(summary_mat[1, summary_mat[1, ] < 999.])))
-}
-
-# PSJS results
-for(tract in Tract.list){
-  summary_mat <- get(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""))
-  # histogram of inferred tract length
-  hist(summary_mat["tract_length", ], main = paste("Tract = ", toString(tract), sep = ""))
-  print(c("mean", mean(summary_mat["tract_length", ]), 
-          "sd", sd(summary_mat["tract_length", ])))  
-}
-
-# exclude suspiciously long inferred tract length, plot again
-for(tract in Tract.list){
-  summary_mat <- get(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""))
-  # histogram of inferred tract length
-  hist(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0], main = paste("Tract = ", toString(tract), sep = ""))
-  print(c("mean", mean(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0]), 
-          "sd", sd(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0])))  
-}
+# # HMM results
+# for (tract in Tract.list){
+#   # show how many stuck at boundary 1000 nt first
+#   print(paste("Tract = ", toString(tract), sep = ""))
+#   summary_mat <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
+#   
+#   # histogram of inferred tract length
+#   hist(summary_mat[1, summary_mat[1, ] < 999.], main = paste("Tract = ", toString(tract), sep = ""))
+#   print(paste("Among total 100 simulated data sets, ", toString(sum(summary_mat[1, ] > 999)), 
+#               " datasets stuck at 1000", sep = ""))
+#   print(matrix(c("mean", mean(summary_mat[1, summary_mat[1, ] < 999.]), 
+#                  "sd", sd(summary_mat[1, summary_mat[1, ] < 999.])), 2, 2))
+# }
+# 
+# # PSJS results
+# for(tract in Tract.list){
+#   summary_mat <- get(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+#   # histogram of inferred tract length
+#   hist(summary_mat["tract_length", ], main = paste("Tract = ", toString(tract), sep = ""))
+#   print(matrix(c("mean", mean(summary_mat["tract_length", ]), 
+#                  "sd", sd(summary_mat["tract_length", ])), 2, 2))  
+# }
+# 
+# # exclude suspiciously long inferred tract length, plot again
+# for(tract in Tract.list){
+#   summary_mat <- get(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+#   # histogram of inferred tract length
+#   hist(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0], main = paste("Tract = ", toString(tract), sep = ""))
+#   print(matrix(c("mean", mean(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0]), 
+#                  "sd", sd(summary_mat["tract_length", summary_mat["tract_length", ] < 1000.0])), 2, 2))  
+# }
 ```
 
 A plot of HMM surface that infer tract length at boundary from each tract length condition
 
 ```{r}
-# plot the first two datasets that HMM inferred tract length stuck at boundary of 1000.0 
-for (tract in Tract.list){
-  print(paste("Tract = ", toString(tract), sep = ""))
-  summary_mat <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
-  count = 0
-  for(iter in 1:99){
-    if(summary_mat[1, iter] > 999. & count < 2){
-      to.plot <- read.table(paste("./plot/Tract_", toString(tract), ".0/", colnames(summary_mat)[iter], 
-                                  "/HMM_YDR418W_YEL054C_lnL_", colnames(summary_mat)[iter],
-                                  "_1D_surface.txt", sep = ""))
-      plot(3.0*exp(-to.plot[, 1]), to.plot[, 2], main = paste("Tract = ", toString(tract), " ",colnames(summary_mat)[iter], sep = "" ), type = "l", xlab = "tract length in nucleotides", 
-           ylab = "lnL")
-      count = count + 1
-    }
-  }
-}
+# # plot the first two datasets that HMM inferred tract length stuck at boundary of 1000.0 
+# for (tract in Tract.list){
+#   print(paste("Tract = ", toString(tract), sep = ""))
+#   summary_mat <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
+#   count = 0
+#   for(iter in 1:99){
+#     if(summary_mat[1, iter] > 999. & count < 2){
+#       to.plot <- read.table(paste("./plot/Tract_", toString(tract), ".0/", colnames(summary_mat)[iter], 
+#                                   "/HMM_YDR418W_YEL054C_lnL_", colnames(summary_mat)[iter],
+#                                   "_1D_surface.txt", sep = ""))
+#       plot(3.0*exp(-to.plot[, 1]), to.plot[, 2], main = paste("Tract = ", toString(tract), " ",colnames(summary_mat)[iter], sep = "" ), type = "l", xlab = "tract length in nucleotides", 
+#            ylab = "lnL")
+#       count = count + 1
+#     }
+#   }
+# }
 
 ```
 
 Now plot the two plots of lnL
 ```{r}
-library(ggplot2)
-# Tract length = 10
-hmm.plot <- read.table("./plot/Tract_10.0/sim_1/HMM_YDR418W_YEL054C_lnL_sim_1_1D_surface.txt")
-PSJS.plot <- read.table("./plot/Tract_10.0/sim_1/PSJS_HKY_rv_sim_1_Tract_10.0_lnL_1D_surface.txt")
-ggplot(mapping = aes(x = 3.0*exp(-hmm.plot[,1]), y = hmm.plot[, 2], colour = "blue")) + geom_line() +
-  geom_line(aes(x = exp(-PSJS.plot[,1]), y = PSJS.plot[, 2]/488 + min(hmm.plot[, 2]) - min(PSJS.plot[, 2]/488),
-                colour = "red")) +
-  xlab("Tract length in nucleotides") + 
-  ylab("lnL") + 
-  ggtitle("Tract length = 10, simulated dataet 1")
-
-hmm.plot <- read.table("./plot/Tract_10.0/sim_100/HMM_YDR418W_YEL054C_lnL_sim_100_1D_surface.txt")
-PSJS.plot <- read.table("./plot/Tract_10.0/sim_100/PSJS_HKY_rv_sim_100_Tract_10.0_lnL_1D_surface.txt")
-ggplot(mapping = aes(x = 3.0*exp(-hmm.plot[,1]), y = hmm.plot[, 2], colour = "blue")) + geom_line() +
-  geom_line(aes(x = exp(-PSJS.plot[,1]), y = PSJS.plot[, 2]/488 + min(hmm.plot[, 2]) - min(PSJS.plot[, 2]/488),
-                colour = "red")) +
-  xlab("Tract length in nucleotides") + 
-  ylab("lnL") + 
-  ggtitle("Tract length = 10, simulated dataet 100")
+# library(ggplot2)
+# # Tract length = 10
+# hmm.plot <- read.table("./plot/Tract_10.0/sim_1/HMM_YDR418W_YEL054C_lnL_sim_1_1D_surface.txt")
+# PSJS.plot <- read.table("./plot/Tract_10.0/sim_1/PSJS_HKY_rv_sim_1_Tract_10.0_lnL_1D_surface.txt")
+# ggplot(mapping = aes(x = 3.0*exp(-hmm.plot[,1]), y = hmm.plot[, 2], colour = "blue")) + geom_line() +
+#   geom_line(aes(x = exp(-PSJS.plot[,1]), y = PSJS.plot[, 2]/488 + min(hmm.plot[, 2]) - min(PSJS.plot[, 2]/488),
+#                 colour = "red")) +
+#   xlab("Tract length in nucleotides") + 
+#   ylab("lnL") + 
+#   ggtitle("Tract length = 10, simulated dataet 1")
+# 
+# hmm.plot <- read.table("./plot/Tract_10.0/sim_100/HMM_YDR418W_YEL054C_lnL_sim_100_1D_surface.txt")
+# PSJS.plot <- read.table("./plot/Tract_10.0/sim_100/PSJS_HKY_rv_sim_100_Tract_10.0_lnL_1D_surface.txt")
+# ggplot(mapping = aes(x = 3.0*exp(-hmm.plot[,1]), y = hmm.plot[, 2], colour = "blue")) + geom_line() +
+#   geom_line(aes(x = exp(-PSJS.plot[,1]), y = PSJS.plot[, 2]/488 + min(hmm.plot[, 2]) - min(PSJS.plot[, 2]/488),
+#                 colour = "red")) +
+#   xlab("Tract length in nucleotides") + 
+#   ylab("lnL") + 
+#   ggtitle("Tract length = 10, simulated dataet 100")
 ```
 
 Now see how estimates from the two approaches differ from the actual mean tract length in each simulated data set.
 
 ```{r}
+# for(tract in Tract.list){
+#   sim.info <- get(paste("sim.tract.", toString(tract), sep = ""))
+#   # Show mean and sd
+#   print(matrix(c("proposed mean", mean(sim.info["mean proposed tract length", ]),
+#           "performed mean", mean(sim.info["mean performed tract length", ]),
+#           "geometric mean", tract,
+#           "proposed sd", mean(sim.info["sd proposed tract length",], na.rm = TRUE),
+#           "performed sd", mean(sim.info["sd performed tract length",], na.rm = TRUE),
+#           "geometric sd", sqrt(tract^2-tract*3.0)), 2, 6))
+#   hmm.info <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
+#   PSJS.info <- get(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""))
+#   shared.col <- intersect(colnames(hmm.info), colnames(PSJS.info))
+#   
+#   # Now show the ratio of HMM estimated tract / actual mean tracts in simulation
+#   hmm.ratio <- hmm.info[1, shared.col]/sim.info[1, shared.col]
+#   hist(hmm.ratio, main = paste("HMM ratio Tract = ", toString(tract), sep = ""))
+#   print(matrix(c("HMM mean", mean(hmm.ratio), "HMM sd", sd(hmm.ratio)), 2, 2))
+#   
+#   # Now show the ratio of PSJS estimated tract / actual mean tracts in simulation
+#   PSJS.ratio <- PSJS.info["tract_length", shared.col]/sim.info[1, shared.col]
+#   hist(PSJS.ratio, main = paste("PSJS ratio Tract = ", toString(tract), sep = ""))
+#   print(matrix(c("PSJS mean", mean(PSJS.ratio), "PSJS sd", sd(PSJS.ratio)), 2, 2))
+#   
+# }
+
+
+```
+
+####09152017
+
+Show the PSJS estimated results for Simulated datasets with estimated tau
+
+```{r}
+
+for(tract in Tract.list){
+  target_summary <- get(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+  col.names <- target_summary["tract_length", ] < 10*tract
+  hist(target_summary["tract_length", col.names], 
+       main = paste("Tract = ", toString(tract), ".0 combined PSJS HKY Results", sep = ""))
+  sim_info <- get(paste("sim.tract.", toString(tract), sep = ""))
+  plot(sim_info["num IGC", ], sim_info["mean proposed tract length", ], 
+       main = paste("Simulation info of Tract ", toString(tract), sep = ""), 
+       xlab = "number of IGC events", ylab = "mean proposed tract length")
+  abline(h = tract, col = "red")
+  
+  plot(sim_info["num IGC", ], sim_info["mean performed tract length", ], 
+       main = paste("Simulation Info of Tract ", toString(tract), sep = ""),
+       xlab = "number of IGC events", ylab = "mean performed tract length")
+  abline(h = tract, col = "red")
+  
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], target_summary["tract_length", col.names],
+       main = paste("PSJS estimate of Tract ", toString(tract), sep = ""),
+       xlab = "number of IGC events", ylab = "PSJS estimated tract length")
+  abline(h = tract, col = "red")
+  
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       target_summary["tract_length", col.names] / sim_info["mean proposed tract length", colnames(target_summary)[col.names]],
+       main = paste(" Ratio of PSJS tract length over mean proposed tract length - Tract ", toString(tract), sep = ""),
+       xlab = "number of IGC events", ylab = "Ratio (PSJS/mean proposed tract length)")
+  abline(h = 1.0, col = "red")
+  
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       target_summary["tract_length", col.names] / sim_info["mean performed tract length", colnames(target_summary)[col.names]],
+       main = paste(" Ratio of PSJS tract length over mean performed tract length - Tract ", toString(tract), sep = ""),
+       xlab = "number of IGC events", ylab = "Ratio (PSJS/mean performed tract length)")
+  abline(h = 1.0, col = "red")  
+
+  # Now plot kappa estimates
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       target_summary["kappa", col.names],
+       main = paste("PSJS kappa, Tract = ", toString(tract), sep = ""),
+       xlab = "Num IGC", ylab = "PSJS estimated kappa")
+  abline(h = 14.46399, col = 2)
+    
+  # Now plot r2 estimates
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       target_summary["r2", col.names],
+       main = paste("PSJS r2, Tract = ", toString(tract), sep = ""),
+       xlab = "Num IGC", ylab = "PSJS estimated r2")
+  abline(h = 0.5391702, col = 2)
+  
+  # Now plot r3 estimates
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       target_summary["r3", col.names],
+       main = paste("PSJS r3, Tract = ", toString(tract), sep = ""),
+       xlab = "Num IGC", ylab = "PSJS estimated r3")
+  abline(h = 11.58006, col = 2)
+  
+  # Now plot initiation rate estimates
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       target_summary["init_rate", col.names],
+       main = paste("PSJS init_rate, Tract = ", toString(tract), sep = ""),
+       xlab = "Num IGC", ylab = "PSJS estimated init_rate")
+  abline(h = 22.58153 / tract, col = 2)
+  
+  # Now plot tract p estimates
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       1.0/target_summary["tract_length", col.names],
+       main = paste("PSJS tract_p, Tract = ", toString(tract), sep = ""),
+       xlab = "Num IGC", ylab = "PSJS estimated tract_p")
+  abline(h = 1.0 / tract, col = 2)
+  
+  # Now plot Tau estimates
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       target_summary["init_rate", col.names]*target_summary["tract_length", col.names],
+       main = paste("PSJS Tau, Tract = ", toString(tract), sep = ""),
+       xlab = "Num IGC", ylab = "PSJS estimated Tau")
+  abline(h = 22.58153, col = 2) 
+  
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
+       target_summary["init_rate", col.names]*target_summary["tract_length", col.names]*3.0/(1.0 +target_summary["r2", col.names] + target_summary["r3", col.names]),
+       main = paste("PSJS Weighted Tau, Tract = ", toString(tract), sep = ""),
+       xlab = "Num IGC", ylab = "PSJS Tau*3/(1+r2+r3)")
+  abline(h = 5.16376333125, col = 2) 
+
+  # Now plot initiation rate vs tract length
+  plot(target_summary["tract_length", col.names], 
+       target_summary["init_rate", col.names],
+       main = paste("PSJS init_rate, Tract = ", toString(tract), sep = ""),
+       xlab = "Tract length", ylab = "initiation rate")
+  lines(sort(target_summary["tract_length", col.names]), 22.58153/sort(target_summary["tract_length", col.names]), 
+       col = "red", type = "l")  
+    
+  plot(sim_info["mean performed tract length", colnames(target_summary)[col.names]], 
+       target_summary["tract_length", col.names],
+       main = paste(" mean performed vs PSJS estimated Tract ", toString(tract), sep = ""),
+       xlab = "mean performed IGC tract length", ylab = "PSJS estimated")
+  abline(a= 0.0, b = 1.0, col = "red") 
+  
+  plot(sim_info["mean proposed tract length", colnames(target_summary)[col.names]], 
+       target_summary["tract_length", col.names],
+       main = paste(" mean proposed vs PSJS estimated Tract ", toString(tract), sep = ""),
+       xlab = "mean proposed IGC tract length", ylab = "PSJS estimated")
+  abline(a = 0.0, b = 1.0, col = 2) 
+  
+  plot(sim_info["mean performed nonidentical tract length", colnames(target_summary)[col.names]], 
+       target_summary["tract_length", col.names],
+       main = paste(" mean performed nonidentical vs PSJS estimated Tract ", toString(tract), sep = ""),
+       xlab = "mean performed nonidentical IGC tract length", ylab = "PSJS estimated")
+  abline(a= 0.0, b = 1.0, col = "red") 
+  
+  
+  
+  print(paste("Tract = ", toString(tract), ".0 combined PSJS HKY Results", sep = ""))
+  print(matrix(c("Total samples", sum(col.names),
+                 "mean", mean(target_summary["tract_length", col.names]), 
+                 "sd", sd(target_summary["tract_length", col.names])), 2, 3))  
+  
+}
+
+```
+
+```{r}
 for(tract in Tract.list){
   sim.info <- get(paste("sim.tract.", toString(tract), sep = ""))
-  # Show mean and sd
-  print(c("empirical mean", mean(sim.info["mean tract length", ]),
-          "geometric mean", tract,
-          "empirical sd", mean(sim.info["sd tract length",], na.rm = TRUE),
-          "geometric sd", sqrt(tract^2-tract*3.0)))
-  hmm.info <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
-  PSJS.info <- get(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""))
-  shared.col <- intersect(colnames(hmm.info), colnames(PSJS.info))
-  
-  # Now show the ratio of HMM estimated tract / actual mean tracts in simulation
-  hmm.ratio <- hmm.info[1, shared.col]/sim.info[1, shared.col]
-  hist(hmm.ratio, main = paste("HMM ratio Tract = ", toString(tract), sep = ""))
-  print(c("HMM mean", mean(hmm.ratio), "HMM sd", sd(hmm.ratio)))
+  PSJS.info <- get(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+  shared.col <- colnames(PSJS.info)[PSJS.info["tract_length", ] < 10000 & PSJS.info["tract_length", ] > 1.]
   
   # Now show the ratio of PSJS estimated tract / actual mean tracts in simulation
   PSJS.ratio <- PSJS.info["tract_length", shared.col]/sim.info[1, shared.col]
   hist(PSJS.ratio, main = paste("PSJS ratio Tract = ", toString(tract), sep = ""))
-  print(c("PSJS mean", mean(PSJS.ratio), "PSJS sd", sd(PSJS.ratio)))
-  
+  print(matrix(c("Tract", tract, "PSJS mean", mean(PSJS.ratio), "PSJS sd", sd(PSJS.ratio)), 2, 3))
 }
-
 
 ```
 
