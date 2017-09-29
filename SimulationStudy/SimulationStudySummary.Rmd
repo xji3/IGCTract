@@ -9,7 +9,7 @@ pdf_document: default
 
 This R markdown file summarizes Simulation Study results. 
 
-```{r}
+```{r, echo=FALSE}
 rm(list=ls())  # clean up workspace
 setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
 
@@ -63,16 +63,38 @@ for (tract in Tract.list){
                      "/YDR418W_YEL054C_sim_", toString(sim), "_IGC.log", sep = "")
     # now read in log file
     log_info <- read.table(sim_log, header = TRUE)
-    performed.tract.length <- log_info[, "stop_pos"] - log_info[, "start_pos"] + 1
-    proposed.tract.length <- log_info[, "tract_length"]
+    realized.tract.length <- log_info[, "stop_pos"] - log_info[, "start_pos"] + 1
+    potential.tract.length <- log_info[, "tract_length"]
+    # Now get longest length of variant subtract of each tract
     diff.tracts <- log_info[, "num_diff"] > 0
-    new.info <- matrix(c(dim(log_info)[1], mean(proposed.tract.length), sd(proposed.tract.length), 
-                         mean(performed.tract.length), sd(performed.tract.length),
-                         mean(proposed.tract.length[diff.tracts]), 
-                         mean(performed.tract.length[diff.tracts])), 7, 1)
-    rownames(new.info) <- c("num IGC", "mean proposed tract length", "sd proposed tract length", 
-                            "mean performed tract length", "sd performed tract length", 
-                            "mean proposed nonidentical tract length", "mean performed nonidentical tract length")
+    if (sum(diff.tracts)){
+      subtract.length.list <- NULL
+      for(row.num in (1:dim(log_info)[1])[diff.tracts]){
+        donor.seq <- strsplit(toString(log_info[row.num, "template_seq"]), "")[[1]]
+        recipient.seq <- strsplit(toString(log_info[row.num, "overide_seq"]), "")[[1]]
+        first.pos <- FALSE
+        for(seq.pos in 1:length(donor.seq)){
+          if(donor.seq[seq.pos] != recipient.seq[seq.pos]){
+            last.pos <- seq.pos
+            if(!first.pos){
+              first.pos <- seq.pos
+            }
+          }
+        }
+        subtract.length.list <- c(subtract.length.list, last.pos - first.pos + 1)
+      }
+    }
+    new.info <- matrix(c(dim(log_info)[1], mean(potential.tract.length), sd(potential.tract.length), 
+                         mean(realized.tract.length), sd(realized.tract.length),
+                         mean(potential.tract.length[diff.tracts]), 
+                         mean(realized.tract.length[diff.tracts]),
+                         mean(subtract.length.list),
+                         sum(log_info[, "num_diff"] > 1)),
+                       9, 1)
+    rownames(new.info) <- c("num IGC", "mean potential tract length", "sd potential tract length", 
+                            "mean realized tract length", "sd realized tract length", 
+                            "mean potential nonidentical tract length", "mean realized nonidentical tract length",
+                            "mean subtract length", "num IGC with at least two variant sites")
     colnames(new.info) <- paste("sim_", toString(sim), sep = "")
     sim.tract <- cbind(sim.tract, new.info)
   }
@@ -132,11 +154,64 @@ for(tract in Tract.list){
   colnames(combined.PSJS.tract.summary) <- col.list
   assign(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""), combined.PSJS.tract.summary)
 }
+
+# Now read in PSJS summary results of Old Simulated Datasets 
+for(tract in Tract.list){
+  for(guess in guess.list){
+    PSJS.tract.summary <- NULL
+    for(sim in 1:100){
+      
+      PSJS.summary <- paste("./summary/IGCgeo_", toString(tract), '.0/sim_', 
+                            toString(sim), '/PSJS_HKY_rv_sim_',
+                            toString(sim), "_IGCgeo_", toString(tract), '.0_guess_',
+                            toString(guess),'.0_summary.txt', sep = "")
+      if (file.exists(PSJS.summary)){
+        all <- readLines(PSJS.summary, n = -1)
+        col.names <- paste("sim_", toString(sim), sep = "")
+        row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+        summary_mat <- as.matrix(read.table(PSJS.summary, 
+                                            row.names = row.names, 
+                                            col.names = col.names))
+        PSJS.tract.summary <- cbind(PSJS.tract.summary, summary_mat)
+      }
+    }
+    assign(paste("Old_PSJS_HKY_Tract_", toString(tract), "_guess_", 
+                 toString(guess), "_summary", sep = ""), PSJS.tract.summary)
+  }
+}
+
+# Now combine all initial guess results using old simulated data
+for(tract in Tract.list){
+  combined.PSJS.tract.summary <- NULL
+  col.list <- NULL
+  for ( sim_num in 1:100){
+    sim_col <- paste("sim_", toString(sim_num), sep = "")
+    best.lnL <- -Inf
+    best.guess <- NULL
+    for(guess in guess.list){
+      target_summary <- get(paste("Old_PSJS_HKY_Tract_", toString(tract), "_guess_", toString(guess), "_summary", sep = ""))
+      if(sim_col %in% colnames(target_summary) ){
+        if (target_summary["ll", sim_col] > best.lnL){
+          best.lnL <- target_summary["ll", sim_col]
+          best.guess <- guess        
+        }
+      }
+    }
+    if(! is.null(best.guess)){
+      combined.PSJS.tract.summary <- cbind(combined.PSJS.tract.summary, 
+                                           get(paste("Old_PSJS_HKY_Tract_", toString(tract), "_guess_", toString(best.guess), "_summary", sep = ""))[, sim_col]) 
+      col.list <- c(col.list, sim_col)
+    }
+    
+  }
+  colnames(combined.PSJS.tract.summary) <- col.list
+  assign(paste("Old_PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""), combined.PSJS.tract.summary)
+}
 ```
 
 OK, Now show the performance summary
 
-```{r}
+```{r, echo=FALSE}
 # # HMM results
 # for (tract in Tract.list){
 #   # show how many stuck at boundary 1000 nt first
@@ -172,7 +247,7 @@ OK, Now show the performance summary
 
 A plot of HMM surface that infer tract length at boundary from each tract length condition
 
-```{r}
+```{r, echo=FALSE}
 # # plot the first two datasets that HMM inferred tract length stuck at boundary of 1000.0 
 # for (tract in Tract.list){
 #   print(paste("Tract = ", toString(tract), sep = ""))
@@ -193,7 +268,7 @@ A plot of HMM surface that infer tract length at boundary from each tract length
 ```
 
 Now plot the two plots of lnL
-```{r}
+```{r, echo=FALSE}
 # library(ggplot2)
 # # Tract length = 10
 # hmm.plot <- read.table("./plot/Tract_10.0/sim_1/HMM_YDR418W_YEL054C_lnL_sim_1_1D_surface.txt")
@@ -217,15 +292,15 @@ Now plot the two plots of lnL
 
 Now see how estimates from the two approaches differ from the actual mean tract length in each simulated data set.
 
-```{r}
+```{r, echo=FALSE}
 # for(tract in Tract.list){
 #   sim.info <- get(paste("sim.tract.", toString(tract), sep = ""))
 #   # Show mean and sd
-#   print(matrix(c("proposed mean", mean(sim.info["mean proposed tract length", ]),
-#           "performed mean", mean(sim.info["mean performed tract length", ]),
+#   print(matrix(c("potential mean", mean(sim.info["mean potential tract length", ]),
+#           "realized mean", mean(sim.info["mean realized tract length", ]),
 #           "geometric mean", tract,
-#           "proposed sd", mean(sim.info["sd proposed tract length",], na.rm = TRUE),
-#           "performed sd", mean(sim.info["sd performed tract length",], na.rm = TRUE),
+#           "potential sd", mean(sim.info["sd potential tract length",], na.rm = TRUE),
+#           "realized sd", mean(sim.info["sd realized tract length",], na.rm = TRUE),
 #           "geometric sd", sqrt(tract^2-tract*3.0)), 2, 6))
 #   hmm.info <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
 #   PSJS.info <- get(paste("PSJS_Tract_", toString(tract), "_summary", sep = ""))
@@ -251,47 +326,84 @@ Now see how estimates from the two approaches differ from the actual mean tract 
 Show the PSJS estimated results for Simulated datasets with estimated tau
 
 ```{r}
+realized.tract.dist <- function(L, p){
+  x <- 1:(L-1)
+  dist.1 <- (2 + (L-1-x)*p)/(1.0/p + L -1.)*(1-p)^(x-1)
+  dist.L <- 1/p/(1.0/p + L -1.)*(1-p)^(L-1)
+  dist <- c(dist.1, dist.L)
+  mean.L <- sum(x * dist.1) + L*dist.L
+  var.L <- sum(x^2 * dist.1) + L^2*dist.L - mean.L^2
+  return(list(dist = dist, mean = mean.L, sd = sqrt(var.L)))
+}
 
+```
+
+```{r}
+Tract.list <- c(50.0, 100.0, 300.0)
 for(tract in Tract.list){
   target_summary <- get(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
   col.names <- target_summary["tract_length", ] < 10*tract
-  hist(target_summary["tract_length", col.names], 
-       main = paste("Tract = ", toString(tract), ".0 combined PSJS HKY Results", sep = ""))
   sim_info <- get(paste("sim.tract.", toString(tract), sep = ""))
-  plot(sim_info["num IGC", ], sim_info["mean proposed tract length", ], 
-       main = paste("Simulation info of Tract ", toString(tract), sep = ""), 
-       xlab = "number of IGC events", ylab = "mean proposed tract length")
-  abline(h = tract, col = "red")
   
-  plot(sim_info["num IGC", ], sim_info["mean performed tract length", ], 
-       main = paste("Simulation Info of Tract ", toString(tract), sep = ""),
-       xlab = "number of IGC events", ylab = "mean performed tract length")
+  hist(target_summary["tract_length", col.names], breaks = 50,
+       main = paste("PSJS Estimated Tract length 1/p, Tract = ", toString(tract), ".0 ", sep = ""))
+  abline(v =  realized.tract.dist(492, 1.0/tract)$mean, col = "blue")
+  abline(v =  tract, col = 2)
+  abline(v =  mean(sim_info["mean subtract length", ]), col = "green")
+  
+  hist(-log(target_summary["tract_length", col.names]), breaks = 50,
+       main = paste("PSJS Estimated ln(p), Tract = ", toString(tract), ".0", sep = ""))
+  abline(v = log(1.0 / realized.tract.dist(492, 1.0/tract)$mean), col = "blue")
+  abline(v = log(1.0 / tract), col = 2)
+  abline(v = log(1.0 / mean(sim_info["mean subtract length", ])), col = "green")
+  
+  
+  hist((1/target_summary["tract_length", col.names]), breaks = 50,
+       main = paste("PSJS Estimated p, Tract = ", toString(tract), ".0", sep = ""))
+  abline(v = 1.0 / tract, col = 2)
+  abline(v = 1.0 / realized.tract.dist(492, 1.0/tract)$mean, col = "blue")
+  abline(v = 1.0 / mean(sim_info["mean subtract length", ]), col = "green")
+  
+  plot(sim_info["num IGC", ], sim_info["mean potential tract length", ], 
+       main = paste("Simulated potential tract length, Tract = ", toString(tract), sep = ""), 
+       xlab = "number of IGC events", ylab = "mean potential tract length")
   abline(h = tract, col = "red")
+  abline(h = mean(sim_info["mean subtract length", ]), col = "green")
+  
+  plot(sim_info["num IGC", ], sim_info["mean realized tract length", ], 
+       main = paste("Simulated realized tract length, Tract = ", toString(tract), sep = ""),
+       xlab = "number of IGC events", ylab = "mean realized tract length")
+  abline(h = realized.tract.dist(492, 1/tract)$mean, col = "red")
+  abline(h = mean(sim_info["mean subtract length", ]), col = "green")
   
   plot(sim_info["num IGC", colnames(target_summary)[col.names]], target_summary["tract_length", col.names],
        main = paste("PSJS estimate of Tract ", toString(tract), sep = ""),
        xlab = "number of IGC events", ylab = "PSJS estimated tract length")
   abline(h = tract, col = "red")
+  abline(h = realized.tract.dist(492, 1/tract)$mean, col = "blue")
+  abline(h = mean(sim_info["mean subtract length", ]), col = "green")
   
-  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
-       target_summary["tract_length", col.names] / sim_info["mean proposed tract length", colnames(target_summary)[col.names]],
-       main = paste(" Ratio of PSJS tract length over mean proposed tract length - Tract ", toString(tract), sep = ""),
-       xlab = "number of IGC events", ylab = "Ratio (PSJS/mean proposed tract length)")
-  abline(h = 1.0, col = "red")
-  
-  plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
-       target_summary["tract_length", col.names] / sim_info["mean performed tract length", colnames(target_summary)[col.names]],
-       main = paste(" Ratio of PSJS tract length over mean performed tract length - Tract ", toString(tract), sep = ""),
-       xlab = "number of IGC events", ylab = "Ratio (PSJS/mean performed tract length)")
-  abline(h = 1.0, col = "red")  
+  plot(sim_info["num IGC", colnames(target_summary)[col.names]], target_summary["tract_length", col.names],
+       main = paste("PSJS estimate of Tract ", toString(tract), sep = ""),
+       xlab = "number of IGC events", ylab = "PSJS estimated tract length")
+  abline(h = tract, col = "red")
+  abline(h = realized.tract.dist(492, 1/tract)$mean, col = "blue")
+  abline(h = mean(sim_info["mean subtract length", ]), col = "green")
 
+  plot(sim_info["num IGC with at least two variant sites", colnames(target_summary)[col.names]], 
+       target_summary["tract_length", col.names],
+       main = paste(" PSJS estimated vs num IGC >1 variant sites - Tract ", toString(tract), sep = ""),
+       xlab = "num IGC with at least two variant sites", ylab = "PSJS estimated tract length")
+  abline(h = tract, col = 2)
+  abline(h = mean(sim_info["mean subtract length", ]), col = "green")
+  
   # Now plot kappa estimates
   plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
        target_summary["kappa", col.names],
        main = paste("PSJS kappa, Tract = ", toString(tract), sep = ""),
        xlab = "Num IGC", ylab = "PSJS estimated kappa")
   abline(h = 14.46399, col = 2)
-    
+  
   # Now plot r2 estimates
   plot(sim_info["num IGC", colnames(target_summary)[col.names]], 
        target_summary["r2", col.names],
@@ -332,43 +444,119 @@ for(tract in Tract.list){
        main = paste("PSJS Weighted Tau, Tract = ", toString(tract), sep = ""),
        xlab = "Num IGC", ylab = "PSJS Tau*3/(1+r2+r3)")
   abline(h = 5.16376333125, col = 2) 
-
+  
   # Now plot initiation rate vs tract length
   plot(target_summary["tract_length", col.names], 
        target_summary["init_rate", col.names],
        main = paste("PSJS init_rate, Tract = ", toString(tract), sep = ""),
        xlab = "Tract length", ylab = "initiation rate")
   lines(sort(target_summary["tract_length", col.names]), 22.58153/sort(target_summary["tract_length", col.names]), 
-       col = "red", type = "l")  
-    
-  plot(sim_info["mean performed tract length", colnames(target_summary)[col.names]], 
+        col = "red", type = "l")  
+  
+  plot(sim_info["mean realized tract length", colnames(target_summary)[col.names]], 
        target_summary["tract_length", col.names],
-       main = paste(" mean performed vs PSJS estimated Tract ", toString(tract), sep = ""),
-       xlab = "mean performed IGC tract length", ylab = "PSJS estimated")
+       main = paste(" mean realized vs PSJS estimated Tract ", toString(tract), sep = ""),
+       xlab = "mean realized IGC tract length", ylab = "PSJS estimated")
   abline(a= 0.0, b = 1.0, col = "red") 
   
-  plot(sim_info["mean proposed tract length", colnames(target_summary)[col.names]], 
+  plot(sim_info["mean potential tract length", colnames(target_summary)[col.names]], 
        target_summary["tract_length", col.names],
-       main = paste(" mean proposed vs PSJS estimated Tract ", toString(tract), sep = ""),
-       xlab = "mean proposed IGC tract length", ylab = "PSJS estimated")
+       main = paste(" mean potential vs PSJS estimated Tract ", toString(tract), sep = ""),
+       xlab = "mean potential IGC tract length", ylab = "PSJS estimated")
   abline(a = 0.0, b = 1.0, col = 2) 
   
-  plot(sim_info["mean performed nonidentical tract length", colnames(target_summary)[col.names]], 
+  plot(sim_info["mean subtract length", colnames(target_summary)[col.names]], 
        target_summary["tract_length", col.names],
-       main = paste(" mean performed nonidentical vs PSJS estimated Tract ", toString(tract), sep = ""),
-       xlab = "mean performed nonidentical IGC tract length", ylab = "PSJS estimated")
-  abline(a= 0.0, b = 1.0, col = "red") 
-  
+       main = paste(" mean longest variant pair length vs PSJS estimated Tract ", toString(tract), sep = ""),
+       xlab = "mean longest variant pair length", ylab = "PSJS estimated")
+  abline(a = 0.0, b = 1.0, col = "green") 
   
   
   print(paste("Tract = ", toString(tract), ".0 combined PSJS HKY Results", sep = ""))
   print(matrix(c("Total samples", sum(col.names),
-                 "mean", mean(target_summary["tract_length", col.names]), 
-                 "sd", sd(target_summary["tract_length", col.names])), 2, 3))  
+                 "mean estimates", mean(target_summary["tract_length", col.names]), 
+                 "sd estimates", sd(target_summary["tract_length", col.names]),
+                 "mean longest variant pair", mean(sim_info["mean subtract length", col.names]),
+                 "sd longest variant pair", sd(sim_info["mean subtract length", col.names])), 2, 5))  
   
 }
 
 ```
+
+Now look back at the simulation study of published work to see if Tau estimate is linear with # IGC
+
+```{r}
+IGC.path <- "/Users/xji3/FromCluster_IGCCodonSimulation01262016/"
+paml.path <- "/Users/xji3/GitFolders/IGCCodonSimulation/"
+IGC.geo.list <- c(3.0, 10.0, 50.0, 100.0, 500.0)
+num.sim <- 100
+paralog <- "YDR418W_YEL054C"
+sim.path <- paste("SimulationSummary", paralog, "",sep = "/")
+for (IGC.geo in IGC.geo.list){
+  summary_mat <- NULL
+  IGC.geo.path <- paste("IGCgeo_", toString(IGC.geo), ".0/", sep = "")
+  file.prefix <- paste(paralog, "MG94_geo", paste(toString(IGC.geo), ".0", sep = ""), "Sim", sep = "_")
+  file.suffix <- "summary.txt"
+  for (sim.num in 0:(num.sim - 1)){
+    file.name <- paste(file.prefix, toString(sim.num), file.suffix, sep = "_")
+    summary_file <- paste(IGC.path, sim.path, IGC.geo.path, file.name, sep = "")
+    if (file.exists(summary_file)){
+      all <- readLines(summary_file, n = -1)
+      col.names <- paste("geo", paste(toString(IGC.geo), ".0", sep = ""), "sim", toString(sim.num), sep = "_")
+      row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+      summary_mat <- cbind(summary_mat, as.matrix(read.table(summary_file, 
+                                                             row.names = row.names, 
+                                                             col.names = col.names)))        
+    }
+  }
+  assign(paste("geo", paste(toString(IGC.geo), ".0", sep = ""), "summary", sep = "_"), summary_mat)
+}
+
+# Now read in Total number of IGC events in simulation
+edge.list <- c(#"N0_kluyveri", outgroup branch has no IGC events
+  "N0_N1", "N1_castellii", "N1_N2", "N2_bayanus", 
+  "N2_N3", "N3_kudriavzevii", "N3_N4", "N4_mikatae", "N4_N5", 
+  "N5_cerevisiae", "N5_paradoxus")
+nIGC.mat <- NULL
+for(IGC.geo in IGC.geo.list){
+  summary_mat <- NULL
+  IGC.geo.path <- paste("IGCgeo_", toString(IGC.geo), ".0/sim_", sep = "")
+  for(sim.num in 0:(num.sim - 1)){
+    num.IGC <- 0
+    for (edge in edge.list){
+      file.name <- paste(IGC.geo.path, toString(sim.num), "/log/", edge, "_log.log", sep = "")
+      log.file <- paste(IGC.path, paralog, "/", file.name, sep = "")
+      content <- readLines(log.file)
+      if (length(content)>6){
+        for(i in 7:length(content)){
+          line.cont <- strsplit(content[i], " ")
+          if(line.cont[[1]][1] == "IGC"){
+            num.IGC <- num.IGC + 1
+          }
+        }
+      }
+      
+    }
+    summary_mat <- c(summary_mat, num.IGC)
+  }
+  nIGC.mat <- rbind(nIGC.mat, summary_mat)
+}
+rownames(nIGC.mat) <- paste("IGCgeo_", IGC.geo.list, ".0", sep = "")
+colnames(nIGC.mat) <- paste("sim_", 0:99, sep = "")
+
+for(IGC.geo in IGC.geo.list){
+  summary_mat <- get(paste("geo_", IGC.geo, ".0_summary", sep = ""))
+  # Now plot Tau estimates
+  plot(nIGC.mat[paste("IGCgeo_", IGC.geo, ".0", sep = ""),], 
+       summary_mat["tau", ],
+       main = paste("PSJS Tau, Tract = ", toString(IGC.geo), sep = ""),
+       xlab = "Num IGC", ylab = "IS MG94 estimated Tau")
+  abline(h = 1.409408, col = 2)   
+  
+}
+
+```
+
 
 ```{r}
 for(tract in Tract.list){
@@ -378,7 +566,7 @@ for(tract in Tract.list){
   
   # Now show the ratio of PSJS estimated tract / actual mean tracts in simulation
   PSJS.ratio <- PSJS.info["tract_length", shared.col]/sim.info[1, shared.col]
-  hist(PSJS.ratio, main = paste("PSJS ratio Tract = ", toString(tract), sep = ""))
+  hist(PSJS.ratio, breaks = 50, main = paste("PSJS ratio Tract = ", toString(tract), sep = ""))
   print(matrix(c("Tract", tract, "PSJS mean", mean(PSJS.ratio), "PSJS sd", sd(PSJS.ratio)), 2, 3))
 }
 

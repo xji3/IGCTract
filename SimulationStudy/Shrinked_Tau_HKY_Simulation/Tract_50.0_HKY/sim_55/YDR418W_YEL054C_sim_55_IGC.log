@@ -1,3 +1,0 @@
-edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
-N1_N2	0.0155955980783	1	2	10	256	265	1	AACACCTAGA	AACATCTAGA
-N2_bayanus	0.00108891128765	1	2	4	256	259	0	AACA	AACA

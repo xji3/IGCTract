@@ -7,10 +7,9 @@ output: html_document
 
 ```{r}
 rm(list=ls())  # clean up workspace
-setwd("/Users/Xiang/GitFolders/YeastIGCTract/SimulationStudy/")
+setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
 
 Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
-#Tract.list <- c(3.0, 10.0)
 # Now read in actual mean tract length in each simulated dataset
 for (tract in Tract.list){
   sim.tract <- NULL
@@ -23,11 +22,13 @@ for (tract in Tract.list){
     performed.tract.length <- log_info[, "stop_pos"] - log_info[, "start_pos"] + 1
     proposed.tract.length <- log_info[, "tract_length"]
     diff.tracts <- log_info[, "num_diff"] > 0
-    new.info <- matrix(c(dim(log_info)[1], mean(proposed.tract.length), sd(proposed.tract.length), 
+    new.info <- matrix(c(dim(log_info)[1], sum(log_info[, "orlg_from"] == 1), sum(log_info[, "orlg_from"] == 2),
+                         mean(proposed.tract.length), sd(proposed.tract.length), 
                          mean(performed.tract.length), sd(performed.tract.length),
                          mean(proposed.tract.length[diff.tracts]), 
-                         mean(performed.tract.length[diff.tracts])), 7, 1)
-    rownames(new.info) <- c("num IGC", "mean proposed tract length", "sd proposed tract length", 
+                         mean(performed.tract.length[diff.tracts])), 9, 1)
+    rownames(new.info) <- c("num IGC", "num 1->2 IGC", "num 2->1 IGC",
+                            "mean proposed tract length", "sd proposed tract length", 
                             "mean performed tract length", "sd performed tract length", 
                             "mean proposed nonidentical tract length", "mean performed nonidentical tract length")
     colnames(new.info) <- paste("sim_", toString(sim), sep = "")
@@ -54,38 +55,50 @@ Tau = 22.58153
 blen = 0.056233707053073859
 for(tract in Tract.list){
   sim.summary <- get(paste("sim.tract.", toString(tract), sep = ""))
-  plot(rowMeans(sim.summary[8:499, ]), 
+  
+  
+  plot(sim.summary["num 1->2 IGC", ] / sim.summary["num IGC", ], 
+       main = paste("% 1->2 IGC events, Tract = ", toString(tract), ""))
+  abline(h = 0.5, col = 2)
+  
+  x = 0:11 * 0.1
+  n <- Tau / tract * (tract + 491) * 2 * blen
+  hist(sim.summary["num 1->2 IGC", ] / sim.summary["num IGC", ], prob=TRUE, breaks = x - 0.05,
+        main = paste("% 1->2 IGC Histogram, Tract = ", toString(tract), sep = ""))
+  lines(x, dnorm(x, 0.5, 0.5/sqrt(n)), col = 2)
+  
+  plot(rowMeans(sim.summary[10:501, ]), 
        main = paste("Mean Experienced # IGC across sites, Tract = ", toString(tract), ""))
   abline(h = 22.58153 * 2 * 0.056233707053073859, col = 2)
 
-  plot(rowMeans(sim.summary[8:499, ]^2) - rowMeans(sim.summary[8:499, ])^2, 
+  plot(rowMeans(sim.summary[10:501, ]^2) - rowMeans(sim.summary[10:501, ])^2, 
        main = paste("Var Experienced # IGC across sites, Tract = ", toString(tract), ""))
   abline(h = 22.58153 * 2 * 0.056233707053073859, col = 2)
   
   # All sites
-  x =  0:(max(sim.summary[8:499,]) + 1)
-  hist(sim.summary[8:499,], prob=TRUE, breaks = x - 0.5,
+  x =  0:(max(sim.summary[10:501,]) + 1)
+  hist(sim.summary[10:501,], prob=TRUE, breaks = x - 0.5,
         main = paste("Histogram, Tract = ", toString(tract), sep = ""))
-  lines(x, dpois(x, Tau * 2 * blen))  
+  lines(x, dpois(x, Tau * 2 * blen), col = 2)  
   
   # First site
-  x =  0:(max(sim.summary[8,]) + 1)
-  hist(sim.summary[8,], prob=TRUE, breaks = x - 0.5,
+  x =  0:(max(sim.summary[10,]) + 1)
+  hist(sim.summary[10,], prob=TRUE, breaks = x - 0.5,
         main = paste("Histogram of 1st site, Tract = ", toString(tract), sep = ""))
-  lines(x, dpois(x, Tau * 2 * blen))  
+  lines(x, dpois(x, Tau * 2 * blen), col = 2)  
 
   # Site 200
-  x =  0:(max(sim.summary[207,]) + 1)
-  hist(sim.summary[207,], prob=TRUE, breaks = x - 0.5,
+  x =  0:(max(sim.summary[209,]) + 1)
+  hist(sim.summary[209,], prob=TRUE, breaks = x - 0.5,
         main = paste("Histogram of 200th site, Tract = ", toString(tract), sep = ""))
-  lines(x, dpois(x, Tau * 2 * blen))  
+  lines(x, dpois(x, Tau * 2 * blen), col = 2)  
 
   # Site 400
-  x =  0:(max(sim.summary[407,]) + 1)
-  hist(sim.summary[407,], prob=TRUE, breaks = x - 0.5,
+  x =  0:(max(sim.summary[409,]) + 1)
+  hist(sim.summary[409,], prob=TRUE, breaks = x - 0.5,
         main = paste("Histogram of 400th site, Tract = ", toString(tract), sep = ""))
-  lines(x, dpois(x, Tau * 2 * blen)) 
-  #ks.test(sim.summary[8:499,], "ppois", Tau*2*blen)
+  lines(x, dpois(x, Tau * 2 * blen), col = 2) 
+  #ks.test(sim.summary[10:501,], "ppois", Tau*2*blen)
 }
 
 ```

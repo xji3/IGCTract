@@ -1,0 +1,131 @@
+---
+title: "SimpleCaseEstimatorBehavior"
+author: "Xiang Ji"
+date: "9/29/2017"
+output:
+  pdf_document: default
+  html_document: default
+header-includes:
+- \usepackage{bm}
+- \newcommand{\Real}{\mathbb{R}}
+- \newcommand{\dom}{{\bf dom}\,}
+- \newcommand{\Tra}{^{\sf T}} % Transpose
+- \newcommand{\Inv}{^{-1}} % Inverse
+- \def\vec{\mathop{\rm vec}\nolimits}
+- \newcommand{\diag}{\mathop{\rm diag}\nolimits}
+- \newcommand{\tr}{\operatorname{tr}} % Trace
+- \newcommand{\epi}{\operatorname{epi}} % epigraph
+- \newcommand{\V}[1]{{\bm{\mathbf{\MakeLowercase{#1}}}}} % vector
+- \newcommand{\VE}[2]{\MakeLowercase{#1}_{#2}} % vector element
+- \newcommand{\Vn}[2]{\V{#1}^{(#2)}} % n-th vector
+- \newcommand{\Vtilde}[1]{{\bm{\tilde \mathbf{\MakeLowercase{#1}}}}} % vector
+- \newcommand{\Vhat}[1]{{\bm{\hat \mathbf{\MakeLowercase{#1}}}}} % vector
+- \newcommand{\VtildeE}[2]{\tilde{\MakeLowercase{#1}}_{#2}} % vector element
+- \newcommand{\M}[1]{{\bm{\mathbf{\MakeUppercase{#1}}}}} % matrix
+- \newcommand{\ME}[2]{\MakeLowercase{#1}_{#2}} % matrix element
+- \newcommand{\Mtilde}[1]{{\bm{\tilde \mathbf{\MakeUppercase{#1}}}}} % matrix
+- \newcommand{\Mbar}[1]{{\bm{\bar \mathbf{\MakeUppercase{#1}}}}} % matrix
+- \newcommand{\Mn}[2]{\M{#1}^{(#2)}} % n-th matrix
+---
+
+This R markdown file compares the behavior of IGC tract length estimates from MLE and MCLE
+(maximum composite likelihood estimate). 
+
+Simple case: consider a sequence region with three symbols (1, 2, 3):
+    
+    1. definitely experienced IGC.
+    
+    2. definitely not experienced IGC.
+    
+    3. no information.
+    
+Case 1, 2 correspond to sites that two paralogs are at different states before the IGC event. 
+
+Consider $\eta t \ll 1$, such that there is at most one IGC event in the region and we observe 
+
+$$
+2 33...3 133...31 33...3 2
+$$
+which contains substrings of 3s with length $a$, $L-2$ and $b$.
+
+
+####Full Likelihood
+
+The full likelihood is:
+
+$$
+l_F = \sum\limits_{i = 0}^a {\sum\limits_{j = 0}^b {\Pr (L + i + j)} } = p{(1 - p)^{L - 1}}\left[ {\frac{{1 - {{(1 - p)}^{a + 1}}}}{p}} \right]\left[ {\frac{{1 - {{(1 - p)}^{b + 1}}}}{p}} \right]
+$$
+$$
+ln(l_F) = -ln(p) + (L-1)ln(1-p) + ln\left[1-(1-p)^{a+1}\right] + ln\left[1-(1-p)^{b+1}\right]
+$$
+
+when $a=b=0$, ${\hat p_{MLE}} = \frac{1}{L}$ and $E(\frac{1}{{{{\hat p}_{MLE}}}})=E(L) = p$ is unbiased.
+
+when $a=b=\infty$,  ${\hat p_{MLE}} = 0$
+
+
+####Composite Likelihood
+
+The composite likelihood (pair-site) is:
+
+$$
+l_c = p(p-1)^{L-1}\left[1-(1-p)^{a+1}\right]\left[1-(1-p)^{a+L}\right]\left[1-(1-p)^{b+1}\right]\left[1-(1-p)^{b+L}\right]
+$$
+
+$$
+ln(l_c) = ln(p) + (L-1)ln(1-p) + ln\left[1-(1-p)^{a+1}\right] + ln\left[1-(1-p)^{a+L}\right] + ln\left[1-(1-p)^{b+1}\right] + ln\left[1-(1-p)^{b+L}\right]
+$$
+when $a=b=\infty$,  ${\hat p_{MCLE}} = \frac{1}{L}$, again $E(\frac{1}{{{{\hat p}_{MCLE}}}})=E(L) = p$ is unbiased
+
+
+####Relationship between the two estimators
+
+$$
+ln(l_c) = ln(l_F) + 2ln(p) + ln\left[1-(1-p)^{a+L}\right] + ln\left[1-(1-p)^{b+L}\right]
+$$
+$$
+\frac{{d\ln ({l_c})}}{{dp}} = \frac{{d\ln ({l_F})}}{{dp}} + \frac{2}{p} + \frac{{(a + L){{(1 - p)}^{a + L - 1}}}}{{1 - {{(1 - p)}^{a + L}}}} + \frac{{(b + L){{(1 - p)}^{b + L - 1}}}}{{1 - {{(1 - p)}^{b + L}}}}
+$$
+
+And, 
+
+$$
+\frac{2}{p} + \frac{{(a + L){{(1 - p)}^{a + L - 1}}}}{{1 - {{(1 - p)}^{a + L}}}} + \frac{{(b + L){{(1 - p)}^{b + L - 1}}}}{{1 - {{(1 - p)}^{b + L}}}} > 0
+$$
+so that we know 
+
+$$
+{\hat p_{MCLE}} \ne {\hat p_{MLE}}
+$$
+
+and
+
+$$
+{\hat p_{MCLE}} > {\hat p_{MLE}}, \forall a,b
+$$
+
+\newpage
+
+Now, show the estimates and log likelihood surface for several parameter combinations.
+
+```{r}
+rm(list=ls())  # clean up workspace
+a.list <- c(0,5,20)
+b.list <- c(0,5,20)
+L.list <- c(3, 10,50,100, 200, 300, 500)
+p <- 1:9999 * 0.0001
+
+for(a in a.list){
+  for(b in b.list){
+    for(L in L.list){
+      lnl = -log(p) + (L-1)*log(1-p) + log(1-(1-p)^(a+1))+ log(1-(1-p)^(b+1))
+      lnlc = log(p) + (L-1)*log(1-p) + log(1-(1-p)^(a+1)) + log(1-(1-p)^(a+L)) + log(1-(1-p)^(b+1)) + log(1-(1-p)^(b+L))
+      plot(p, lnl, type ="l", main = paste("a=", a, ",b=", b, ",L=", L))
+      lines(p, lnlc, type = "l", col = 2)
+      print(matrix(c("MLE", which.max(lnl)/10000, "MCLE", which.max(lnlc)/10000, 
+                    "1/MLE", 10000/which.max(lnl), "1/MCLE", 10000/which.max(lnlc)), 2, 4))
+    }
+  }
+}
+```
