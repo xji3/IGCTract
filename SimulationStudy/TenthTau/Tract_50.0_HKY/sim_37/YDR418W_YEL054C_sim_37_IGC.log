@@ -1,0 +1,4 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+N1_N2	0.00651479315682	1	2	20	346	365	2	AAACCAACCTGCGAAGTGCA	AAACCAATCTGCGAAGTGCG
+N3_kudriavzevii	0.00214976715479	1	2	50	484	491	2	GGAAGGTG	GGAAAGTA
+N4_mikatae	0.0007672486829	1	2	121	488	491	2	GGTG	AGTA

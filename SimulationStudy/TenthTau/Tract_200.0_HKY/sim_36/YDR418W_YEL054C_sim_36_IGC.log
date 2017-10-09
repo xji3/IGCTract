@@ -1,0 +1,3 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+N1_N2	0.00390843514441	2	1	7	382	388	0	ACAGGTA	ACAGGTA
+N2_N3	0.00124758020048	1	2	5	0	4	1	GTTTC	GTCTC

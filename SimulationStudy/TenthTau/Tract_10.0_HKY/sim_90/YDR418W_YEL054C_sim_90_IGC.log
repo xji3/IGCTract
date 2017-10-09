@@ -1,0 +1,6 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+N1_castellii	0.00217352575661	1	2	4	79	82	0	CCAT	CCAT
+N1_N2	0.0105865264237	2	1	8	118	125	0	GAGCATGG	GAGCATGG
+N1_N2	0.012674829362	2	1	1	301	301	0	A	A
+N3_kudriavzevii	0.00064872677599	2	1	2	135	136	0	CA	CA
+N3_kudriavzevii	0.00162929784501	2	1	2	225	226	0	AC	AC

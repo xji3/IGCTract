@@ -1,0 +1,2 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+N1_castellii	0.00611713505099	1	2	23	149	171	3	GCTGCTTAAGCTAATAATGCACT	GCTACTTAAGCTAATAATACATT

@@ -1,0 +1,2 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+N5_cerevisiae	0.0024790838593	2	1	32	0	31	2	CCTATGCGTCCACCGCAACTTACCATTATAAT	CCTATGCGTCCACCGCAGCTAACCATTATAAT
