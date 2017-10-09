@@ -339,7 +339,7 @@ realized.tract.dist <- function(L, p){
 ```
 
 ```{r}
-Tract.list <- c(50.0, 100.0, 300.0)
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 300.0)
 for(tract in Tract.list){
   target_summary <- get(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
   col.names <- target_summary["tract_length", ] < 10*tract
