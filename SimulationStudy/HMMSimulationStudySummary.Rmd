@@ -1,0 +1,62 @@
+---
+title: "HMMSimulationStudySummary"
+author: "Xiang Ji"
+date: "10/17/2017"
+output: html_document
+---
+
+This file summarizes the simulation study results for HMM analysis.
+
+```{r, echo=FALSE}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
+
+source("./ReadInSummary.R")
+```
+
+Now, show histogram of HMM estimated tract length for each case.
+
+```{r}
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
+for (tract in Tract.list){
+  HMM.summary <- get(paste("HMM_Tract_", toString(tract), "_plot", sep = ""))
+  col.names <- colnames(HMM.summary)[HMM.summary["tract in nt", ]<10*tract & HMM.summary["tract in nt", ]<999]
+  hist(HMM.summary["tract in nt", col.names], breaks = 50,
+       main = paste("HMM Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  abline(v =  tract, col = 2)
+  print(paste("Tract = ", toString(tract), ".0 HKY+rv+IS-IGC+HMM results mean and sd", sep = ""))
+  print(c(mean(HMM.summary["tract in nt", col.names]), sd(HMM.summary["tract in nt", col.names])))
+}
+```
+
+
+Now, show histogram of HMM estimated tract length for each Half Tau case.
+
+```{r}
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
+for (tract in Tract.list){
+  HMM.summary <- get(paste("HalfTau_HMM_Tract_", toString(tract), "_plot", sep = ""))
+  col.names <- colnames(HMM.summary)[HMM.summary["tract in nt", ]<10*tract & HMM.summary["tract in nt", ]<999]
+  hist(HMM.summary["tract in nt", col.names], breaks = 50,
+       main = paste("HalfTau HMM Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  abline(v =  tract, col = 2)
+  print(paste("Tract = ", toString(tract), ".0 HKY+rv+IS-IGC+HMM results mean and sd", sep = ""))
+  print(c(mean(HMM.summary["tract in nt", col.names]), sd(HMM.summary["tract in nt", col.names])))
+}
+```
+
+
+Now, show histogram of HMM estimated tract length for each Tenth Tau case.
+
+```{r}
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
+for (tract in Tract.list){
+  HMM.summary <- get(paste("TenthTau_HMM_Tract_", toString(tract), "_plot", sep = ""))
+  col.names <- colnames(HMM.summary)[HMM.summary["tract in nt", ]<10*tract & HMM.summary["tract in nt", ]<999]
+  hist(HMM.summary["tract in nt", col.names], breaks = 50,
+       main = paste("TenthTau HMM Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  abline(v =  tract, col = 2)
+  print(paste("Tract = ", toString(tract), ".0 HKY+rv+IS-IGC+HMM results mean and sd", sep = ""))
+  print(c(mean(HMM.summary["tract in nt", col.names]), sd(HMM.summary["tract in nt", col.names])))
+}
+```

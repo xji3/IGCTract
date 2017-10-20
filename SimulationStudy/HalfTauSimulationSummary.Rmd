@@ -1,0 +1,256 @@
+---
+title: "HalfTauSimulationSummary"
+author: "Xiang Ji"
+date: "10/10/2017"
+output:
+html_document: default
+pdf_document: default
+header-includes:
+- \usepackage{bm}
+- \newcommand{\Real}{\mathbb{R}}
+- \newcommand{\dom}{{\bf dom}\,}
+---
+
+This file is almost a duplicate of SimulationStudySummary.Rmd but aimed at comparing 
+simulation study results of Tau and 1/2Tau cases.
+
+```{r, echo=FALSE}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
+
+source("./ReadInSummary.R")
+```
+
+
+####09152017
+
+Show the PSJS estimated results for Simulated datasets with estimated tau
+
+```{r}
+realized.tract.dist <- function(L, p){
+  x <- 1:(L-1)
+  dist.1 <- (2 + (L-1-x)*p)/(1.0/p + L -1.)*(1-p)^(x-1)
+  dist.L <- 1/p/(1.0/p + L -1.)*(1-p)^(L-1)
+  dist <- c(dist.1, dist.L)
+  mean.L <- sum(x * dist.1) + L*dist.L
+  var.L <- sum(x^2 * dist.1) + L^2*dist.L - mean.L^2
+  return(list(dist = dist, mean = mean.L, sd = sqrt(var.L)))
+}
+
+```
+
+```{r}
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 300.0)
+for(tract in Tract.list){
+  target_summary <- get(paste("PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+  col.names <- target_summary["tract_length", ] < 10*tract
+  sim_info <- get(paste("sim.tract.", toString(tract), sep = ""))
+  
+  hist(target_summary["tract_length", col.names], breaks = 50,
+       main = paste("PSJS Estimated Tract length 1/p, Tract = ", toString(tract), ".0 ", sep = ""))
+  #abline(v =  realized.tract.dist(492, 1.0/tract)$mean, col = "blue")
+  abline(v =  tract, col = 2)
+  abline(v =  mean(sim_info["mean subtract length", ]), col = "green")
+  
+  HalfTau.target_summary <- get(paste("HalfTau_PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+  HalfTau.col.names <- HalfTau.target_summary["tract_length", ] < 10*tract
+  HalfTau.sim_info <- get(paste("HalfTau.sim.tract.", toString(tract), sep = ""))
+  
+  hist(HalfTau.target_summary["tract_length", HalfTau.col.names], breaks = 50,
+       main = paste("Half Tau PSJS Estimated Tract length 1/p, Tract = ", toString(tract), ".0 ", sep = ""))
+  abline(v =  tract, col = 2)
+  
+  
+  TenthTau.target_summary <- get(paste("TenthTau_PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+  TenthTau.col.names <- TenthTau.target_summary["tract_length", ] < 10*tract
+  TenthTau.sim_info <- get(paste("TenthTau.sim.tract.", toString(tract), sep = ""))
+  
+  hist(TenthTau.target_summary["tract_length", TenthTau.col.names], breaks = 50,
+       main = paste("Tenth Tau PSJS Estimated Tract length 1/p, Tract = ", toString(tract), ".0 ", sep = ""))
+  abline(v =  tract, col = 2)  
+  
+  print(paste("Tract = ", toString(tract), ".0 combined PSJS HKY Results", sep = ""))
+  print("Real value used in simulation: Tau = 22.581687801812059, r2 = 0.53919187294821969, r3 = 11.580030840998282")
+  matrix.print <- matrix(c(sum(TenthTau.col.names), sum(HalfTau.col.names), sum(col.names),
+                           mean(TenthTau.target_summary["tract_length", TenthTau.col.names]), mean(HalfTau.target_summary["tract_length", HalfTau.col.names]), mean(target_summary["tract_length", col.names]), 
+                           sd(TenthTau.target_summary["tract_length", TenthTau.col.names]), sd(HalfTau.target_summary["tract_length", HalfTau.col.names]), sd(target_summary["tract_length", col.names]),
+                           # mean(HalfTau.sim_info["mean subtract length", HalfTau.col.names]), mean(sim_info["mean subtract length", col.names]),
+                           # sd(HalfTau.sim_info["mean subtract length", HalfTau.col.names]), sd(sim_info["mean subtract length", col.names])),
+                           mean(TenthTau.target_summary["tract_length", TenthTau.col.names] * TenthTau.target_summary["init_rate", TenthTau.col.names]), mean(HalfTau.target_summary["tract_length", HalfTau.col.names] * HalfTau.target_summary["init_rate", HalfTau.col.names]), mean(target_summary["tract_length", col.names] * target_summary["init_rate", col.names]),
+                           sd(TenthTau.target_summary["tract_length", TenthTau.col.names] * TenthTau.target_summary["init_rate", TenthTau.col.names]), sd(HalfTau.target_summary["tract_length", HalfTau.col.names] * HalfTau.target_summary["init_rate", HalfTau.col.names]), sd(target_summary["tract_length", col.names] * target_summary["init_rate", col.names]),
+                           mean(TenthTau.target_summary["r2", TenthTau.col.names]), mean(HalfTau.target_summary["r2", HalfTau.col.names]), mean(target_summary["r2", col.names]),
+                           sd(TenthTau.target_summary["r2", TenthTau.col.names]), sd(HalfTau.target_summary["r2", HalfTau.col.names]), sd(target_summary["r2", col.names]),
+                           mean(TenthTau.target_summary["r3", TenthTau.col.names]), mean(HalfTau.target_summary["r3", HalfTau.col.names]), mean(target_summary["r3", col.names]),
+                           sd(TenthTau.target_summary["r3", TenthTau.col.names]), sd(HalfTau.target_summary["r3", HalfTau.col.names]), sd(target_summary["r3", col.names])
+  ),
+  3, 9)
+  colnames(matrix.print) <- c("Total samples","mean tract length","sd tract length","mean Tau","sd Tau", 
+                              "mean r2", "sd r2", "mean r3", "sd r3")
+  rownames(matrix.print) <- c("TenthTau", "HalfTau", "Tau")
+  print("Now showing summary of estimates")
+  print(matrix.print)  
+  
+}
+
+```
+
+
+####10/15/2017
+
+Now see if the bias can be corrected by analyzing each half of the alignment
+Correction uses n choose 2 as sample size
+
+```{r}
+Tract.list <- c(50.0, 100.0, 300.0)
+n1 <- choose(489, 2)
+n2 <- choose(243, 2)
+n3 <- choose(246, 2)
+for(tract in Tract.list){
+  first.half.summary <- get(paste("first_half_PSJS_HKY_Tract_", tract, "_combined_summary", sep = ""))
+  second.half.summary <- get(paste("second_half_PSJS_HKY_Tract_", tract, "_combined_summary", sep = ""))
+  target.summary <- get(paste("PSJS_HKY_Tract_", tract, "_combined_summary", sep = ""))
+  
+  col.names <- intersect(intersect(colnames(first.half.summary), colnames(second.half.summary)), colnames(target.summary))
+  
+  first.half.corrected <- (n1 - n2) /(n1 * 1./target.summary["tract_length", col.names] - n2 * 1.0/first.half.summary["tract_length", col.names]) 
+  second.half.corrected <-  (n1 - n3) / (n1 * 1./target.summary["tract_length", col.names] - n3 * 1./second.half.summary["tract_length", col.names])
+  
+  # first.half.corrected[first.half.corrected<target.summary["tract_length", col.names]] <- target.summary["tract_length",col.names[first.half.corrected<target.summary["tract_length", col.names]]]
+  # second.half.corrected[second.half.corrected<target.summary["tract_length", col.names]] <- target.summary["tract_length",col.names[second.half.corrected<target.summary["tract_length", col.names]]]
+  # 
+  hist(target.summary["tract_length", col.names], breaks = 50,
+       main = paste("PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  hist(first.half.corrected, breaks = 50,
+       main = paste("First half corrected PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  hist(second.half.corrected, breaks = 50,
+       main = paste("Second half corrected PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))   
+  hist((first.half.corrected + second.half.corrected) / 2, breaks = 50,
+       main = paste("Both half corrected PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  
+  plot(target.summary["tract_length", col.names], (first.half.corrected + second.half.corrected) / 2, 
+       xlab = "PSJS estimated", ylab = "Both half corrected", 
+       main = paste("Both half corrected vs PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  abline(a = 0, b = 1)
+  abline(h = tract)
+  
+  n.list <- c(rep(n1, length(col.names)), rep(n2, length(col.names)), rep(n3, length(col.names)))
+  ni.theta <- c(n1*log(target.summary["tract_length", col.names]), n2*log(first.half.summary["tract_length", col.names]), n3*log(second.half.summary["tract_length", col.names]))
+  theta.list <- c(log(target.summary["tract_length", col.names]), log(first.half.summary["tract_length", col.names]), log(second.half.summary["tract_length", col.names]))
+  plot(n.list, ni.theta, 
+       main = paste("-ni*log(p) vs ni, Tract = ", toString(tract), ".0 ", sep = ""))
+  # OK, this violates the constant variance assumptiong of linear regression
+  fit <- lm(ni.theta ~ n.list)
+  y <- ni.theta / sqrt(n.list)
+  x1 <- sqrt(n.list)
+  x2 <- 1/sqrt(n.list)
+  fit2 <- lm(y~0+x1+x2)
+  abline(a = fit$coefficients[1], b = fit$coefficients[2], col = "red")
+  
+  plot(1/n.list, theta.list, 
+       main = paste("-log(p) vs 1/ni, Tract = ", toString(tract), ".0 ", sep = ""))
+  x3 <- 1/n.list
+  fit3 <- lm(theta.list~x3)
+  abline(a=fit3$coefficients[1], b=fit3$coefficients[2], col="red")
+  
+  print(fit$coefficients)
+  print(c(exp(fit$coefficients[2]), exp(fit2$coefficients[1]), exp(fit3$coefficients[1])))
+  print(c(mean(target.summary["tract_length", col.names])/exp(fit$coefficients[1]/n1),
+          mean(target.summary["tract_length", col.names])/exp(fit2$coefficients[2]/n1),
+          mean(target.summary["tract_length", col.names])/exp(fit3$coefficients[2]/n1)))
+      
+  print.matrix <- matrix(c(mean(target.summary["tract_length", col.names]), sd(target.summary["tract_length", col.names]), 
+                           mean(first.half.corrected), sd(first.half.corrected), 
+                           mean(second.half.corrected), sd(second.half.corrected),
+                           mean((first.half.corrected + second.half.corrected) / 2), 
+                           sd(first.half.corrected + second.half.corrected) / 2), 
+                         4, 2, byrow = TRUE) 
+  colnames(print.matrix) <- c("mean", "sd")
+  rownames(print.matrix) <- c("PSJS estimated", "Corrected using first half", 
+                              "Corrected using second half", "Corrected using both")
+  print(print.matrix)
+}
+
+```
+
+Now see if the bias can be corrected by analyzing each half of the alignment
+Correction uses n as sample size
+
+```{r}
+Tract.list <- c(50.0, 100.0, 300.0)
+n1 <- 489
+n2 <- 243
+n3 <- 246
+for(tract in Tract.list){
+  first.half.summary <- get(paste("first_half_PSJS_HKY_Tract_", tract, "_combined_summary", sep = ""))
+  second.half.summary <- get(paste("second_half_PSJS_HKY_Tract_", tract, "_combined_summary", sep = ""))
+  target.summary <- get(paste("PSJS_HKY_Tract_", tract, "_combined_summary", sep = ""))
+  
+  col.names <- intersect(intersect(colnames(first.half.summary), colnames(second.half.summary)), colnames(target.summary))
+  
+  first.half.corrected <- (n1 - n2) /(n1 * 1./target.summary["tract_length", col.names] - n2 * 1.0/first.half.summary["tract_length", col.names]) 
+  second.half.corrected <-  (n1 - n3) / (n1 * 1./target.summary["tract_length", col.names] - n3 * 1./second.half.summary["tract_length", col.names])
+  
+  # first.half.corrected[first.half.corrected<target.summary["tract_length", col.names]] <- target.summary["tract_length",col.names[first.half.corrected<target.summary["tract_length", col.names]]]
+  # second.half.corrected[second.half.corrected<target.summary["tract_length", col.names]] <- target.summary["tract_length",col.names[second.half.corrected<target.summary["tract_length", col.names]]]
+  
+  hist(target.summary["tract_length", col.names], breaks = 50,
+       main = paste("PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  hist(first.half.corrected, breaks = 50,
+       main = paste("First half corrected PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  hist(second.half.corrected, breaks = 50,
+       main = paste("Second half corrected PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))   
+  hist((first.half.corrected + second.half.corrected) / 2, breaks = 50,
+       main = paste("Both half corrected PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  
+  plot(target.summary["tract_length", col.names], (first.half.corrected + second.half.corrected) / 2, 
+       xlab = "PSJS estimated", ylab = "Both half corrected", 
+       main = paste("Both half corrected vs PSJS Estimated Tract length, Tract = ", toString(tract), ".0 ", sep = ""))
+  abline(a = 0, b = 1)
+  abline(h = tract)
+  
+  n.list <- c(rep(n1, length(col.names)), rep(n2, length(col.names)), rep(n3, length(col.names)))
+  ni.theta <- c(n1*log(target.summary["tract_length", col.names]), n2*log(first.half.summary["tract_length", col.names]), n3*log(second.half.summary["tract_length", col.names]))
+  theta.list <- c(log(target.summary["tract_length", col.names]), log(first.half.summary["tract_length", col.names]), log(second.half.summary["tract_length", col.names]))
+  plot(n.list, ni.theta, 
+       main = paste("-ni*log(p) vs ni, Tract = ", toString(tract), ".0 ", sep = ""))
+
+  # OK, this violates the constant variance assumptiong of linear regression
+  fit <- lm(ni.theta ~ n.list)
+  y <- ni.theta / sqrt(n.list)
+  x1 <- sqrt(n.list)
+  x2 <- 1/sqrt(n.list)
+  fit2 <- lm(y~0+x1+x2)
+  abline(a = fit$coefficients[1], b = fit$coefficients[2], col = "red")
+  
+  plot(1/n.list, theta.list, 
+       main = paste("-log(p) vs 1/ni, Tract = ", toString(tract), ".0 ", sep = ""))
+  x3 <- 1/n.list
+  fit3 <- lm(theta.list~x3)
+  abline(a=fit3$coefficients[1], b=fit3$coefficients[2], col="red")
+  
+  print(fit$coefficients)
+  print(c(exp(fit$coefficients[2]), exp(fit2$coefficients[1]), exp(fit3$coefficients[1])))
+  print(c(mean(target.summary["tract_length", col.names])/exp(fit$coefficients[1]/n1),
+          mean(target.summary["tract_length", col.names])/exp(fit2$coefficients[2]/n1),
+          mean(target.summary["tract_length", col.names])/exp(fit3$coefficients[2]/n1)))
+  
+  
+  print.matrix <- matrix(c(mean(target.summary["tract_length", col.names]), sd(target.summary["tract_length", col.names]), 
+                           mean(first.half.corrected), sd(first.half.corrected), 
+                           mean(second.half.corrected), sd(second.half.corrected),
+                           mean((first.half.corrected + second.half.corrected) / 2), 
+                           sd(first.half.corrected + second.half.corrected) / 2), 
+                         4, 2, byrow = TRUE) 
+  colnames(print.matrix) <- c("mean", "sd")
+  rownames(print.matrix) <- c("PSJS estimated", "Corrected using first half", 
+                              "Corrected using second half", "Corrected using both")
+  print(print.matrix)
+}
+
+```
+
+#### 10162017 plot ${n_i}\hat \theta$ vs $n_i$
+
+```{r}
+save.image(file = "./HalfTauSimulationSummary.RData")
+```
