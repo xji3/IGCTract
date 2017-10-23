@@ -9,7 +9,8 @@ This file reads the log likelihood of all pairs apart same distance of the simul
 
 ```{r, echo=FALSE}
 rm(list=ls())  # clean up workspace
-setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
+#setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy/")
+setwd("/Users/Xiang/GitFolders/YeastIGCTract/SimulationStudy/")
 
 Tract.list <- c(50.0)
 for(tract in Tract.list){
@@ -125,11 +126,25 @@ for (tract in Tract.list){
   assign(paste("sim.tract.", toString(tract), sep = ""), sim.tract)
 }
 
+
+# Now read in index file and count number of pairs again
+seq.index <- read.table("../MafftAlignment/YDR418W_YEL054C/YDR418W_YEL054C_seq_index.txt")
+pair.diff <- abs(apply(combn(seq.index[, 1], 2), 2, diff))
+pair.diff.counts <- table(pair.diff)
 ```
 
 Now plot the variance of lnL with varying log_p in each distance
 
+Try the weighting scheme of $(1-p)^n$
+
 ```{r}
+n.list <- 1:491
+p.list <- 1./c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 200, 300, 400, 500)
+p.list <- rep(0.02, 20)
+weight.scheme <- outer(p.list, n.list, FUN=function(a, b) (1-a)^b)
+#weight.scheme <- outer(p.list, n.list, FUN=function(a, b) (1-a)^b) %*% diag(1.0/pair.diff.counts)
+#weight.scheme <- outer(p.list, n.list, FUN=function(a, b) 1.0/a/b)
+weighted.estimate <- NULL
 for (sim in 1:100){
   grid.lnL <- get(paste("Tract_", tract, ".0_sim_", sim, "_grid_lnL", sep = ""))
   sim.info <- get(paste("sim.tract.", tract, sep = ""))
@@ -140,16 +155,25 @@ for (sim in 1:100){
   plot(exp(-grid.lnL[, 1]), rowSums(grid.lnL[, -1]), type = "b",
        xlab = "Tract length", ylab = "lnL", 
        main = paste("lnL vs Tract sim = ", sim))
+  plot(exp(-grid.lnL[, 1]), rowSums(grid.lnL[, -1] * weight.scheme), type = "b",
+       xlab = "Tract length", ylab = "lnL", 
+       main = paste("lnL vs Tract after applying weights sim = ", sim)) #  %*% diag(1./as.vector(pair.diff.counts))
   print(paste("In simulation, number of IGC events:", sim.info["num IGC", paste("sim", sim, sep = "_")], 
               ", mean potential tract length:", sim.info["mean potential tract length", paste("sim", sim, sep = "_")],
               ", mean realized tract length:", sim.info["mean realized tract length", paste("sim", sim, sep = "_")]))
   print(paste("Max lnL at grid value:", round(exp(-grid.lnL[, 1])[which.max(rowSums(grid.lnL[, -1]))])))
+  print(paste("Max lnL at grid value after applying the weight scheme:", round(exp(-grid.lnL[, 1])[which.max(rowSums(grid.lnL[, -1] * weight.scheme ))])))  # %*% diag(1./as.vector(pair.diff.counts))
   if (paste("sim", sim, sep = "_") %in% colnames(PSJS_HKY_Tract_50_combined_summary)){
     print(paste("PSJS estimate:", PSJS_HKY_Tract_50_combined_summary["tract_length", paste("sim", sim, sep = "_")]))
     
   }
+  weighted.estimate <- c(weighted.estimate, round(exp(-grid.lnL[, 1])[which.max(rowSums(grid.lnL[, -1] * weight.scheme %*% diag(1./as.vector(pair.diff.counts))))]))
 }
+
+print(mean(weighted.estimate))
 ```
+
+
 
 Save workspace
 
