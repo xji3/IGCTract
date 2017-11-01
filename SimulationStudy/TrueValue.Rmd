@@ -1,0 +1,152 @@
+---
+title: "TrueValueSimulationStudy"
+author: "Xiang Ji"
+date: "10/25/2017"
+output: html_document
+---
+
+This file reads the estimates of tract length when all other parameters are fixed at their true value in simulation.
+
+```{r, echo=FALSE}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/SimulationStudy")
+#setwd("/Users/Xiang/GitFolders/YeastIGCTract/SimulationStudy/")
+
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
+guess.list <- c(50.0, 100.0, 250.0, 500.0)
+# Now read in PSJS summary results 
+for(tract in Tract.list){
+  for(guess in guess.list){
+    PSJS.tract.summary <- NULL
+    for(sim in 1:100){
+      
+      PSJS.summary <- paste("./summary/Tract_", toString(tract), '.0_HKY/sim_', 
+                            toString(sim), '/True_PSJS_HKY_rv_sim_',
+                            toString(sim), "_Tract_", toString(tract), '.0_guess_',
+                            toString(guess),'.0_nt_summary.txt', sep = "")
+      if (file.exists(PSJS.summary)){
+        all <- readLines(PSJS.summary, n = -1)
+        col.names <- paste("sim_", toString(sim), sep = "")
+        row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+        summary_mat <- as.matrix(read.table(PSJS.summary, 
+                                            row.names = row.names, 
+                                            col.names = col.names))
+        PSJS.tract.summary <- cbind(PSJS.tract.summary, summary_mat)
+      }
+    }
+    assign(paste("True_PSJS_HKY_Tract_", toString(tract), "_guess_", 
+                 toString(guess), "_summary", sep = ""), PSJS.tract.summary)
+  }
+}
+
+# Now combine all initial guess results
+for(tract in Tract.list){
+  combined.PSJS.tract.summary <- NULL
+  col.list <- NULL
+  for ( sim_num in 1:100){
+    sim_col <- paste("sim_", toString(sim_num), sep = "")
+    best.lnL <- -Inf
+    best.guess <- NULL
+    for(guess in guess.list){
+      target_summary <- get(paste("True_PSJS_HKY_Tract_", toString(tract), "_guess_", toString(guess), "_summary", sep = ""))
+      if(sim_col %in% colnames(target_summary) ){
+        if (target_summary["ll", sim_col] > best.lnL){
+          best.lnL <- target_summary["ll", sim_col]
+          best.guess <- guess        
+        }
+      }
+    }
+    if(! is.null(best.guess)){
+      combined.PSJS.tract.summary <- cbind(combined.PSJS.tract.summary, 
+                                           get(paste("True_PSJS_HKY_Tract_", toString(tract), "_guess_", toString(best.guess), "_summary", sep = ""))[, sim_col]) 
+      col.list <- c(col.list, sim_col)
+    }
+    
+  }
+  colnames(combined.PSJS.tract.summary) <- col.list
+  assign(paste("True_PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""), combined.PSJS.tract.summary)
+}
+
+# from plots
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
+for(tract in Tract.list){
+  hmm.tract.plots <- NULL
+  for(sim in 1:100){
+    hmm.plot <- paste("./plot/Tract_", toString(tract), '.0_HKY/sim_', 
+                      toString(sim), '/True_HMM_YDR418W_YEL054C_HKY_rv_lnL_sim_',
+                      toString(sim), '_1D_surface.txt', sep = "")
+    if (file.exists(hmm.plot)){
+      lnL.surface <- read.table(hmm.plot)
+      max.idx <- which.max(lnL.surface[, 2])
+      new.summary <- matrix(c(3.0*exp(-lnL.surface[max.idx, 1]), lnL.surface[max.idx, 2]), 2, 1)
+      rownames(new.summary) <- c("tract in nt", "lnL")
+      colnames(new.summary) <- paste("sim_", toString(sim), sep = "")
+      hmm.tract.plots <- cbind(hmm.tract.plots, new.summary)     
+    }
+  }
+  assign(paste("True_HMM_Tract_", toString(tract), "_plot", sep = ""), hmm.tract.plots)
+}
+
+```
+
+Alright, now show histogram
+
+```{r}
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
+for(tract in Tract.list){
+  target_summary <- get(paste("True_PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+  col.names <- colnames(target_summary)[target_summary["tract_length", ] < 10*tract]
+  #sim_info <- get(paste("sim.tract.", toString(tract), sep = ""))
+  
+  hist(log(target_summary["tract_length", col.names]), breaks = 50,
+       main = paste("PSJS Estimated Tract length 1/p, Tract = ", toString(tract), ".0 ", sep = ""))
+  #abline(v =  realized.tract.dist(492, 1.0/tract)$mean, col = "blue")
+  abline(v =  log(tract), col = 2)
+  #abline(v =  mean(sim_info["mean subtract length", ]), col = "green")
+  
+  cat(" Number of datasets: ", length(col.names), ". True Tract: ", tract, "\n Mean: ", mean(target_summary["tract_length", col.names]), 
+      "sd: ", sd(target_summary["tract_length", col.names]))
+}  
+
+```
+
+Now plot estimated tract length
+
+```{r}
+library(ggplot2)
+tract.summary <- NULL
+for (tract in Tract.list){
+  target <- get(paste("True_PSJS_HKY_Tract_", toString(tract), "_combined_summary", sep = ""))
+  tract.summary <- cbind(tract.summary, target["tract_length", ])
+  }
+colnames(tract.summary) <- paste(Tract.list)
+Plot.summary <- NULL
+for (tract in Tract.list){
+  target <- tract.summary[tract.summary[, toString(tract)] < 10*tract, toString(tract)]
+  Plot.summary <- rbind(Plot.summary, c(tract, mean(target), 
+                                      quantile(target, 0.125)[[1]], 
+                                      quantile(target, 0.975)[[1]]))
+}
+colnames(Plot.summary) <- c("tract", "mean", "quantile_low", "quantile_high")
+Plot.summary <- data.frame(Plot.summary)
+myplot <- ggplot(Plot.summary, aes(x = log(tract), y= log(mean))) +
+  geom_errorbar(aes(ymin = log(quantile_low), ymax = log(quantile_high)), width = 0.05) + 
+  #  geom_line() + 
+  geom_point(shape = 21, fill = "black", size = 1.7) + 
+  xlab("Log expected tract length") + 
+  ylab("Log estimated tract length") + 
+  #    xlim(0.0, max(target[, "True_blen"], target[, "estimated_blen"] + target[, "se_of_blen"]) * 1.1) + 
+  #    ylim(0.0, max(target[, "True_blen"], target[, "estimated_blen"] + target[, "se_of_blen"]) * 1.1) +
+  geom_abline(slope = 1.0, intercept = 0.0, lty = 2)  
+  #ggtitle("estimated Tract length constrain other parameters at their True values")
+myplot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"))
+ggsave("estimated Tract length constrain other parameters at their True values summary.pdf")
+
+```
+
+Now save workspace.
+
+```{r}
+save.image("./TrueValue.RData")
+```

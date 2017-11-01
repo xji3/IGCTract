@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
 
     sh_line = 'sbatch -p long -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/'
-    for guess in [ 1, 2]:
+    for guess in [ 1, 2, 3]:
         sh_file_all_name = './PSJS_' + IGC_pm +'_guess_' + str(guess) + '_all.sh'
         with open(sh_file_all_name, 'w+') as g:
             g.write('#!/bin/bash' + '\n')
@@ -120,7 +120,7 @@ if __name__ == '__main__':
                 g.write(sh_line + sh_file_name + '  \n')
 
     sh_line = 'sbatch -p long -o PSJSG-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/'
-    for guess in [ 1, 2]:
+    for guess in [ 1, 2, 3]:
         sh_file_all_name = './PSJS_' + IGC_pm +'_RV_guess_' + str(guess) + '_all.sh'
         with open(sh_file_all_name, 'w+') as g:
             g.write('#!/bin/bash' + '\n')

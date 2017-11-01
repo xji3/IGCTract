@@ -15,6 +15,8 @@ filtered.pairs <- readLines('../Filtered_pairs.txt')
 # Now read in individual summary of gene pairs
 PSJS.HKY.rv.nonclock.summary.guess.1 <- NULL
 PSJS.HKY.rv.nonclock.summary.guess.2 <- NULL
+
+PSJS.HKY.rv.nonclock.summary.dim.1 <- NULL
 for (pair in filtered.pairs){
   summary.file.name <- paste("PSJS_HKY", pair, "One_rate_Guess_1_rv_SCOK_nonclock_summary.txt", sep = "_")
   summary_file <- paste("./summary/", summary.file.name, sep = "")
@@ -36,7 +38,38 @@ for (pair in filtered.pairs){
                                       col.names = col.names))
   PSJS.HKY.rv.nonclock.summary.guess.2 <- cbind(PSJS.HKY.rv.nonclock.summary.guess.2, summary_mat)  
 
-  #YER102W_YBL072C guess 2 file is a fake copy of guess 1 file  
+  summary.file.name <- paste("PSJS_dim_1_HKY", pair, "One_rate_init_30.0_rv_SCOK_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  PSJS.HKY.rv.nonclock.summary.dim.1 <- cbind(PSJS.HKY.rv.nonclock.summary.dim.1, summary_mat)   
 }
 ```
 
+Now show estimated tract length from the three
+
+```{r}
+tract.length <- cbind(PSJS.HKY.rv.nonclock.summary.dim.1["tract_length", ], 
+      PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ],
+      PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ])
+colnames(tract.length) <- c("dim 1 est", "All 1 est", "All 2 est")
+
+lnL <- cbind(PSJS.HKY.rv.nonclock.summary.dim.1["ll", ], 
+      PSJS.HKY.rv.nonclock.summary.guess.1["ll", ],
+      PSJS.HKY.rv.nonclock.summary.guess.2["ll", ])
+colnames(lnL)  <- c("dim 1 lnL", "All 1 lnL", "All 2 lnL")
+
+tract.length
+lnL
+```
+
+
+Now save workspace.
+
+```{r}
+save.image("./PSJS_Summary.RData")
+```

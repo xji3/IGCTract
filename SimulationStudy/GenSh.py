@@ -68,13 +68,25 @@ if __name__ == '__main__':
 ##                    g.write('python Run_PSJS_Bias.py --geo ' + str(geo) + ' --sim_num ' + str(sim_num) + ' --heterogeneity \n')
 
 
-    sh_line = 'sbatch -o Grid-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/Grid_HKY_'
+##    sh_line = 'sbatch -o Grid-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/Grid_HKY_'
+##    for geo in mean_tract_list:
+##        IGC_bash_file = './Grid_HKY_Tract_' + str(geo) + '.sh'
+##        with open(IGC_bash_file, 'w+') as f:
+##            f.write('#!/bin/bash' + '\n')
+##            for sim_num in range(1, 101):
+##                f.write(sh_line + str(sim_num) + '_Tract_' + str(geo) + '.sh \n')
+##                with open('./ShFiles/Grid_HKY_' + str(sim_num) + '_Tract_' + str(geo) + '.sh', 'w+') as g:
+##                    g.write('#!/bin/bash' + '\n')
+##                    g.write('python Run_PSJS_Grid.py --geo ' + str(geo) + ' --sim_num ' + str(sim_num) + ' --heterogeneity \n')
+
+
+    sh_line = 'sbatch -o True-%j.out --mail-type=FAIL --mail-user=xji3@ncsu.edu ./ShFiles/True_'
     for geo in mean_tract_list:
-        IGC_bash_file = './Grid_HKY_Tract_' + str(geo) + '.sh'
+        IGC_bash_file = './True_Tract_' + str(geo) + '.sh'
         with open(IGC_bash_file, 'w+') as f:
             f.write('#!/bin/bash' + '\n')
             for sim_num in range(1, 101):
                 f.write(sh_line + str(sim_num) + '_Tract_' + str(geo) + '.sh \n')
-                with open('./ShFiles/Grid_HKY_' + str(sim_num) + '_Tract_' + str(geo) + '.sh', 'w+') as g:
+                with open('./ShFiles/True_' + str(sim_num) + '_Tract_' + str(geo) + '.sh', 'w+') as g:
                     g.write('#!/bin/bash' + '\n')
-                    g.write('python Run_PSJS_Grid.py --geo ' + str(geo) + ' --sim_num ' + str(sim_num) + ' --heterogeneity \n')
+                    g.write('python Run_PSJS_TrueValue.py --geo ' + str(geo) + ' --sim_num ' + str(sim_num) + ' --heterogeneity \n')

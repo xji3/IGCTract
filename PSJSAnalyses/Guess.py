@@ -25,7 +25,7 @@ def main(args):
     log_file  = './log/PSJS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_Guess_' + str(args.guess) + '_nonclock_log.txt'
     summary_file = './summary/PSJS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_Guess_' + str(args.guess) + '_nonclock_summary.txt'
 
-    initial_tract_length_list = np.log([30.0, 200.0])
+    initial_tract_length_list = np.log([30.0, 200.0, 500.0])
     guess_lnp = -initial_tract_length_list[args.guess-1]
     
     if args.rate_variation:
@@ -39,18 +39,18 @@ def main(args):
             log_file = log_file.replace('_nonclock', '_rv_SCOK_nonclock')
             summary_file = summary_file.replace('_nonclock', '_rv_NOSC_nonclock')
     else:
-        x_js = np.concatenate((averaged_x_js[:-1], [averaged_x_js[-1] + guess_lnp, guess_lnp]))
+        x_js = np.concatenate((averaged_x_js[:-1], [guess_lnp, guess_lnp]))
 
         
 
      
     test = PSJSGeneconv(alignment_file, gene_to_orlg_file, seq_index_file, args.cdna, args.allow_same_codon, tree_newick, DupLosList, x_js, pm_model, IGC_pm,
                       args.rate_variation, node_to_pos, terminal_node_list, save_file, log_file)
-    #x = np.concatenate((x_js, averaged_x_rates))
-    #test.unpack_x(x)
+    x = np.concatenate((x_js, [np.log(0.1)] * len(averaged_x_rates)))
+    test.unpack_x(x)
 
 
-    test.get_mle()
+    test.get_mle(stringent_level = 'high')
     test.get_individual_summary(summary_file)
 
 
