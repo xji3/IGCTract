@@ -1,0 +1,11 @@
+Human__Paralog1	1
+Human__Paralog2	2
+Chimp__Paralog1	1
+Chimp__Paralog2	2
+Goril__Paralog1	1
+Goril__Paralog2	2
+Orang__Paralog1	1
+Orang__Paralog2	2
+Macaq__Paralog1	1
+Macaq__Paralog2	2
+Mouse__Paralog1	0

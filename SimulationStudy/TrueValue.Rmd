@@ -124,8 +124,8 @@ Plot.summary <- NULL
 for (tract in Tract.list){
   target <- tract.summary[tract.summary[, toString(tract)] < 10*tract, toString(tract)]
   Plot.summary <- rbind(Plot.summary, c(tract, mean(target), 
-                                      quantile(target, 0.125)[[1]], 
-                                      quantile(target, 0.975)[[1]]))
+                                      quantile(tract.summary[, toString(tract)], 0.25)[[1]], 
+                                      quantile(tract.summary[, toString(tract)], 0.75)[[1]]))
 }
 colnames(Plot.summary) <- c("tract", "mean", "quantile_low", "quantile_high")
 Plot.summary <- data.frame(Plot.summary)
@@ -133,15 +133,77 @@ myplot <- ggplot(Plot.summary, aes(x = log(tract), y= log(mean))) +
   geom_errorbar(aes(ymin = log(quantile_low), ymax = log(quantile_high)), width = 0.05) + 
   #  geom_line() + 
   geom_point(shape = 21, fill = "black", size = 1.7) + 
-  xlab("Log expected tract length") + 
-  ylab("Log estimated tract length") + 
+  xlab("Expected tract length") + 
+  ylab("Estimated tract length") + 
   #    xlim(0.0, max(target[, "True_blen"], target[, "estimated_blen"] + target[, "se_of_blen"]) * 1.1) + 
   #    ylim(0.0, max(target[, "True_blen"], target[, "estimated_blen"] + target[, "se_of_blen"]) * 1.1) +
-  geom_abline(slope = 1.0, intercept = 0.0, lty = 2)  
+  geom_abline(slope = 1.0, intercept = 0.0, lty = 2)  +
+  scale_x_continuous(breaks = log(Tract.list), label = paste(Tract.list)) + 
+  scale_y_continuous(breaks = log(Tract.list), label = paste(Tract.list))
   #ggtitle("estimated Tract length constrain other parameters at their True values")
+
 myplot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"))
 ggsave("estimated Tract length constrain other parameters at their True values summary.pdf")
+
+```
+Alright, now show histogram of HMM results
+
+```{r}
+Tract.list <- c(3.0, 10.0, 50.0, 100.0, 200.0, 300.0, 400.0, 500.0)
+for(tract in Tract.list){
+  target_summary <- get(paste("True_HMM_Tract_", toString(tract), "_plot", sep = ""))
+  col.names <- colnames(target_summary)[target_summary["tract in nt", ] < 10*tract & target_summary["tract in nt", ] < 999]
+  #sim_info <- get(paste("sim.tract.", toString(tract), sep = ""))
+  
+  hist(log(target_summary["tract in nt", col.names]), breaks = 50,
+       main = paste("HMM Estimated Tract length 1/p, Tract = ", toString(tract), ".0 ", sep = ""))
+  #abline(v =  realized.tract.dist(492, 1.0/tract)$mean, col = "blue")
+  abline(v =  log(tract), col = 2)
+  #abline(v =  mean(sim_info["mean subtract length", ]), col = "green")
+  
+  cat(" Number of datasets: ", length(col.names), ". True Tract: ", tract, "\n Mean: ", mean(target_summary["tract in nt", col.names]), 
+      "sd: ", sd(target_summary["tract in nt", col.names]))
+}  
+
+```
+
+
+Now plot estimated tract length
+
+```{r}
+library(ggplot2)
+tract.summary <- NULL
+for (tract in Tract.list){
+  target <- get(paste("True_HMM_Tract_", toString(tract), "_plot", sep = ""))
+  tract.summary <- cbind(tract.summary, target["tract in nt", ])
+  }
+colnames(tract.summary) <- paste(Tract.list)
+Plot.summary <- NULL
+for (tract in Tract.list){
+  target <- tract.summary[tract.summary[, toString(tract)] < 10*tract & tract.summary[, toString(tract)] < 999, toString(tract)]
+  Plot.summary <- rbind(Plot.summary, c(tract, mean(target), 
+                                      quantile(tract.summary[, toString(tract)], 0.25)[[1]], 
+                                      quantile(tract.summary[, toString(tract)], 0.75)[[1]]))
+}
+colnames(Plot.summary) <- c("tract", "mean", "quantile_low", "quantile_high")
+Plot.summary <- data.frame(Plot.summary)
+myplot <- ggplot(Plot.summary, aes(x = log(tract), y= log(mean))) +
+  geom_errorbar(aes(ymin = log(quantile_low), ymax = log(quantile_high)), width = 0.05) + 
+  #  geom_line() + 
+  geom_point(shape = 21, fill = "black", size = 1.7) + 
+  xlab("Expected tract length") + 
+  ylab("Estimated tract length") + 
+  #    xlim(0.0, max(target[, "True_blen"], target[, "estimated_blen"] + target[, "se_of_blen"]) * 1.1) + 
+  #    ylim(0.0, max(target[, "True_blen"], target[, "estimated_blen"] + target[, "se_of_blen"]) * 1.1) +
+  geom_abline(slope = 1.0, intercept = 0.0, lty = 2)  +
+  scale_x_continuous(breaks = log(Tract.list), label = paste(Tract.list)) + 
+  scale_y_continuous(breaks = log(Tract.list), label = paste(Tract.list))
+  #ggtitle("estimated Tract length constrain other parameters at their True values")
+
+myplot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"))
+ggsave("HMM estimated Tract length constrain other parameters at their True values summary.pdf")
 
 ```
 

@@ -1,0 +1,128 @@
+---
+title: "QualityControl"
+author: "Xiang Ji"
+date: "11/16/2017"
+output: html_document
+---
+
+This file summarizes the data sets in Harpak et al. 2017. Main interests are 
+length of alignment, level of missing species etc.
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/Harpak/")
+alignment.files <- list.files("./intronAlignmentSeparated/")
+filtered.alignment.files <- NULL
+num.missing.genes.list <- NULL
+filtered.files <- NULL
+for(seq.file in alignment.files){
+  info <- read.table(paste("./intronAlignmentSeparated/", seq.file, sep = ""), as.is = TRUE)
+  num.missing.genes <- sum(is.na(info[, 1]))
+  num.missing.genes.list <- c(num.missing.genes.list, num.missing.genes)
+  if(num.missing.genes == 0){
+    filtered.files <- c(filtered.files, seq.file)
+  }
+  if(dim(info)[2] > 1){
+    filtered.alignment.files <- c(filtered.alignment.files, seq.file)
+  }
+}
+table(num.missing.genes.list)
+```
+
+OK, 27 datasets have no missing genes (based on gene names). Now apply additional filter by looking at the gap percentage (100% gaps = missing).
+
+```{r}
+additional.failure <- NULL
+for(seq.file in filtered.files){
+  info <- read.table(paste("./intronAlignmentSeparated/", seq.file, sep = ""), as.is = TRUE)
+  for(row.num in 1:11){
+    seq <- strsplit(info[row.num, 2], "")[[1]]
+    percent.gap <- (length(grep("-", seq)) + length(grep("N", seq)))/length(seq)
+    if (percent.gap > 1 - 1e-6){
+      if( ! seq.file %in% additional.failure)
+        additional.failure <- c(additional.failure, seq.file)
+    }
+  }
+}
+additional.filtered <- filtered.files[! filtered.files %in% additional.failure]
+# See how many have missing info
+length(additional.failure)
+# See how many have passed the additional filter
+length(additional.filtered)
+# Show the remaining data sets
+additional.filtered
+```
+
+Now summarize all alignment files in terms of how many ingroup species have missing genes.
+
+```{r}
+num.missing.species.list  <- NULL
+for(num.spe in 0:5){
+  assign(paste("missing", num.spe, "species", sep = "."), NULL)
+}
+for(seq.file in filtered.alignment.files){
+  info <- read.table(paste("./intronAlignmentSeparated/", seq.file, sep = ""), as.is = TRUE)
+  for(row.num in 1:11){
+    seq <- strsplit(info[row.num, 2], "")[[1]]
+    percent.gap <- length(grep("-", seq))/length(seq)
+    if (percent.gap > 1 - 1e-6){
+      info[row.num, 1] <- NA
+    }   
+  }
+  num.spe <- 0
+  for(row.iter in 1:5){
+    if(any(is.na(info[c(row.iter*2-1, row.iter*2), 1]))){
+      num.spe <- num.spe + 1
+    }
+  }
+  num.missing.species.list <- c(num.missing.species.list, num.spe)
+  assign(paste("missing", num.spe, "species", sep = "."), c(get(paste("missing", num.spe, "species", sep = ".")), seq.file))
+}
+table(num.missing.species.list)
+# In addition, show files that have only one ingroup species that misses either one or both copies
+missing.1.species
+```
+
+Now look at the length of the alignment and percent of columns that contain gaps
+
+```{r}
+# 20 files that have no missing genes
+missing.0.summary <- NULL
+for(seq.file in missing.0.species){
+  info <- read.table(paste("./intronAlignmentSeparated/", seq.file, sep = ""), as.is = TRUE)
+
+  gap.col <- NULL
+  for(row.num in 1:11){
+    seq <- strsplit(info[row.num, 2], "")[[1]]
+    gap.col <- union(gap.col, grep("-", seq))
+  }
+  
+  missing.0.summary <- rbind(missing.0.summary, c(length(seq), length(seq) - length(gap.col), length(gap.col), length(gap.col)/length(seq)))
+}
+rownames(missing.0.summary) <- missing.0.species
+colnames(missing.0.summary) <- c("length", "# col no gap", "# col with gap", "% gap col")
+missing.0.summary
+
+# 46 files that have one species that contains missing genes
+missing.1.summary <- NULL
+for(seq.file in missing.1.species){
+  info <- read.table(paste("./intronAlignmentSeparated/", seq.file, sep = ""), as.is = TRUE)
+
+  gap.col <- NULL
+  for(row.num in 1:11){
+    seq <- strsplit(info[row.num, 2], "")[[1]]
+    if(length(grep("-", seq)) < length(seq)){
+      gap.col <- union(gap.col, grep("-", seq))
+    }
+  }
+  
+  missing.1.summary <- rbind(missing.1.summary, c(length(seq), length(seq) - length(gap.col), length(gap.col), length(gap.col)/length(seq)))
+}
+rownames(missing.1.summary) <- missing.1.species
+colnames(missing.1.summary) <- c("length", "# col no gap", "# col with gap", "% gap col")
+missing.1.summary
+
+# Now save the file names
+write.table(missing.0.species, "./missing_0_species_list.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(missing.1.species, "./missing_1_species_list.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+```
