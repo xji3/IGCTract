@@ -186,14 +186,14 @@ def main(args):
                            + '_seq_index.txt' for seq_file in seq_file_list]
 
     save_file_list = ['./save/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
-                           + '_save.txt' for seq_file in seq_file_list]
+                           + '_guess_' + str(args.guess) + '_save.txt' for seq_file in seq_file_list]
     log_file_list = ['./log/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
-                           + '_log.txt' for seq_file in seq_file_list]
+                           + '_guess_' + str(args.guess) + '_log.txt' for seq_file in seq_file_list]
     summary_file_list = ['./summary/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
-                           + '_summary.txt' for seq_file in seq_file_list]
+                           + '_guess_' + str(args.guess) + '_summary.txt' for seq_file in seq_file_list]
 
     gene_to_orlg_file = './GeneToOrlg.txt'
-    save_file = './save/Grand_save.txt'
+    save_file = './save/Grand_save_guess_' + str(args.guess) + '.txt'
 
     tree_newick = './HarpakTree.newick'
     DupLosList = './HarpakDupLost.txt'
@@ -226,7 +226,7 @@ def main(args):
 
     self = test
 
-    results = test.objective_and_gradient(True, test.x)
+    #results = test.objective_and_gradient(True, test.x)
     #print results
     test.get_mle(stringent_level = 'high')
     
