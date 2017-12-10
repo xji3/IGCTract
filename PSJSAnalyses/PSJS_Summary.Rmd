@@ -15,6 +15,7 @@ filtered.pairs <- readLines('../Filtered_pairs.txt')
 # Now read in individual summary of gene pairs
 PSJS.HKY.rv.nonclock.summary.guess.1 <- NULL
 PSJS.HKY.rv.nonclock.summary.guess.2 <- NULL
+PSJS.HKY.rv.nonclock.summary.guess.3 <- NULL
 
 PSJS.HKY.rv.nonclock.summary.dim.1 <- NULL
 for (pair in filtered.pairs){
@@ -38,6 +39,16 @@ for (pair in filtered.pairs){
                                       col.names = col.names))
   PSJS.HKY.rv.nonclock.summary.guess.2 <- cbind(PSJS.HKY.rv.nonclock.summary.guess.2, summary_mat)  
 
+  summary.file.name <- paste("PSJS_HKY", pair, "One_rate_Guess_3_rv_SCOK_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  PSJS.HKY.rv.nonclock.summary.guess.3 <- cbind(PSJS.HKY.rv.nonclock.summary.guess.3, summary_mat)  
+  
   summary.file.name <- paste("PSJS_dim_1_HKY", pair, "One_rate_init_30.0_rv_SCOK_nonclock_summary.txt", sep = "_")
   summary_file <- paste("./summary/", summary.file.name, sep = "")
   all <- readLines(summary_file, n = -1)
@@ -55,16 +66,32 @@ Now show estimated tract length from the three
 ```{r}
 tract.length <- cbind(PSJS.HKY.rv.nonclock.summary.dim.1["tract_length", ], 
       PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ],
-      PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ])
-colnames(tract.length) <- c("dim 1 est", "All 1 est", "All 2 est")
+      PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ],
+      PSJS.HKY.rv.nonclock.summary.guess.3["tract_length", ])
+colnames(tract.length) <- c("dim 1 est", "All 1 est", "All 2 est", "All 3 est")
 
 lnL <- cbind(PSJS.HKY.rv.nonclock.summary.dim.1["ll", ], 
       PSJS.HKY.rv.nonclock.summary.guess.1["ll", ],
-      PSJS.HKY.rv.nonclock.summary.guess.2["ll", ])
-colnames(lnL)  <- c("dim 1 lnL", "All 1 lnL", "All 2 lnL")
+      PSJS.HKY.rv.nonclock.summary.guess.2["ll", ],
+      PSJS.HKY.rv.nonclock.summary.guess.3["ll", ])
+colnames(lnL)  <- c("dim 1 lnL", "All 1 lnL", "All 2 lnL", "All 3 lnL")
+
+effective.tau <- cbind(
+  PSJS.HKY.rv.nonclock.summary.dim.1["init_rate", ] * PSJS.HKY.rv.nonclock.summary.dim.1["tract_length", ] * 3 / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.dim.1[c("r2", "r3"), ])), 
+  PSJS.HKY.rv.nonclock.summary.guess.1["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ] * 3 / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.1[c("r2", "r3"), ])), 
+  PSJS.HKY.rv.nonclock.summary.guess.2["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ] * 3 / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.2[c("r2", "r3"), ])), 
+  PSJS.HKY.rv.nonclock.summary.guess.3["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.3["tract_length", ] * 3 / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.3[c("r2", "r3"), ])) 
+  )
+colnames(effective.tau) <- c("dim 1 tau", "All 1 tau", "All 2 tau", "All 3 tau")
 
 tract.length
 lnL
+effective.tau
+
+for(i in 1:dim(lnL)[1]){
+  max.col <- which.min(lnL[i, 2:4]) + 1
+  cat(rownames(lnL)[i], max.col - 1, effective.tau[i, max.col], tract.length[i, max.col], "\n")
+}
 ```
 
 
