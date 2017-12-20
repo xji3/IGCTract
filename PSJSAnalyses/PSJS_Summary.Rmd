@@ -59,6 +59,14 @@ for (pair in filtered.pairs){
                                       col.names = col.names))
   PSJS.HKY.rv.nonclock.summary.dim.1 <- cbind(PSJS.HKY.rv.nonclock.summary.dim.1, summary_mat)   
 }
+
+# read in Gradient list
+for (pair in filtered.pairs){
+  gradient.file <- paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_1_rv_SCOK_nonclock_gradient.txt", sep = "")
+  gradient.list <- read.table(gradient.file)
+  
+  Godambe.matrix <- read.table(paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_1_rv_SCOK_nonclock_godambe.txt", sep = ""))
+}
 ```
 
 Now show estimated tract length from the three

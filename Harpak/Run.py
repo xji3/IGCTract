@@ -152,6 +152,12 @@ class Run_PSJS_Harpak_all:
             f += f_incr
         return f
 
+    def get_gradient_hessian(self, x, gradient_file_list, hessian_file_list):
+        for i, psjsgeneconv in enumerate(self.psjsgeneconv_list):
+            if os.path.isfile(gradient_file_list[i]) and os.path.isfile(hessian_file_list[i]):
+                continue
+            else:
+                psjsgeneconv.get_gradient_hessian(x, gradient_file_list[i], hessian_file_list[i])
 
     
     def get_mle(self, display = True, derivative = True, stringent_level = 'low'):
@@ -368,6 +374,10 @@ def main(args):
                            + '_guess_' + str(args.guess) + '_log.txt' for seq_file in seq_file_list]
     summary_file_list = ['./summary/PSJS_' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
                            + '_guess_' + str(args.guess) + '_summary.txt' for seq_file in seq_file_list]
+    gradient_file_list = ['./summary/PSJS_' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '_guess_' + str(args.guess) + '_gradient.txt' for seq_file in seq_file_list]
+    hessian_file_list = ['./summary/PSJS_' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '_guess_' + str(args.guess) + '_hessian.txt' for seq_file in seq_file_list]
 
     gene_to_orlg_file = './GeneToOrlg.txt'
     save_file = './save/PSJS_Grand_save_guess_' + str(args.guess) + '.txt'
@@ -400,7 +410,10 @@ def main(args):
                                save_file_list, log_file_list, save_file,
                                multiprocess_combined_list = multiprocess_combined_list
                                )
-    test.get_mle(stringent_level = 'high')
+    #test.get_mle(stringent_level = 'high')
+    Godambe_x = np.array([test.psjsgeneconv_list[0].psjsmodel.x_IGC[0] - test.psjsgeneconv_list[0].psjsmodel.x_IGC[1],\
+                          test.psjsgeneconv_list[0].psjsmodel.x_IGC[1] - np.log(1.0 - np.exp(test.psjsgeneconv_list[0].psjsmodel.x_IGC[1]))])
+    test.get_gradient_hessian(Godambe_x, gradient_file_list, hessian_file_list)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -423,6 +436,10 @@ if __name__ == '__main__':
 ##                           + '_guess_' + str(args.guess) + '_log.txt' for seq_file in seq_file_list]
 ##    summary_file_list = ['./summary/PSJS_' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
 ##                           + '_guess_' + str(args.guess) + '_summary.txt' for seq_file in seq_file_list]
+##    gradient_file_list = ['./summary/PSJS_' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+##                           + '_guess_' + str(args.guess) + '_gradient.txt' for seq_file in seq_file_list]
+##    hessian_file_list = ['./summary/PSJS_' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+##                           + '_guess_' + str(args.guess) + '_hessian.txt' for seq_file in seq_file_list]
 ##
 ##    gene_to_orlg_file = './GeneToOrlg.txt'
 ##    save_file = './save/PSJS_Grand_save_guess_' + str(args.guess) + '.txt'
@@ -455,12 +472,17 @@ if __name__ == '__main__':
 ##                               save_file_list, log_file_list, save_file,
 ##                               multiprocess_combined_list = multiprocess_combined_list
 ##                               )
-##    test.get_mle(stringent_level = 'high')
+##    #test.get_mle(stringent_level = 'high')
+##    Godambe_x = np.array([test.psjsgeneconv_list[0].psjsmodel.x_IGC[0] - test.psjsgeneconv_list[0].psjsmodel.x_IGC[1],\
+##                          test.psjsgeneconv_list[0].psjsmodel.x_IGC[1] - np.log(1.0 - np.exp(test.psjsgeneconv_list[0].psjsmodel.x_IGC[1]))])
+##    test.get_gradient_hessian(Godambe_x, gradient_file_list, hessian_file_list)
+##    
+##    
 
 #######################################################################################################################################
 ###############################           IS-IGC results              #################################################################
 #######################################################################################################################################
-##
+####
 ##    seq_file_list = np.loadtxt('missing_0_species_list.txt', dtype = str)
 ##    alignment_file_list = ['./prepared_input/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
 ##                           + '.fasta' for seq_file in seq_file_list]
@@ -528,6 +550,6 @@ if __name__ == '__main__':
 ##                 node_to_pos, terminal_node_list,
 ##                 save_file_list, log_file_list, save_file, force = force)
 ##    JS_IGC_Force.get_mle(stringent_level = 'high')
-
-
-                          
+##
+##
+##                          
