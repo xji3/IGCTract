@@ -1,0 +1,2 @@
+*gradient.txt filter=lfs diff=lfs merge=lfs -text
+*hessian.txt filter=lfs diff=lfs merge=lfs -text

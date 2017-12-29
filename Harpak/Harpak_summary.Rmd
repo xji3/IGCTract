@@ -1,0 +1,119 @@
+---
+title: "Harpak_summary"
+output: html_document
+---
+
+This rmarkdown file summarizes the results of Harpak data analyses.
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/Harpak/")
+missing.0.files <- readLines("./missing_0_species_list.txt")
+file.names <- gsub("_pos_seq_formatted", "", gsub("\\.", "_", missing.0.files))
+
+# read in lnL from each log file first
+ll.list <- NULL
+for (guess in c(1, 3)){
+  ll <- 0.0
+  for (i in 1:length(missing.0.files)){
+    log_file <- paste("./log/PSJS_", file.names[i], "_guess_", guess, "_log.txt", 
+                       sep = "")
+    log_info <- read.table(log_file)
+    ll <- ll + log_info[ dim(log_info)[1], 1]
+  }
+  ll.list <- rbind(ll.list, c(ll, as.numeric(log_info[dim(log_info)[1], 2:((dim(log_info)[2]+1)/2)])))
+}
+ll.list
+# guess 3 has larger lnL   
+# Tau estimate
+exp(ll.list[, 6] - ll.list[, 7])
+
+# Now calculate Godambe matrix
+Godambe.Harpak <- NULL
+for(guess in c(1,3)){
+  n <- 0
+  H <- 0
+  J <- 0
+  for(i in 1:length(missing.0.files)){
+    hessian_file <- paste("./summary/PSJS_", file.names[i], "_guess_", guess, "_hessian.txt", 
+                       sep = "")
+    hessian <- read.table(hessian_file)
+    H.inc <- matrix(-colSums(hessian), 2, 2)
+    
+    gradient_file <- paste("./summary/PSJS_", file.names[i], "_guess_", guess, "_gradient.txt", 
+                       sep = "")
+    gradient <- as.matrix(read.table(gradient_file))
+    J.inc <- crossprod(gradient)
+    
+    n <- n+dim(gradient)[1]
+    H <- H + H.inc
+    J <- J + J.inc
+    
+  }
+  H <- H/n
+  J <- J/n
+  G <- H %*% (solve(J, H))
+  
+  Godambe.Harpak <- cbind(Godambe.Harpak, c(solve(G)/n))
+}
+
+# Godambe of IS-IGC model
+Godambe.JS <- NULL
+for(guess in c(1)){
+  n.JS <- 0
+  H.JS <- 0
+  J.JS <- 0
+  for(i in 1:length(missing.0.files)){
+    hessian_file <- paste("./summary/", file.names[i], "_guess_", guess, "_HKY_JS_hessian.txt", 
+                       sep = "")
+    hessian <- read.table(hessian_file)
+    x.length <- sqrt(dim(hessian)[2])
+    H.inc <- matrix(-colSums(hessian), x.length, x.length)
+    
+    gradient_file <- paste("./summary/", file.names[i], "_guess_", guess, "_HKY_JS_gradient.txt", 
+                       sep = "")
+    gradient <- as.matrix(read.table(gradient_file))
+    J.inc <- crossprod(gradient)
+    
+    n.JS <- n.JS + dim(gradient)[1]
+    H.JS <- H.JS + H.inc
+    J.JS <- J.JS + J.inc
+    
+  }
+  H.JS <- H.JS/n.JS
+  J.JS <- J.JS/n.JS
+  G.JS <- H.JS %*% (solve(J.JS, H.JS))
+  
+  Godambe.JS <- cbind(Godambe.JS, c(diag(solve(G.JS)/n.JS)))
+}
+
+# read in IS-IGC estimate
+summary_file = paste( "./summary/", file.names[1], "_guess_1_HKY_JS_summary.txt", sep = "")
+all <- readLines(summary_file, n = -1)
+col.names <- "HKY+IS-IGC"
+row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+JS.HKY <- as.matrix(read.table(summary_file, 
+                                    row.names = row.names, 
+                                    col.names = col.names))
+
+```
+
+Now show estimates and 95% C.I.
+
+```{r}
+show.mat <- rbind(exp(-ll.list[, 7]),
+                  exp(log(exp(-ll.list[, 7])-1.0)-1.96*sqrt(Godambe.Harpak[4,]))+1.0, 
+                  exp(log(exp(-ll.list[, 7])-1.0)+1.96*sqrt(Godambe.Harpak[4,]))+1.0, 
+                  exp(ll.list[, 6] - ll.list[, 7]),
+                  exp(ll.list[, 6] - ll.list[, 7] - 1.96*sqrt(Godambe.Harpak[1, ])),
+                  exp(ll.list[, 6] - ll.list[, 7] + 1.96*sqrt(Godambe.Harpak[1, ])),
+                  JS.HKY["Tau",], 
+                  JS.HKY["Tau",]/exp(1.96*sqrt(Godambe.JS[1, ])),
+                  JS.HKY["Tau",]*exp(1.96*sqrt(Godambe.JS[1, ]))
+                  )
+
+colnames(show.mat) <- paste("Guess", c(1, 3))
+rownames(show.mat) <- c("tract_length", "min", "max", "PS-IGC Tau", "min", "max",
+                        "IS-IGC Tau", "min", "max")
+round(show.mat, digits = 2)
+```

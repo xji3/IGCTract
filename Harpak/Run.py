@@ -154,6 +154,10 @@ class Run_PSJS_Harpak_all:
 
     def get_gradient_hessian(self, x, gradient_file_list, hessian_file_list):
         for i, psjsgeneconv in enumerate(self.psjsgeneconv_list):
+<<<<<<< HEAD
+            psjsgeneconv.get_gradient_hessian(x, gradient_file_list[i], hessian_file_list[i])
+=======
+>>>>>>> d3a35fbd4733e2578ee1da872cda4e739767da16
             if os.path.isfile(gradient_file_list[i]) and os.path.isfile(hessian_file_list[i]):
                 continue
             else:
@@ -416,14 +420,14 @@ def main(args):
     test.get_gradient_hessian(Godambe_x, gradient_file_list, hessian_file_list)
     
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--G', type = int, dest = 'guess', default = 1, help = 'Guess case')
-    
-    main(parser.parse_args())
+##    parser = argparse.ArgumentParser()
+##    parser.add_argument('--G', type = int, dest = 'guess', default = 1, help = 'Guess case')
+##    
+##    main(parser.parse_args())
 
-##    MyStruct = namedtuple('MyStruct', 'guess')
-##    args = MyStruct(guess = 1)
-##
+    MyStruct = namedtuple('MyStruct', 'guess')
+    args = MyStruct(guess = 1)
+
 ##    seq_file_list = np.loadtxt('missing_0_species_list.txt', dtype = str)
 ##    alignment_file_list = ['./prepared_input/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
 ##                           + '.fasta' for seq_file in seq_file_list]
@@ -483,6 +487,78 @@ if __name__ == '__main__':
 ###############################           IS-IGC results              #################################################################
 #######################################################################################################################################
 ####
+<<<<<<< HEAD
+    seq_file_list = np.loadtxt('missing_0_species_list.txt', dtype = str)
+    alignment_file_list = ['./prepared_input/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '.fasta' for seq_file in seq_file_list]
+    seq_index_file_list = ['./prepared_input/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '_seq_index.txt' for seq_file in seq_file_list]
+
+    save_file_list = ['./save/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '_guess_' + str(args.guess) + '_HKY_JS_save.txt' for seq_file in seq_file_list]
+    log_file_list = ['./log/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '_guess_' + str(args.guess) + '_HKY_JS_log.txt' for seq_file in seq_file_list]
+    summary_file_list = ['./summary/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '_guess_' + str(args.guess) + '_HKY_JS_summary.txt' for seq_file in seq_file_list]
+
+    gene_to_orlg_file = './GeneToOrlg.txt'
+    save_file = './save/Grand_save_HKY_JS_guess_' + str(args.guess) + '.txt'
+
+    tree_newick = './HarpakTree.newick'
+    DupLosList = './HarpakDupLost.txt'
+    terminal_node_list = ['Human', 'Chimp', 'Goril', 'Orang', 'Macaq', 'Mouse']
+    node_to_pos = {'D1':0}
+    pm_model = 'HKY'
+    
+    IGC_pm = 'One rate'
+
+    initial_tract_length_list = np.log([30.0, 200.0, 500.0])
+    guess_lnp = -initial_tract_length_list[args.guess - 1]
+
+    rate_variation = False
+    
+
+    x_js = np.log([0.3,0.4,0.5,4.0, 3.0])
+
+
+##    alignment_file_list = alignment_file_list[:2]
+##    seq_index_file_list = seq_index_file_list[:2]
+##    save_file_list = save_file_list[:2]
+##    log_file_list = log_file_list[:2]
+      
+    test = Run_JS_Harpak_all(alignment_file_list, gene_to_orlg_file,
+                 seq_index_file_list, 
+                 tree_newick, DupLosList,
+                 x_js, pm_model, IGC_pm, rate_variation,
+                 node_to_pos, terminal_node_list,
+                 save_file_list, log_file_list, save_file, 10)
+
+    self = test
+
+    #results = test.objective_and_gradient(True, test.x)
+    #print results
+    test.get_mle(stringent_level = 'high')
+    
+    force = {4:0.0}
+
+    save_file_list = ['./save/Force_' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '_guess_' + str(args.guess) + '_HKY_JS_save.txt' for seq_file in seq_file_list]
+    log_file_list = ['./log/Force_' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
+                           + '_guess_' + str(args.guess) + '_HKY_JS_log.txt' for seq_file in seq_file_list]
+    save_file = './save/Force_Grand_save_HKY_JS_guess_' + str(args.guess) + '.txt'
+
+    
+    JS_IGC_Force = Run_JS_Harpak_all(alignment_file_list, gene_to_orlg_file,
+                 seq_index_file_list, 
+                 tree_newick, DupLosList,
+                 x_js, pm_model, IGC_pm, rate_variation,
+                 node_to_pos, terminal_node_list,
+                 save_file_list, log_file_list, save_file, force = force)
+    JS_IGC_Force.get_mle(stringent_level = 'high')
+
+
+                          
+=======
 ##    seq_file_list = np.loadtxt('missing_0_species_list.txt', dtype = str)
 ##    alignment_file_list = ['./prepared_input/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
 ##                           + '.fasta' for seq_file in seq_file_list]
@@ -553,3 +629,4 @@ if __name__ == '__main__':
 ##
 ##
 ##                          
+>>>>>>> d3a35fbd4733e2578ee1da872cda4e739767da16

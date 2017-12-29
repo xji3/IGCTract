@@ -87,19 +87,19 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--paralog1', required = True, help = 'Name of the 1st paralog')
-    parser.add_argument('--paralog2', required = True, help = 'Name of the 2nd paralog')
-    parser.add_argument('--L', type = float, dest = 'tract_length', default = 30.0, help = 'Initial guess tract length')
-    parser.add_argument('--D', type = int, dest = 'dim', default = 0, help = 'Dimension used in search with default value 0')
-    parser.add_argument('--heterogeneity', dest = 'rate_variation', action = 'store_true', help = 'rate heterogeneity control')
-    parser.add_argument('--homogeneity', dest = 'rate_variation', action = 'store_false', help = 'rate heterogeneity control')
-    parser.add_argument('--coding', dest = 'cdna', action = 'store_true', help = 'coding sequence control')
-    parser.add_argument('--noncoding', dest = 'cdna', action = 'store_false', help = 'coding sequence control')
-    parser.add_argument('--samecodon', dest = 'allow_same_codon', action = 'store_true', help = 'whether allow pair sites from same codon')
-    parser.add_argument('--no-samecodon', dest = 'allow_same_codon', action = 'store_false', help = 'whether allow pair sites from same codon')
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--paralog1', required = True, help = 'Name of the 1st paralog')
+    # parser.add_argument('--paralog2', required = True, help = 'Name of the 2nd paralog')
+    # parser.add_argument('--L', type = float, dest = 'tract_length', default = 30.0, help = 'Initial guess tract length')
+    # parser.add_argument('--D', type = int, dest = 'dim', default = 0, help = 'Dimension used in search with default value 0')
+    # parser.add_argument('--heterogeneity', dest = 'rate_variation', action = 'store_true', help = 'rate heterogeneity control')
+    # parser.add_argument('--homogeneity', dest = 'rate_variation', action = 'store_false', help = 'rate heterogeneity control')
+    # parser.add_argument('--coding', dest = 'cdna', action = 'store_true', help = 'coding sequence control')
+    # parser.add_argument('--noncoding', dest = 'cdna', action = 'store_false', help = 'coding sequence control')
+    # parser.add_argument('--samecodon', dest = 'allow_same_codon', action = 'store_true', help = 'whether allow pair sites from same codon')
+    # parser.add_argument('--no-samecodon', dest = 'allow_same_codon', action = 'store_false', help = 'whether allow pair sites from same codon')
     
-    main(parser.parse_args())
+    # main(parser.parse_args())
 
   
 
@@ -187,38 +187,41 @@ if __name__ == '__main__':
 
 
 
-##    pairs = []
-##    all_pairs = '../Filtered_pairs.txt'
-##    with open(all_pairs, 'r') as f:
-##        for line in f.readlines():
-##            pairs.append(line.replace('\n','').split('_'))
-##
-##    for pair in pairs:
-##        paralog = pair
-##        
-##        gene_to_orlg_file = '../GeneToOrlg/' + '_'.join(paralog) +'_GeneToOrlg.txt'
-##        alignment_file = '../MafftAlignment/' + '_'.join(paralog) +'/' + '_'.join(paralog) +'_input.fasta'
-##
-##        tree_newick = '../YeastTree.newick'
-##        DupLosList = '../YeastTestDupLost.txt'
-##        terminal_node_list = ['kluyveri', 'castellii', 'bayanus', 'kudriavzevii', 'mikatae', 'paradoxus', 'cerevisiae']
-##        node_to_pos = {'D1':0}
-##        pm_model = 'HKY'
-##        
-##        IGC_pm = 'One rate'
-##        rate_variation = True
-##        cdna = True
-##        
-##        save_file = './save/Force_JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_save.txt'
-##        log_file = './log/Force_JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_log.txt'
-##        summary_file = './summary/Force_JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_summary.txt'
-##        x_js = np.log([ 0.5, 0.5, 0.5,  4.35588244, 0.5, 5.0, 0.3])
-##        force = {6:0.0}
-##
-##        test_JS = JSGeneconv(alignment_file, gene_to_orlg_file, cdna, tree_newick, DupLosList, x_js, pm_model, IGC_pm,
-##                         rate_variation, node_to_pos, terminal_node_list, save_file, force)
-##        test_JS.get_mle()
-##        test_JS.get_individual_summary(summary_file)
-        
+   pairs = []
+   all_pairs = '../Filtered_pairs.txt'
+   with open(all_pairs, 'r') as f:
+       for line in f.readlines():
+           pairs.append(line.replace('\n','').split('_'))
 
+   for pair in pairs:
+       paralog = pair
+       
+       gene_to_orlg_file = '../GeneToOrlg/' + '_'.join(paralog) +'_GeneToOrlg.txt'
+       alignment_file = '../MafftAlignment/' + '_'.join(paralog) +'/' + '_'.join(paralog) +'_input.fasta'
+
+       tree_newick = '../YeastTree.newick'
+       DupLosList = '../YeastTestDupLost.txt'
+       terminal_node_list = ['kluyveri', 'castellii', 'bayanus', 'kudriavzevii', 'mikatae', 'paradoxus', 'cerevisiae']
+       node_to_pos = {'D1':0}
+       pm_model = 'HKY'
+       
+       IGC_pm = 'One rate'
+       rate_variation = True
+       cdna = True
+       
+       save_file = './save/JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_save.txt'
+       log_file = './log/JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_log.txt'
+       summary_file = './summary/JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_summary.txt'
+       gradient_file = './summary/JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_gradient.txt'
+       hessian_file = './summary/JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_hessian.txt'
+       godambe_file = './summary/JS_HKY_'+ '_'.join(paralog) + '_' + IGC_pm.replace(' ', '_') + '_rv_nonclock_godambe.txt'
+       x_js = np.log([ 0.5, 0.5, 0.5,  4.35588244, 0.5, 5.0, 0.3])
+       #force = {6:0.0}
+
+       test_JS = JSGeneconv(alignment_file, gene_to_orlg_file, cdna, tree_newick, DupLosList, x_js, pm_model, IGC_pm,
+                        rate_variation, node_to_pos, terminal_node_list, save_file)
+       test_JS.get_mle()
+       test_JS.get_individual_summary(summary_file)
+       godambe = test_JS.get_Godambe_matrix(test_JS.x, gradient_file, hessian_file)
+       np.savetxt(open(godambe_file, 'w+'), np.array(godambe))
         

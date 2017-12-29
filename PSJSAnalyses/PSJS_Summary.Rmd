@@ -16,6 +16,8 @@ filtered.pairs <- readLines('../Filtered_pairs.txt')
 PSJS.HKY.rv.nonclock.summary.guess.1 <- NULL
 PSJS.HKY.rv.nonclock.summary.guess.2 <- NULL
 PSJS.HKY.rv.nonclock.summary.guess.3 <- NULL
+JS.HKY.rv.nonclock.summary <- NULL
+
 
 PSJS.HKY.rv.nonclock.summary.dim.1 <- NULL
 for (pair in filtered.pairs){
@@ -38,7 +40,7 @@ for (pair in filtered.pairs){
                                       row.names = row.names, 
                                       col.names = col.names))
   PSJS.HKY.rv.nonclock.summary.guess.2 <- cbind(PSJS.HKY.rv.nonclock.summary.guess.2, summary_mat)  
-
+  
   summary.file.name <- paste("PSJS_HKY", pair, "One_rate_Guess_3_rv_SCOK_nonclock_summary.txt", sep = "_")
   summary_file <- paste("./summary/", summary.file.name, sep = "")
   all <- readLines(summary_file, n = -1)
@@ -49,6 +51,16 @@ for (pair in filtered.pairs){
                                       col.names = col.names))
   PSJS.HKY.rv.nonclock.summary.guess.3 <- cbind(PSJS.HKY.rv.nonclock.summary.guess.3, summary_mat)  
   
+  summary.file.name <- paste("JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)  
+    
   summary.file.name <- paste("PSJS_dim_1_HKY", pair, "One_rate_init_30.0_rv_SCOK_nonclock_summary.txt", sep = "_")
   summary_file <- paste("./summary/", summary.file.name, sep = "")
   all <- readLines(summary_file, n = -1)
@@ -61,6 +73,46 @@ for (pair in filtered.pairs){
 }
 
 # read in Gradient list
+<<<<<<< HEAD
+Godambe.guess.1 <- NULL
+Godambe.guess.2 <- NULL
+Godambe.JS      <- NULL
+for (pair in filtered.pairs){
+  gradient.file <- paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_1_rv_SCOK_nonclock_gradient.txt", sep = "")
+  gradient.list <- read.table(gradient.file)
+  cat("Now get Godambe matrix for pair: ", pair, "\n")
+  cat("PSJS guess 1 Gradient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.1["ll",pair], "\n")
+  
+  Godambe.matrix <- read.table(paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_1_rv_SCOK_nonclock_godambe.txt", sep = ""))
+  cat("Godambe matrix= ", paste(Godambe.matrix), "\n")
+  Godambe.guess.1 <- cbind(Godambe.guess.1, c(solve(Godambe.matrix)/dim(gradient.list)[1]))
+  
+  gradient.file <- paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_2_rv_SCOK_nonclock_gradient.txt", sep = "")
+  gradient.list <- read.table(gradient.file)
+  cat("PSJS guess 2 Gadient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.2["ll",pair], "\n")
+  
+  Godambe.matrix <- read.table(paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_2_rv_SCOK_nonclock_godambe.txt", sep = ""))
+  cat("Godambe matrix = ", paste(Godambe.matrix), "\n")
+  Godambe.guess.2 <- cbind(Godambe.guess.2, c(solve(Godambe.matrix)/dim(gradient.list)[1]))
+  
+  gradient.file <- paste("./summary/JS_HKY_", pair, "_One_rate_rv_nonclock_gradient.txt", sep = "")
+  gradient.list <- read.table(gradient.file)
+  cat("JS Gradient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/JS.HKY.rv.nonclock.summary["ll",pair], "\n")
+  
+  # if(pair == "YER074W_YIL069C") next
+  Godambe.matrix <- read.table(paste("./summary/JS_HKY_", pair, "_One_rate_rv_nonclock_godambe.txt", sep = ""))
+  #cat("Godambe matrix = ", paste(Godambe.matrix), "\n")
+  Godambe.JS <- cbind(Godambe.JS, c(diag(solve(Godambe.matrix)/dim(gradient.list)[1])))
+    
+}
+rownames(Godambe.guess.1) <- c("Tau", "Tau.logit", "logit.Tau", "logit")
+rownames(Godambe.guess.2) <- c("Tau", "Tau.logit", "logit.Tau", "logit")
+#rownames(Godambe.JS) <- c("AC", "G", "T", rownames(JS.HKY.rv.nonclock.summary)[-(1:6)])
+colnames(Godambe.guess.1) <- filtered.pairs
+colnames(Godambe.guess.2) <- filtered.pairs
+colnames(Godambe.JS) <- filtered.pairs
+=======
+>>>>>>> d3a35fbd4733e2578ee1da872cda4e739767da16
 for (pair in filtered.pairs){
   gradient.file <- paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_1_rv_SCOK_nonclock_gradient.txt", sep = "")
   gradient.list <- read.table(gradient.file)
@@ -74,9 +126,14 @@ Now show estimated tract length from the three
 ```{r}
 tract.length <- cbind(PSJS.HKY.rv.nonclock.summary.dim.1["tract_length", ], 
       PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ],
+      exp(log(PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ]-1.0)-1.96*sqrt(Godambe.guess.1[4,]))+1.0,
+      exp(log(PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ]-1.0)+1.96*sqrt(Godambe.guess.1[4,]))+1.0,
       PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ],
+      exp(log(PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ]-1.0)-1.96*sqrt(Godambe.guess.2[4,]))+1.0,
+      exp(log(PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ]-1.0)+1.96*sqrt(Godambe.guess.2[4,]))+1.0,
       PSJS.HKY.rv.nonclock.summary.guess.3["tract_length", ])
-colnames(tract.length) <- c("dim 1 est", "All 1 est", "All 2 est", "All 3 est")
+colnames(tract.length) <- c("dim 1 est", "All 1 est", "All 1 -", "All 1 +", 
+                            "All 2 est", "All 2 -",  "All 2 +", "All 3 est")
 
 lnL <- cbind(PSJS.HKY.rv.nonclock.summary.dim.1["ll", ], 
       PSJS.HKY.rv.nonclock.summary.guess.1["ll", ],
@@ -87,21 +144,54 @@ colnames(lnL)  <- c("dim 1 lnL", "All 1 lnL", "All 2 lnL", "All 3 lnL")
 effective.tau <- cbind(
   PSJS.HKY.rv.nonclock.summary.dim.1["init_rate", ] * PSJS.HKY.rv.nonclock.summary.dim.1["tract_length", ] * 3 / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.dim.1[c("r2", "r3"), ])), 
   PSJS.HKY.rv.nonclock.summary.guess.1["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ] * 3 / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.1[c("r2", "r3"), ])), 
+  PSJS.HKY.rv.nonclock.summary.guess.1["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ] * 3 /exp(1.96*sqrt(Godambe.guess.1[1, ])) / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.1[c("r2", "r3"), ])), 
+  PSJS.HKY.rv.nonclock.summary.guess.1["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.1["tract_length", ] * 3 *exp(1.96*sqrt(Godambe.guess.1[1, ])) / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.1[c("r2", "r3"), ])),
   PSJS.HKY.rv.nonclock.summary.guess.2["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ] * 3 / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.2[c("r2", "r3"), ])), 
+  PSJS.HKY.rv.nonclock.summary.guess.2["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ] * 3 /exp(1.96*sqrt(Godambe.guess.2[1, ])) / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.2[c("r2", "r3"), ])), 
+  PSJS.HKY.rv.nonclock.summary.guess.2["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.2["tract_length", ] * 3 *exp(1.96*sqrt(Godambe.guess.2[1, ])) / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.2[c("r2", "r3"), ])), 
   PSJS.HKY.rv.nonclock.summary.guess.3["init_rate", ] * PSJS.HKY.rv.nonclock.summary.guess.3["tract_length", ] * 3 / (1.0 + colSums(PSJS.HKY.rv.nonclock.summary.guess.3[c("r2", "r3"), ])) 
   )
-colnames(effective.tau) <- c("dim 1 tau", "All 1 tau", "All 2 tau", "All 3 tau")
+colnames(effective.tau) <- c("dim 1 tau", "All 1 tau", "All 1 tau -", "All 1 tau +",
+                             "All 2 tau", "All 2 tau -", "All 2 tau +", "All 3 tau")
 
 tract.length
 lnL
 effective.tau
 
+cat("Now show final estimates with 95% confidence interval \n")
+# now shown the estimates with the best lnL in guess 1 and 2
+show.mat <- NULL
 for(i in 1:dim(lnL)[1]){
-  max.col <- which.min(lnL[i, 2:4]) + 1
-  cat(rownames(lnL)[i], max.col - 1, effective.tau[i, max.col], tract.length[i, max.col], "\n")
+  max.col <- which.min(lnL[i, 2:3])
+  show.mat <- rbind(show.mat, round(c(max.col, effective.tau[i, (max.col * 3 - 1):(max.col*3 + 1)], tract.length[i, (max.col * 3 - 1):(max.col*3 + 1)]), digits = 3))
 }
+# use the other estimate for YJL177W_YKL180W
+i = 7; max.col = 2;
+show.mat[i,] <- round(c( max.col, effective.tau[i, (max.col * 3 - 1):(max.col*3 + 1)], tract.length[i, (max.col * 3 - 1):(max.col*3 + 1)]), digits = 3)
+
+colnames(show.mat) <- c( "guess", "Tau", "min", "max", "Tract_length", "min", "max")
+rownames(show.mat) <- filtered.pairs
+show.mat
 ```
 
+####12252017
+add in Godambe calculated 95% C.I. for IS-IGC method
+
+```{r}
+show.mat <- cbind(
+  JS.HKY.rv.nonclock.summary["Tau",]*3.0/(1. + colSums(JS.HKY.rv.nonclock.summary[c("r2", "r3"),])),
+      JS.HKY.rv.nonclock.summary["Tau",]/exp(1.96*sqrt(Godambe.JS[7, ]))*3.0/(1. + colSums(JS.HKY.rv.nonclock.summary[c("r2", "r3"),])), 
+      JS.HKY.rv.nonclock.summary["Tau",]*exp(1.96*sqrt(Godambe.JS[7, ]))*3.0/(1. + colSums(JS.HKY.rv.nonclock.summary[c("r2", "r3"),])), 
+      JS.HKY.rv.nonclock.summary["r2",],
+      JS.HKY.rv.nonclock.summary["r2",]/exp(1.96*sqrt(Godambe.JS[5,])),
+      JS.HKY.rv.nonclock.summary["r2",]*exp(1.96*sqrt(Godambe.JS[5,])),
+      JS.HKY.rv.nonclock.summary["r3",],
+      JS.HKY.rv.nonclock.summary["r3",]/exp(1.96*sqrt(Godambe.JS[6,])),
+      JS.HKY.rv.nonclock.summary["r3",]*exp(1.96*sqrt(Godambe.JS[6,]))
+)
+colnames(show.mat) <- c("Tau", "min", "max", "r2", "min", "max", "r3", "min", "max")
+round(show.mat, digits = 2)
+```
 
 Now save workspace.
 

@@ -68,6 +68,19 @@ def main(args):
     # np.savetxt(open(godambe_file, 'w+'), np.array(godambe))
     # test.get_gradient_hessian(Godambe_x, gradient_file, hessian_file)
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+    test.get_mle(stringent_level = 'high')
+    test.get_individual_summary(summary_file)
+    Godambe_x = np.array([test.psjsmodel.x_IGC[0] - test.psjsmodel.x_IGC[1], test.psjsmodel.x_IGC[1] - np.log(1.0 - np.exp(test.psjsmodel.x_IGC[1]))])
+    godambe = test.get_Godambe_matrix(Godambe_x)
+    np.savetxt(open(godambe_file, 'w+'), np.array(godambe))
+    test.get_gradient_hessian(Godambe_x, gradient_file, hessian_file)
+
+=======
+>>>>>>> d3a35fbd4733e2578ee1da872cda4e739767da16
+=======
+>>>>>>> d3a35fbd4733e2578ee1da872cda4e739767da16
 
 
 
