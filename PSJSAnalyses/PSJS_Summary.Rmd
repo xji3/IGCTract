@@ -73,31 +73,31 @@ for (pair in filtered.pairs){
 }
 
 # read in Gradient list
-<<<<<<< HEAD
+
 Godambe.guess.1 <- NULL
 Godambe.guess.2 <- NULL
 Godambe.JS      <- NULL
 for (pair in filtered.pairs){
   gradient.file <- paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_1_rv_SCOK_nonclock_gradient.txt", sep = "")
   gradient.list <- read.table(gradient.file)
-  cat("Now get Godambe matrix for pair: ", pair, "\n")
-  cat("PSJS guess 1 Gradient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.1["ll",pair], "\n")
+  # cat("Now get Godambe matrix for pair: ", pair, "\n")
+  # cat("PSJS guess 1 Gradient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.1["ll",pair], "\n")
   
   Godambe.matrix <- read.table(paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_1_rv_SCOK_nonclock_godambe.txt", sep = ""))
-  cat("Godambe matrix= ", paste(Godambe.matrix), "\n")
+  #cat("Godambe matrix= ", paste(Godambe.matrix), "\n")
   Godambe.guess.1 <- cbind(Godambe.guess.1, c(solve(Godambe.matrix)/dim(gradient.list)[1]))
   
   gradient.file <- paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_2_rv_SCOK_nonclock_gradient.txt", sep = "")
   gradient.list <- read.table(gradient.file)
-  cat("PSJS guess 2 Gadient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.2["ll",pair], "\n")
+  #cat("PSJS guess 2 Gadient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.2["ll",pair], "\n")
   
   Godambe.matrix <- read.table(paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_2_rv_SCOK_nonclock_godambe.txt", sep = ""))
-  cat("Godambe matrix = ", paste(Godambe.matrix), "\n")
+  #cat("Godambe matrix = ", paste(Godambe.matrix), "\n")
   Godambe.guess.2 <- cbind(Godambe.guess.2, c(solve(Godambe.matrix)/dim(gradient.list)[1]))
   
   gradient.file <- paste("./summary/JS_HKY_", pair, "_One_rate_rv_nonclock_gradient.txt", sep = "")
   gradient.list <- read.table(gradient.file)
-  cat("JS Gradient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/JS.HKY.rv.nonclock.summary["ll",pair], "\n")
+  #cat("JS Gradient = ", colSums(gradient.list), ". Gradient/Objective = ", colSums(gradient.list)/JS.HKY.rv.nonclock.summary["ll",pair], "\n")
   
   # if(pair == "YER074W_YIL069C") next
   Godambe.matrix <- read.table(paste("./summary/JS_HKY_", pair, "_One_rate_rv_nonclock_godambe.txt", sep = ""))
@@ -111,8 +111,7 @@ rownames(Godambe.guess.2) <- c("Tau", "Tau.logit", "logit.Tau", "logit")
 colnames(Godambe.guess.1) <- filtered.pairs
 colnames(Godambe.guess.2) <- filtered.pairs
 colnames(Godambe.JS) <- filtered.pairs
-=======
->>>>>>> d3a35fbd4733e2578ee1da872cda4e739767da16
+
 for (pair in filtered.pairs){
   gradient.file <- paste("./summary/PSJS_HKY_", pair, "_One_rate_Guess_1_rv_SCOK_nonclock_gradient.txt", sep = "")
   gradient.list <- read.table(gradient.file)
@@ -191,6 +190,14 @@ show.mat <- cbind(
 )
 colnames(show.mat) <- c("Tau", "min", "max", "r2", "min", "max", "r3", "min", "max")
 round(show.mat, digits = 2)
+```
+
+####12302017 update
+show % changes due to IGC
+```{r}
+num.IGC <- colSums(JS.HKY.rv.nonclock.summary[24:36, ])
+num.Mut <- colSums(JS.HKY.rv.nonclock.summary[c(37, 40:49),])
+num.IGC/(num.IGC + num.Mut)
 ```
 
 Now save workspace.

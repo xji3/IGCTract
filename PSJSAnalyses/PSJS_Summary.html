@@ -191,127 +191,45 @@ for (pair in filtered.pairs){
 }
 
 # read in Gradient list
+
 Godambe.guess.1 &lt;- NULL
 Godambe.guess.2 &lt;- NULL
 Godambe.JS      &lt;- NULL
 for (pair in filtered.pairs){
   gradient.file &lt;- paste(&quot;./summary/PSJS_HKY_&quot;, pair, &quot;_One_rate_Guess_1_rv_SCOK_nonclock_gradient.txt&quot;, sep = &quot;&quot;)
   gradient.list &lt;- read.table(gradient.file)
-  cat(&quot;Now get Godambe matrix for pair: &quot;, pair, &quot;\n&quot;)
-  cat(&quot;PSJS guess 1 Gradient = &quot;, colSums(gradient.list), &quot;. Gradient/Objective = &quot;, colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.1[&quot;ll&quot;,pair], &quot;\n&quot;)
+  # cat(&quot;Now get Godambe matrix for pair: &quot;, pair, &quot;\n&quot;)
+  # cat(&quot;PSJS guess 1 Gradient = &quot;, colSums(gradient.list), &quot;. Gradient/Objective = &quot;, colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.1[&quot;ll&quot;,pair], &quot;\n&quot;)
   
   Godambe.matrix &lt;- read.table(paste(&quot;./summary/PSJS_HKY_&quot;, pair, &quot;_One_rate_Guess_1_rv_SCOK_nonclock_godambe.txt&quot;, sep = &quot;&quot;))
-  cat(&quot;Godambe matrix= &quot;, paste(Godambe.matrix), &quot;\n&quot;)
+  #cat(&quot;Godambe matrix= &quot;, paste(Godambe.matrix), &quot;\n&quot;)
   Godambe.guess.1 &lt;- cbind(Godambe.guess.1, c(solve(Godambe.matrix)/dim(gradient.list)[1]))
   
   gradient.file &lt;- paste(&quot;./summary/PSJS_HKY_&quot;, pair, &quot;_One_rate_Guess_2_rv_SCOK_nonclock_gradient.txt&quot;, sep = &quot;&quot;)
   gradient.list &lt;- read.table(gradient.file)
-  cat(&quot;PSJS guess 2 Gadient = &quot;, colSums(gradient.list), &quot;. Gradient/Objective = &quot;, colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.2[&quot;ll&quot;,pair], &quot;\n&quot;)
+  #cat(&quot;PSJS guess 2 Gadient = &quot;, colSums(gradient.list), &quot;. Gradient/Objective = &quot;, colSums(gradient.list)/PSJS.HKY.rv.nonclock.summary.guess.2[&quot;ll&quot;,pair], &quot;\n&quot;)
   
   Godambe.matrix &lt;- read.table(paste(&quot;./summary/PSJS_HKY_&quot;, pair, &quot;_One_rate_Guess_2_rv_SCOK_nonclock_godambe.txt&quot;, sep = &quot;&quot;))
-  cat(&quot;Godambe matrix = &quot;, paste(Godambe.matrix), &quot;\n&quot;)
+  #cat(&quot;Godambe matrix = &quot;, paste(Godambe.matrix), &quot;\n&quot;)
   Godambe.guess.2 &lt;- cbind(Godambe.guess.2, c(solve(Godambe.matrix)/dim(gradient.list)[1]))
   
   gradient.file &lt;- paste(&quot;./summary/JS_HKY_&quot;, pair, &quot;_One_rate_rv_nonclock_gradient.txt&quot;, sep = &quot;&quot;)
   gradient.list &lt;- read.table(gradient.file)
-  cat(&quot;JS Gradient = &quot;, colSums(gradient.list), &quot;. Gradient/Objective = &quot;, colSums(gradient.list)/JS.HKY.rv.nonclock.summary[&quot;ll&quot;,pair], &quot;\n&quot;)
+  #cat(&quot;JS Gradient = &quot;, colSums(gradient.list), &quot;. Gradient/Objective = &quot;, colSums(gradient.list)/JS.HKY.rv.nonclock.summary[&quot;ll&quot;,pair], &quot;\n&quot;)
   
   # if(pair == &quot;YER074W_YIL069C&quot;) next
   Godambe.matrix &lt;- read.table(paste(&quot;./summary/JS_HKY_&quot;, pair, &quot;_One_rate_rv_nonclock_godambe.txt&quot;, sep = &quot;&quot;))
   #cat(&quot;Godambe matrix = &quot;, paste(Godambe.matrix), &quot;\n&quot;)
   Godambe.JS &lt;- cbind(Godambe.JS, c(diag(solve(Godambe.matrix)/dim(gradient.list)[1])))
     
-}</code></pre>
-<pre><code>## Now get Godambe matrix for pair:  YLR406C_YDL075W 
-## PSJS guess 1 Gradient =  1.480812 -0.5438815 . Gradient/Objective =  3.715172e-06 -1.364531e-06 
-## Godambe matrix=  c(0.107860377459095, 1.72704239881322e-05) c(1.72704239881322e-05, 9.84174542543356e-06) 
-## PSJS guess 2 Gadient =  -0.7127495 -0.08605482 . Gradient/Objective =  -1.7882e-06 -2.159008e-07 
-## Godambe matrix =  c(0.107990771285729, 2.12788048552199e-05) c(2.12788048552199e-05, 2.77113397385691e-05) 
-## JS Gradient =  -0.0008180174 -0.008749234 0.003384211 0.0004383392 -0.002391482 -0.0005103608 -0.004317637 -0.0002053043 0.002328153 0.001235223 -0.0009317606 -0.0004622711 -0.0003535659 -0.0005879877 -0.000888315 -0.0007854912 -0.002713353 -0.003143666 0.0008197998 . Gradient/Objective =  6.875184e-07 7.353461e-06 -2.844325e-06 -3.684106e-07 2.009967e-06 4.289425e-07 3.62884e-06 1.725519e-07 -1.95674e-06 -1.038167e-06 7.83116e-07 3.885246e-07 2.971612e-07 4.941855e-07 7.466014e-07 6.601811e-07 2.280489e-06 2.642154e-06 -6.890165e-07 
-## Now get Godambe matrix for pair:  YER131W_YGL189C 
-## PSJS guess 1 Gradient =  1.182794 1.02434 . Gradient/Objective =  2.753508e-06 2.384632e-06 
-## Godambe matrix=  c(0.165298318937827, 5.68241660194518e-06) c(5.68241660194518e-06, 0.000137277724975885) 
-## PSJS guess 2 Gadient =  1.746094 2.659598 . Gradient/Objective =  4.064851e-06 6.191461e-06 
-## Godambe matrix =  c(0.165113582764511, -1.55684445741417e-05) c(-1.55684445741417e-05, 0.000184807344336087) 
-## JS Gradient =  -0.006191802 0.004212916 0.0004501907 -0.001230994 -0.0002789523 -0.0001673645 -0.0006629746 0.001129996 0.0002159931 0.000554299 0.0004469466 0.001806641 -0.001021855 -0.001016547 0.0005907812 -0.0007481167 0.0004968644 0.00110369 0.0004016234 . Gradient/Objective =  5.088126e-06 -3.461973e-06 -3.699451e-07 1.011572e-06 2.292296e-07 1.375321e-07 5.448007e-07 -9.285766e-07 -1.774928e-07 -4.554963e-07 -3.672793e-07 -1.484611e-06 8.397112e-07 8.353494e-07 -4.854757e-07 6.147664e-07 -4.082994e-07 -9.069598e-07 -3.300349e-07 
-## Now get Godambe matrix for pair:  YML026C_YDR450W 
-## PSJS guess 1 Gradient =  -1.348546 -0.04384752 . Gradient/Objective =  -2.351886e-06 -7.647075e-08 
-## Godambe matrix=  c(0.266853274959278, 2.12769280230184e-05) c(2.12769280230184e-05, 2.43344664158333e-05) 
-## PSJS guess 2 Gadient =  -0.2149066 -0.04324639 . Gradient/Objective =  -3.748011e-07 -7.542251e-08 
-## Godambe matrix =  c(0.266796370870213, 1.58006353036905e-05) c(1.58006353036905e-05, 1.32125048683899e-05) 
-## JS Gradient =  0.01887521 -0.003429128 0.002341266 0.001461156 -0.001841131 0.0004167374 -0.0003194752 0.004114988 -0.001717142 -0.001904591 -0.002364685 -0.002326923 0.002754561 -0.0007774106 0.0004360508 0.00667996 -0.001198195 -0.001050998 -0.0003916472 . Gradient/Objective =  -1.379293e-05 2.505813e-06 -1.710865e-06 -1.06773e-06 1.345394e-06 -3.045281e-07 2.334544e-07 -3.007e-06 1.25479e-06 1.391768e-06 1.727978e-06 1.700384e-06 -2.012877e-06 5.680877e-07 -3.186413e-07 -4.881337e-06 8.755733e-07 7.680098e-07 2.861936e-07 
-## Now get Godambe matrix for pair:  YNL301C_YOL120C 
-## PSJS guess 1 Gradient =  14.07248 0.5195937 . Gradient/Objective =  1.19452e-05 4.410488e-07 
-## Godambe matrix=  c(0.200349204479705, -0.000241165071172837) c(-0.000241165071172837, 0.00023277230926599) 
-## PSJS guess 2 Gadient =  0.6308615 2.726932 . Gradient/Objective =  5.354969e-07 2.314714e-06 
-## Godambe matrix =  c(0.200448784836271, -0.000252672464992513) c(-0.000252672464992513, 0.000253823336859495) 
-## JS Gradient =  -0.003498143 0.01490709 1.664289e-05 0.004426099 0.003160414 -0.0002360397 -0.0001214101 -0.002343904 0.0005286958 0.004886551 0.00241072 0.004736675 0.000315552 -0.000614552 0.003439007 0.003211246 0.000228786 0.002930664 -0.001227306 . Gradient/Objective =  1.644914e-06 -7.009683e-06 -7.825898e-09 -2.081261e-06 -1.486105e-06 1.109917e-07 5.709004e-08 1.102162e-06 -2.486059e-07 -2.297778e-06 -1.13358e-06 -2.227302e-06 -1.483804e-07 2.889776e-07 -1.617107e-06 -1.510008e-06 -1.075809e-07 -1.378071e-06 5.771097e-07 
-## Now get Godambe matrix for pair:  YNL069C_YIL133C 
-## PSJS guess 1 Gradient =  -1.068668 -0.03423765 . Gradient/Objective =  -7.765341e-07 -2.487835e-08 
-## Godambe matrix=  c(0.176137165100274, -1.57009179867448e-05) c(-1.57009179867448e-05, 0.000194512843292425) 
-## PSJS guess 2 Gadient =  -0.4000845 -0.5596694 . Gradient/Objective =  -2.907163e-07 -4.066766e-07 
-## Godambe matrix =  c(0.176088549043132, -1.35334198183339e-05) c(-1.35334198183339e-05, 0.00018743151439027) 
-## JS Gradient =  -0.009106953 0.0001457501 0.0009481293 -0.00531455 0.002285368 -0.0008790131 0.00452113 -0.0006588616 0.001080483 -0.0007568859 -0.001008128 -0.001935886 0.002112345 -0.004875766 0.001435993 -0.009254728 0.002323728 0.00488951 0.001923332 . Gradient/Objective =  3.904195e-06 -6.248376e-08 -4.064676e-07 2.278373e-06 -9.797483e-07 3.768372e-07 -1.93823e-06 2.824571e-07 -4.632081e-07 3.244806e-07 4.321891e-07 8.299236e-07 -9.055723e-07 2.090265e-06 -6.156171e-07 3.967547e-06 -9.961935e-07 -2.096156e-06 -8.245415e-07 
-## Now get Godambe matrix for pair:  YMR143W_YDL083C 
-## PSJS guess 1 Gradient =  0.5843304 1.647432 . Gradient/Objective =  1.196979e-06 3.374703e-06 
-## Godambe matrix=  c(0.19064871793159, 3.52786261361524e-05) c(3.52786261361524e-05, 2.99595130629136e-05) 
-## PSJS guess 2 Gadient =  0.914572 1.317604 . Gradient/Objective =  1.873468e-06 2.699064e-06 
-## Godambe matrix =  c(0.191042349557188, 3.37919454006841e-05) c(3.37919454006841e-05, 2.07328204908965e-05) 
-## JS Gradient =  -0.005387961 0.01907017 -0.0001079456 -0.003122727 -0.0006463962 0.001877798 0.0008750842 -0.002033853 -0.0006730407 -0.001164146 -0.001022021 -0.004271987 0.00248078 -0.005551266 0.003031497 -0.00118474 -0.003256875 -0.0004344648 -0.001100197 . Gradient/Objective =  4.425864e-06 -1.566492e-05 8.86704e-08 2.56512e-06 5.309729e-07 -1.54249e-06 -7.188254e-07 1.67068e-06 5.528597e-07 9.562707e-07 8.395248e-07 3.509162e-06 -2.037801e-06 4.560008e-06 -2.49018e-06 9.731881e-07 2.675314e-06 3.568849e-07 9.037411e-07 
-## Now get Godambe matrix for pair:  YJL177W_YKL180W 
-## PSJS guess 1 Gradient =  2.802587 1.84488 . Gradient/Objective =  2.778894e-06 1.829284e-06 
-## Godambe matrix=  c(0.142078688868349, 1.15330257515842e-05) c(1.15330257515842e-05, 6.4339489889475e-08) 
-## PSJS guess 2 Gadient =  1.214021 2.515439 . Gradient/Objective =  1.203757e-06 2.494172e-06 
-## Godambe matrix =  c(0.142279770063347, 5.99772332888173e-06) c(5.99772332888173e-06, 9.09986444340157e-06) 
-## JS Gradient =  0.01586989 -0.01029574 -0.0007284926 0.004956056 0.001478568 0.0009584457 0.001443398 -0.002333515 0.001634959 0.0007447334 0.003204144 0.001450518 0.002592178 -0.0003109869 -0.002280698 -0.004540574 0.0018578 0.0003053927 -0.009462108 . Gradient/Objective =  -8.623179e-06 5.594366e-06 3.95839e-07 -2.692959e-06 -8.034056e-07 -5.20788e-07 -7.842954e-07 1.267956e-06 -8.883831e-07 -4.046638e-07 -1.741027e-06 -7.88164e-07 -1.408505e-06 1.689801e-07 1.239256e-06 2.467199e-06 -1.009467e-06 -1.659404e-07 5.1414e-06 
-## Now get Godambe matrix for pair:  YBR191W_YPL079W 
-## PSJS guess 1 Gradient =  1.462277 -2.173428 . Gradient/Objective =  2.091344e-06 -3.108431e-06 
-## Godambe matrix=  c(0.235391443796372, -6.92719259825381e-05) c(-6.92719259825382e-05, 6.38234188867372e-05) 
-## PSJS guess 2 Gadient =  -0.4821904 -1.24682 . Gradient/Objective =  -6.896271e-07 -1.783198e-06 
-## Godambe matrix =  c(0.234552982839018, -7.23079042221658e-05) c(-7.23079042221658e-05, 7.61122572992097e-05) 
-## JS Gradient =  0.004323805 -0.0005933739 -0.001109853 -0.002797418 -0.0009767597 0.001287475 0.001947013 -0.0007530104 -0.001442935 0.0006554863 -0.001450331 -0.002192911 -0.0007378144 0.001417667 -0.004019509 0.001331398 -0.001849015 0.001559214 0.0007351734 . Gradient/Objective =  -2.943479e-06 4.039459e-07 7.55545e-07 1.904374e-06 6.649401e-07 -8.764627e-07 -1.325451e-06 5.126202e-07 9.822939e-07 -4.462296e-07 9.873289e-07 1.492849e-06 5.022754e-07 -9.650926e-07 2.736326e-06 -9.063641e-07 1.258738e-06 -1.061453e-06 -5.004775e-07 
-## Now get Godambe matrix for pair:  YER074W_YIL069C 
-## PSJS guess 1 Gradient =  4.227011 1.756418 . Gradient/Objective =  8.614212e-06 3.579398e-06 
-## Godambe matrix=  c(0.12592911427767, 0.000533983346643246) c(0.000533983346643246, 0.000676064853149048) 
-## PSJS guess 2 Gadient =  0.4719151 0.03298313 . Gradient/Objective =  9.617155e-07 6.72163e-08 
-## Godambe matrix =  c(0.125920071832097, 0.000489246692360864) c(0.000489246692360864, 0.000628471311879008) 
-## JS Gradient =  -0.01486092 0.002506353 0.000836763 0.0001665234 -0.003551537 -0.001310183 -0.001032166 0.0006223019 -2.403608e-05 0.000855165 0.005480039 -1.970462e-11 0.004150142 -1.307014e-10 0.001191048 -0.005513637 0.001029235 -0.0007325625 -0.0004611589 . Gradient/Objective =  1.205265e-05 -2.032728e-06 -6.786399e-07 -1.350555e-07 2.880403e-06 1.062597e-06 8.371173e-07 -5.047055e-07 1.949398e-08 -6.935645e-07 -4.444476e-06 1.598104e-14 -3.36589e-06 1.060027e-13 -9.659755e-07 4.471725e-06 -8.347408e-07 5.941302e-07 3.740137e-07 
-## Now get Godambe matrix for pair:  YDR418W_YEL054C 
-## PSJS guess 1 Gradient =  -0.1095266 0.8057401 . Gradient/Objective =  -1.293307e-07 9.514308e-07 
-## Godambe matrix=  c(0.147587318892524, 2.3236616134003e-05) c(2.3236616134003e-05, 3.36272003852525e-05) 
-## PSJS guess 2 Gadient =  0.9297121 6.605407 . Gradient/Objective =  1.097815e-06 7.799745e-06 
-## Godambe matrix =  c(0.147511028960624, 2.38679560116551e-05) c(2.38679560116551e-05, 7.6509296751265e-05) 
-## JS Gradient =  0.004245846 -0.0002915583 -0.0003324154 -0.0005616441 -0.001076675 -0.001651897 -0.001758808 0.0007111901 -0.002075303 0.001590421 0.003823022 0.002842552 -0.001726378 0.002318565 0.001372059 0.00162073 0.002706262 -0.0003045646 0.003459259 . Gradient/Objective =  -2.446613e-06 1.680066e-07 1.9155e-07 3.2364e-07 6.204199e-07 9.518838e-07 1.01349e-06 -4.098139e-07 1.195866e-06 -9.164589e-07 -2.202966e-06 -1.637983e-06 9.948022e-07 -1.336042e-06 -7.906307e-07 -9.339241e-07 -1.559447e-06 1.755013e-07 -1.993352e-06 
-## Now get Godambe matrix for pair:  YBL087C_YER117W 
-## PSJS guess 1 Gradient =  -4.140981 1.572491 . Gradient/Objective =  -7.411075e-06 2.814273e-06 
-## Godambe matrix=  c(0.236587204609396, -0.000461542726173106) c(-0.000461542726173106, 0.000321575863395492) 
-## PSJS guess 2 Gadient =  2.881154 1.181027 . Gradient/Objective =  5.156376e-06 2.113674e-06 
-## Godambe matrix =  c(0.238598909250218, -0.000459222529989395) c(-0.000459222529989395, 0.000310566055682233) 
-## JS Gradient =  0.02588176 -0.0004539566 -0.001169006 0.000784706 -0.01007229 -0.002276188 -0.002250213 0.003019262 -0.0003764217 -0.0008053202 0.006073751 -0.007626055 0.00280418 0.003579181 0.002297322 0.007400174 0.002717346 0.001352118 -0.007649589 . Gradient/Objective =  -1.885175e-05 3.306527e-07 8.514803e-07 -5.715637e-07 7.33645e-06 1.657929e-06 1.639009e-06 -2.199168e-06 2.741778e-07 5.865787e-07 -4.423995e-06 5.554662e-06 -2.042508e-06 -2.607002e-06 -1.673322e-06 -5.390135e-06 -1.979259e-06 -9.848553e-07 5.571804e-06 
-## Now get Godambe matrix for pair:  YLR333C_YGR027C 
-## PSJS guess 1 Gradient =  3.450596 0.2835886 . Gradient/Objective =  8.649824e-06 7.108893e-07 
-## Godambe matrix=  c(0.401827696327171, -0.00041761434767568) c(-0.00041761434767568, 7.1415650649087e-05) 
-## PSJS guess 2 Gadient =  3.559645 -2.282674 . Gradient/Objective =  8.923145e-06 -5.722095e-06 
-## Godambe matrix =  c(0.401839196537039, -0.000352097674647902) c(-0.000352097674647902, 2.2530689498636e-06) 
-## JS Gradient =  0.009613151 0.0001509736 3.741367e-05 0.002511358 -0.0005363471 -0.001146403 -0.001381705 -2.679582e-07 0.002839431 -1.922231e-05 0.00200746 -0.0005063181 0.001395824 -0.0001767847 0.003788663 0.004485652 -0.0005696113 0.002037158 0.0005811785 . Gradient/Objective =  -7.711092e-06 -1.21102e-07 -3.0011e-08 -2.01446e-06 4.302253e-07 9.195757e-07 1.108321e-06 2.1494e-10 -2.27762e-06 1.541898e-08 -1.610264e-06 4.061379e-07 -1.119646e-06 1.41806e-07 -3.039038e-06 -3.59812e-06 4.569079e-07 -1.634086e-06 -4.661864e-07 
-## Now get Godambe matrix for pair:  YMR142C_YDL082W 
-## PSJS guess 1 Gradient =  9.124574 0.8918874 . Gradient/Objective =  7.604154e-06 7.43273e-07 
-## Godambe matrix=  c(0.322824425281405, -5.44863321326065e-05) c(-5.44863321326065e-05, 0.000119018390196219) 
-## PSJS guess 2 Gadient =  13.03085 7.766958 . Gradient/Objective =  1.08595e-05 6.472741e-06 
-## Godambe matrix =  c(0.32250079488404, -5.05108291396121e-05) c(-5.0510829139612e-05, 0.000190824773833824) 
-## JS Gradient =  0.01045307 0.001328216 -0.0002634236 0.0003832692 -0.0004250763 -0.00151196 0.001195275 -1.588569e-06 0.006863336 -0.0025856 0.004456545 -5.891259e-05 -0.0006224184 -0.0007721818 -0.006614984 0.003103541 -0.003294994 0.005573302 0.005434409 . Gradient/Objective =  -5.139477e-06 -6.530461e-07 1.295179e-07 -1.884426e-07 2.08998e-07 7.433879e-07 -5.876829e-07 7.810545e-10 -3.374508e-06 1.271266e-06 -2.191157e-06 2.896565e-08 3.060255e-07 3.796599e-07 3.2524e-06 -1.525923e-06 1.620055e-06 -2.740235e-06 -2.671945e-06 
-## Now get Godambe matrix for pair:  YER102W_YBL072C 
-## PSJS guess 1 Gradient =  -8.467363 -6.324654 . Gradient/Objective =  -7.009126e-06 -5.235431e-06 
-## Godambe matrix=  c(0.292928490530092, -4.42407013677881e-05) c(-4.42407013677881e-05, 8.73871992005091e-05) 
-## PSJS guess 2 Gadient =  14.83152 -8.912334 . Gradient/Objective =  1.227718e-05 -7.377421e-06 
-## Godambe matrix =  c(0.29246091197764, -4.88299638514235e-05) c(-4.88299638514235e-05, 6.63313238770283e-05) 
-## JS Gradient =  0.01113388 -0.0009509401 0.000168294 -0.002077874 0.002257176 -0.001699633 -0.001168244 -5.760023e-05 0.003772304 7.086965e-05 0.0046657 -0.003725027 -0.001977924 0.01108835 -0.008761878 0.001520412 -0.006454081 -0.003357566 -0.001969245 . Gradient/Objective =  -5.465124e-06 4.66774e-07 -8.260801e-08 1.019935e-06 -1.107947e-06 8.342741e-07 5.734387e-07 2.827338e-08 -1.851655e-06 -3.478674e-08 -2.290183e-06 1.828449e-06 9.708744e-07 -5.442777e-06 4.300814e-06 -7.463021e-07 3.16802e-06 1.648079e-06 9.666143e-07</code></pre>
-<pre class="r"><code>rownames(Godambe.guess.1) &lt;- c(&quot;Tau&quot;, &quot;Tau.logit&quot;, &quot;logit.Tau&quot;, &quot;logit&quot;)
+}
+rownames(Godambe.guess.1) &lt;- c(&quot;Tau&quot;, &quot;Tau.logit&quot;, &quot;logit.Tau&quot;, &quot;logit&quot;)
 rownames(Godambe.guess.2) &lt;- c(&quot;Tau&quot;, &quot;Tau.logit&quot;, &quot;logit.Tau&quot;, &quot;logit&quot;)
 #rownames(Godambe.JS) &lt;- c(&quot;AC&quot;, &quot;G&quot;, &quot;T&quot;, rownames(JS.HKY.rv.nonclock.summary)[-(1:6)])
 colnames(Godambe.guess.1) &lt;- filtered.pairs
 colnames(Godambe.guess.2) &lt;- filtered.pairs
 colnames(Godambe.JS) &lt;- filtered.pairs
+
 for (pair in filtered.pairs){
   gradient.file &lt;- paste(&quot;./summary/PSJS_HKY_&quot;, pair, &quot;_One_rate_Guess_1_rv_SCOK_nonclock_gradient.txt&quot;, sep = &quot;&quot;)
   gradient.list &lt;- read.table(gradient.file)
@@ -488,6 +406,21 @@ round(show.mat, digits = 2)</code></pre>
 ## YLR333C_YGR027C  9.88  5.83 16.73 0.60 0.27 1.33  8.06 4.69 13.87
 ## YMR142C_YDL082W 14.37  8.41 24.53 1.12 0.56 2.23  8.42 4.88 14.52
 ## YER102W_YBL072C 14.77  9.67 22.54 0.82 0.44 1.52  6.19 3.91  9.80</code></pre>
+</div>
+<div id="update" class="section level4">
+<h4>12302017 update</h4>
+<p>show % changes due to IGC</p>
+<pre class="r"><code>num.IGC &lt;- colSums(JS.HKY.rv.nonclock.summary[24:36, ])
+num.Mut &lt;- colSums(JS.HKY.rv.nonclock.summary[c(37, 40:49),])
+num.IGC/(num.IGC + num.Mut)</code></pre>
+<pre><code>## YLR406C_YDL075W YER131W_YGL189C YML026C_YDR450W YNL301C_YOL120C 
+##       0.2397276       0.2740727       0.3950604       0.3172729 
+## YNL069C_YIL133C YMR143W_YDL083C YJL177W_YKL180W YBR191W_YPL079W 
+##       0.2626081       0.3084136       0.2772699       0.3996088 
+## YER074W_YIL069C YDR418W_YEL054C YBL087C_YER117W YLR333C_YGR027C 
+##       0.3927562       0.2685100       0.3839268       0.3854901 
+## YMR142C_YDL082W YER102W_YBL072C 
+##       0.4227126       0.4319034</code></pre>
 <p>Now save workspace.</p>
 <pre class="r"><code>save.image(&quot;./PSJS_Summary.RData&quot;)</code></pre>
 </div>

@@ -546,6 +546,9 @@ if __name__ == '__main__':
     #results = test.objective_and_gradient(True, test.x)
     #print results
     test.get_mle(stringent_level = 'high')
+    for js in test.jsgeneconv_list:
+        js.get_expectedNumGeneconv()
+        js.get_expectedMutationNum()
     test.get_summary(summary_file_list)
     test.get_Godambe_matrix(test.x, gradient_file_list, hessian_file_list)
     

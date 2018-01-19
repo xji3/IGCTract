@@ -127,3 +127,146 @@ missing.1.summary
 write.table(missing.0.species, "./missing_0_species_list.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 write.table(missing.1.species, "./missing_1_species_list.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 ```
+
+####01042018 update
+
+```{r}
+# count groups
+group.list <- NULL
+for(name in filtered.alignment.files){
+  group.name <- strsplit(name, "\\.")[[1]][1]
+  group.list <- c(group.list, group.name)
+}
+unique.groups <- unique(group.list)
+length(unique.groups)
+unique.groups
+
+missing.0.groups <- NULL
+for(name in missing.0.species){
+  group.name <- strsplit(name, "\\.")[[1]][1]
+  missing.0.groups <- c(missing.0.groups, group.name)
+}
+missing.0.groups <- unique(missing.0.groups)
+length(missing.0.groups)
+missing.0.groups
+
+# Now add up total number of sites analyzed
+total.sites <- 0
+for(seq.file in missing.0.species){
+  info <- read.table(paste("./intronAlignmentSeparated/", seq.file, sep = ""), as.is = TRUE)
+  total.sites <- total.sites + nchar(info[1, 2])
+}
+total.sites
+```
+
+
+####01172018 update
+
+```{r}
+# Count how many files that contain species with only one paralog
+ghost.lineage.files <- NULL
+for(seq.file in filtered.alignment.files){
+  info <- read.table(paste("./intronAlignmentSeparated/", seq.file, sep = ""), as.is = TRUE)
+  for(row.num in 1:11){
+    seq <- strsplit(info[row.num, 2], "")[[1]]
+    percent.gap <- length(grep("-", seq))/length(seq)
+    if (percent.gap > 1 - 1e-6){
+      info[row.num, 1] <- NA
+    }   
+  }
+  for(row.iter in 1:5){
+    if(sum(is.na(info[c(row.iter*2-1, row.iter*2), 1])) == 1){
+      ghost.lineage.files <- c(ghost.lineage.files, seq.file)
+    }
+  }
+}
+ghost.lineage.files <- unique(ghost.lineage.files)
+# number of alignment files that contain ghost lineage
+length(ghost.lineage.files)
+
+ghost.groups <- NULL
+for(name in ghost.lineage.files){
+  group.name <- strsplit(name, "\\.")[[1]][1]
+  ghost.groups <- c(ghost.groups, group.name)
+}
+ghost.groups <- unique(ghost.groups)
+# number of gene pairs that contain ghost lineage
+length(ghost.groups)
+```
+
+####01182018 update
+
+Got human segmental duplication file from : http://humanparalogy.gs.washington.edu/build38/data/GRCh38GenomicSuperDup.tab
+
+Ensembl ID | Chrm | name
+------------- | ------------- |  ------------- 
+[ENSG00000109272](http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000109272;r=4:73853189-73854155;t=ENST00000226524) | 4 | PF4V1
+[ENSG00000163737](http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000163737;r=4:73981077-73982124;t=ENST00000296029) | 4 | PF4
+[ENSG00000136943](http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000136943;r=9:97029679-97039643) | 9 | CTSV
+[ENSG00000135047](http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000135047;r=9:87725519-87731393) | 9 | CTSL
+[ENSG00000158485](http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000158485;r=1:158327951-158331531) | 1 | CD1B
+[ENSG00000158477](https://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000158477;r=1:158254137-158258269;t=ENST00000289429) | 1 | CD1A
+[ENSG00000163564](http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000163564;r=1:158930796-158977054) | 1 | PYHIN1
+[ENSG00000163563](https://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000163563;r=1:158831317-158849506) | 1 | PYHIN3
+[ENSG00000187626](http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000187626;r=6:28244623-28252224;t=ENST00000377294) | 6 | ZKSCAN4
+[ENSG00000189298](https://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000189298;r=6:28349914-28369177) | 6 |ZKSCAN3
+
+After all, I give up on checking the duplication regions.  It's pretty hard to locate even one gene into the start and end point that Eichler's lab provided. 
+I don't know how the pairs were constructed.
+
+```{r}
+sg.dup.data <- read.table("~/Downloads/GRCh38GenomicSuperDup.tab", header = FALSE, 
+                          stringsAsFactors = FALSE)
+dup.header <- readLines("~/Downloads/GRCh37GenomicSuperDup.tab", n=1)
+colnames(sg.dup.data) <- strsplit(dup.header, "\t")[[1]]
+boundaries <- c(158327951, 158331531, 158254137, 158258269, 158930796, 158977054, 158831317, 158849506)
+boundaries.1.1 <- c(158327951, 158331531)
+boundaries.1.2 <- c(158254137, 158258269)
+boundaries.2.1 <- c(158930796, 158977054)
+boundaries.2.2 <- c(158831317, 158849506)
+
+same.region <- FALSE
+pair.1.region <- FALSE
+pair.2.region <- FALSE
+start.list <- NULL
+end.list <- NULL
+store.row.num.list <- NULL
+for(row.num in 1:dim(sg.dup.data)[1]){
+  if (substring(sg.dup.data[row.num, "chrom"], 4) == "1" ){
+      # & substring(sg.dup.data[row.num, "otherChrom"], 4) == "1"){
+    sg.start.1 <- sg.dup.data[row.num, "chromStart"]
+    sg.end.1 <- sg.dup.data[row.num, "chromEnd"]
+    sg.start.2 <- sg.dup.data[row.num, "otherStart"]
+    sg.end.2 <- sg.dup.data[row.num, "otherEnd"]
+    
+    sg.start <- min(c(sg.start.1, sg.start.2))
+    sg.end <- max(c(sg.end.1, sg.end.2))
+    
+    if(sg.start < min(boundaries) & sg.end > max(boundaries)){
+      same.region <- TRUE
+      store.row.num.list <- c(store.row.num.list, row.num)
+    }
+    if(sg.start < min(boundaries.1.1) & sg.end > max(boundaries.1.1)){
+      pair.1.region <- TRUE
+    }
+
+    if(sg.start < min(boundaries.1.2) & max(boundaries.1.2) < sg.end){
+      pair.1.region <- TRUE
+    }
+
+    if((sg.start.1 < min(boundaries.2.1) & sg.end.1 > min(boundaries.2.1)) 
+       | (sg.start.2 < min(boundaries.2.1) & sg.end.2 > min(boundaries.2.1))){
+      pair.2.region <- TRUE
+    }
+
+    # if(sg.start < min(boundaries.2.2) & max(boundaries.2.2) < sg.end){
+    #   pair.2.region <- TRUE
+    # }    
+    # 
+    start.list <- c(start.list, sg.dup.data[row.num, "chromStart"])
+    end.list <- c(end.list, sg.dup.data[row.num, "chromEnd"])
+  }
+}
+
+
+```

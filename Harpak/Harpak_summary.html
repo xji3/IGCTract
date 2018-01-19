@@ -214,13 +214,17 @@ for(guess in c(1)){
 }
 
 # read in IS-IGC estimate
-summary_file = paste( &quot;./summary/&quot;, file.names[1], &quot;_guess_1_HKY_JS_summary.txt&quot;, sep = &quot;&quot;)
+JS.HKY.results &lt;- NULL
+for(name in file.names){
+summary_file = paste( &quot;./summary/&quot;, name, &quot;_guess_1_HKY_JS_summary.txt&quot;, sep = &quot;&quot;)
 all &lt;- readLines(summary_file, n = -1)
-col.names &lt;- &quot;HKY+IS-IGC&quot;
+col.names &lt;- name
 row.names &lt;- strsplit(all[length(all)], ' ')[[1]][-1]
 JS.HKY &lt;- as.matrix(read.table(summary_file, 
                                     row.names = row.names, 
-                                    col.names = col.names))</code></pre>
+                                    col.names = col.names))
+JS.HKY.results &lt;- cbind(JS.HKY.results, JS.HKY)
+}</code></pre>
 <p>Now show estimates and 95% C.I.</p>
 <pre class="r"><code>show.mat &lt;- rbind(exp(-ll.list[, 7]),
                   exp(log(exp(-ll.list[, 7])-1.0)-1.96*sqrt(Godambe.Harpak[4,]))+1.0, 
@@ -247,6 +251,16 @@ round(show.mat, digits = 2)</code></pre>
 ## IS-IGC Tau      0.44    0.44
 ## min             0.43    0.43
 ## max             0.44    0.44</code></pre>
+<div id="update" class="section level4">
+<h4>12302017 update</h4>
+<p>show percent changes due to IGC</p>
+<pre class="r"><code>num.IGC &lt;- sum(rowSums(JS.HKY.results[20:30,]))
+num.Mut &lt;- sum(rowSums(JS.HKY.results[c(31, 34:41),]))
+num.IGC/(num.IGC + num.Mut)</code></pre>
+<pre><code>## [1] 0.09328172</code></pre>
+<p>Now save workspace.</p>
+<pre class="r"><code>save.image(&quot;./Harpak_Summary.RData&quot;)</code></pre>
+</div>
 
 
 

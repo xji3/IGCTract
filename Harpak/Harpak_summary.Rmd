@@ -88,14 +88,17 @@ for(guess in c(1)){
 }
 
 # read in IS-IGC estimate
-summary_file = paste( "./summary/", file.names[1], "_guess_1_HKY_JS_summary.txt", sep = "")
+JS.HKY.results <- NULL
+for(name in file.names){
+summary_file = paste( "./summary/", name, "_guess_1_HKY_JS_summary.txt", sep = "")
 all <- readLines(summary_file, n = -1)
-col.names <- "HKY+IS-IGC"
+col.names <- name
 row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
 JS.HKY <- as.matrix(read.table(summary_file, 
                                     row.names = row.names, 
                                     col.names = col.names))
-
+JS.HKY.results <- cbind(JS.HKY.results, JS.HKY)
+}
 ```
 
 Now show estimates and 95% C.I.
@@ -116,4 +119,19 @@ colnames(show.mat) <- paste("Guess", c(1, 3))
 rownames(show.mat) <- c("tract_length", "min", "max", "PS-IGC Tau", "min", "max",
                         "IS-IGC Tau", "min", "max")
 round(show.mat, digits = 2)
+```
+
+#### 12302017 update
+show percent changes due to IGC
+
+```{r}
+num.IGC <- sum(rowSums(JS.HKY.results[20:30,]))
+num.Mut <- sum(rowSums(JS.HKY.results[c(31, 34:41),]))
+num.IGC/(num.IGC + num.Mut)
+```
+
+Now save workspace.
+
+```{r}
+save.image("./Harpak_Summary.RData")
 ```
