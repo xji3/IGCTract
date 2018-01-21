@@ -270,3 +270,48 @@ for(row.num in 1:dim(sg.dup.data)[1]){
 
 
 ```
+
+
+#### 01212018 update
+
+Check if Harpak et al removed 50bp flanking region of the introns.
+
+```{r}
+library(biomaRt)
+Ensembl.id.list <- c("ENSG00000109272", "ENSG00000163737", "ENSG00000136943", "ENSG00000135047", 
+                     "ENSG00000158485","ENSG00000158477", "ENSG00000163564", "ENSG00000163563", "ENSG00000187626")
+#                     "ENSG0000018929")  This one has trouble using getSequence()
+group.id.list <- c()
+mart <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
+
+for(Ensembl.id in Ensembl.id.list){
+  exon.seq <- getSequence(id = Ensembl.id, type = "ensembl_gene_id", seqType = "gene_exon", mart = mart)
+  exon.intron.seq <- getSequence(id = Ensembl.id[1], type = "ensembl_gene_id", seqType = "gene_exon_intron", mart = mart)
+  
+  exon.pos.list <- NULL
+  for(exon in exon.seq$gene_exon){
+    exon.pos.list <- c(exon.pos.list, gregexpr(exon, exon.intron.seq$gene_exon_intron[1], perl = TRUE)[[1]][1])
+  }
+  intron.length.list <- NULL
+  intron.list <- NULL
+  left.seq <- exon.intron.seq$gene_exon_intron[1]
+  for(exon in exon.seq$gene_exon[order(exon.pos.list)]){
+    new.split <- strsplit(left.seq, exon, perl = TRUE)[[1]]
+    if(length(new.split) == 1){
+      left.seq <- new.split[1]
+      intron.length.list <- c(intron.length.list, nchar(new.split[1]))
+      intron.list <- c(intron.list, new.split[1])
+    }else{
+      if(nchar(new.split[1])){
+        intron.length.list <- c(intron.length.list, nchar(new.split[1]))
+        intron.list <- c(intron.list, new.split[1])
+      }
+      left.seq <- new.split[2]
+    }
+    
+  }
+  cat("Ensembl ID: ", Ensembl.id, "\n", 
+      "Intron lengths: ", intron.length.list, "\n", 
+      "# Intron length > 98: ", sum(intron.length.list > 98), "\n")
+}
+```

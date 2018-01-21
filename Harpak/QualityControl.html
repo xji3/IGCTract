@@ -525,62 +525,182 @@ length(ghost.groups)</code></pre>
 <table>
 <thead>
 <tr class="header">
-<th>Table Header</th>
-<th>Second Header</th>
+<th>Ensembl ID</th>
+<th>Chrm</th>
+<th>name</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Table Cell</td>
-<td>Cell 2</td>
+<td><a href="http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000109272;r=4:73853189-73854155;t=ENST00000226524">ENSG00000109272</a></td>
+<td>4</td>
+<td>PF4V1</td>
 </tr>
 <tr class="even">
-<td>Cell 3</td>
-<td>Cell 4</td>
+<td><a href="http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000163737;r=4:73981077-73982124;t=ENST00000296029">ENSG00000163737</a></td>
+<td>4</td>
+<td>PF4</td>
+</tr>
+<tr class="odd">
+<td><a href="http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000136943;r=9:97029679-97039643">ENSG00000136943</a></td>
+<td>9</td>
+<td>CTSV</td>
+</tr>
+<tr class="even">
+<td><a href="http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000135047;r=9:87725519-87731393">ENSG00000135047</a></td>
+<td>9</td>
+<td>CTSL</td>
+</tr>
+<tr class="odd">
+<td><a href="http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000158485;r=1:158327951-158331531">ENSG00000158485</a></td>
+<td>1</td>
+<td>CD1B</td>
+</tr>
+<tr class="even">
+<td><a href="https://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000158477;r=1:158254137-158258269;t=ENST00000289429">ENSG00000158477</a></td>
+<td>1</td>
+<td>CD1A</td>
+</tr>
+<tr class="odd">
+<td><a href="http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000163564;r=1:158930796-158977054">ENSG00000163564</a></td>
+<td>1</td>
+<td>PYHIN1</td>
+</tr>
+<tr class="even">
+<td><a href="https://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000163563;r=1:158831317-158849506">ENSG00000163563</a></td>
+<td>1</td>
+<td>PYHIN3</td>
+</tr>
+<tr class="odd">
+<td><a href="http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000187626;r=6:28244623-28252224;t=ENST00000377294">ENSG00000187626</a></td>
+<td>6</td>
+<td>ZKSCAN4</td>
+</tr>
+<tr class="even">
+<td><a href="https://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000189298;r=6:28349914-28369177">ENSG00000189298</a></td>
+<td>6</td>
+<td>ZKSCAN3</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>library(biomaRt)
-sg.dup.data &lt;- read.table(&quot;~/Downloads/GRCh38GenomicSuperDup.tab&quot;, header = TRUE, 
+<p>After all, I give up on checking the duplication regions. It’s pretty hard to locate even one gene into the start and end point that Eichler’s lab provided. I don’t know how the pairs were constructed.</p>
+<pre class="r"><code>sg.dup.data &lt;- read.table(&quot;~/Downloads/GRCh38GenomicSuperDup.tab&quot;, header = FALSE, 
                           stringsAsFactors = FALSE)
+dup.header &lt;- readLines(&quot;~/Downloads/GRCh37GenomicSuperDup.tab&quot;, n=1)
+colnames(sg.dup.data) &lt;- strsplit(dup.header, &quot;\t&quot;)[[1]]
+boundaries &lt;- c(158327951, 158331531, 158254137, 158258269, 158930796, 158977054, 158831317, 158849506)
+boundaries.1.1 &lt;- c(158327951, 158331531)
+boundaries.1.2 &lt;- c(158254137, 158258269)
+boundaries.2.1 &lt;- c(158930796, 158977054)
+boundaries.2.2 &lt;- c(158831317, 158849506)
 
-# mart &lt;- useMart(&quot;ensembl&quot;)
-# datasets &lt;- listDatasets(mart)
-# mart &lt;- useDataset(&quot;hsapiens_gene_ensembl&quot;,mart)
-#listFilters(mart)
-#listEnsembl()
-# Now construct a list of ensembl ids that are located within segmental duplication regions
-sg.gene.id.list &lt;- &quot;~/GitFolders/YeastIGCTract/Harpak/Segmental_Dup_Gene_ids.txt&quot;
-# if (file.exists(sg.gene.id.list)){
-#   sg.gene.ensembl.ids &lt;- read.table(sg.gene.id.list, stringsAsFactors = FALSE)[, 1]
-# }else{
-#   sg.gene.ensembl.ids &lt;- NULL
-#   for (row.num in 1:dim(sg.dup.data)[1]){
-#     dup1_genes &lt;- 
-#       getBM(attributes=c('ensembl_gene_id','chromosome_name','start_position','end_position'), 
-#             filters = c('chromosome_name', &quot;start&quot;, &quot;end&quot;), 
-#             values = list(substring(sg.dup.data[row.num, &quot;chrom&quot;], 4), 
-#                           sg.dup.data[row.num, &quot;chromStart&quot;], 
-#                           sg.dup.data[row.num, &quot;chromEnd&quot;]), mart = mart)
-#     
-#     dup2_genes &lt;- 
-#       getBM(attributes=c('ensembl_gene_id','chromosome_name','start_position','end_position'), 
-#             filters = c('chromosome_name', &quot;start&quot;, &quot;end&quot;), 
-#             values = list(substring(sg.dup.data[row.num, &quot;otherChrom&quot;], 4), 
-#                           sg.dup.data[row.num, &quot;otherStart&quot;], 
-#                           sg.dup.data[row.num, &quot;otherEnd&quot;]), mart = mart)
-#     
-#     if ( dim(dup1_genes)[1] != 0 &amp; dim(dup2_genes)[1] != 0){
-#       sg.gene.ensembl.ids &lt;- unique(c(sg.gene.ensembl.ids, dup1_genes[, 1], dup2_genes[, 2]))
-#     }
-#     if (row.num %% 1000 == 0){
-#       print(paste(toString(round(row.num / dim(sg.dup.data)[1]  * 100, 2)), &quot;%&quot;, sep = &quot;&quot;))
-#     }
-#   }
-#   write.table(sg.gene.ensembl.ids[substr(sg.gene.ensembl.ids, 1, 4) == &quot;ENSG&quot;], 
-#               sg.gene.id.list, sep = &quot;/n&quot;, 
-#               row.names = FALSE, col.names = FALSE)
-# }</code></pre>
+same.region &lt;- FALSE
+pair.1.region &lt;- FALSE
+pair.2.region &lt;- FALSE
+start.list &lt;- NULL
+end.list &lt;- NULL
+store.row.num.list &lt;- NULL
+for(row.num in 1:dim(sg.dup.data)[1]){
+  if (substring(sg.dup.data[row.num, &quot;chrom&quot;], 4) == &quot;1&quot; ){
+      # &amp; substring(sg.dup.data[row.num, &quot;otherChrom&quot;], 4) == &quot;1&quot;){
+    sg.start.1 &lt;- sg.dup.data[row.num, &quot;chromStart&quot;]
+    sg.end.1 &lt;- sg.dup.data[row.num, &quot;chromEnd&quot;]
+    sg.start.2 &lt;- sg.dup.data[row.num, &quot;otherStart&quot;]
+    sg.end.2 &lt;- sg.dup.data[row.num, &quot;otherEnd&quot;]
+    
+    sg.start &lt;- min(c(sg.start.1, sg.start.2))
+    sg.end &lt;- max(c(sg.end.1, sg.end.2))
+    
+    if(sg.start &lt; min(boundaries) &amp; sg.end &gt; max(boundaries)){
+      same.region &lt;- TRUE
+      store.row.num.list &lt;- c(store.row.num.list, row.num)
+    }
+    if(sg.start &lt; min(boundaries.1.1) &amp; sg.end &gt; max(boundaries.1.1)){
+      pair.1.region &lt;- TRUE
+    }
+
+    if(sg.start &lt; min(boundaries.1.2) &amp; max(boundaries.1.2) &lt; sg.end){
+      pair.1.region &lt;- TRUE
+    }
+
+    if((sg.start.1 &lt; min(boundaries.2.1) &amp; sg.end.1 &gt; min(boundaries.2.1)) 
+       | (sg.start.2 &lt; min(boundaries.2.1) &amp; sg.end.2 &gt; min(boundaries.2.1))){
+      pair.2.region &lt;- TRUE
+    }
+
+    # if(sg.start &lt; min(boundaries.2.2) &amp; max(boundaries.2.2) &lt; sg.end){
+    #   pair.2.region &lt;- TRUE
+    # }    
+    # 
+    start.list &lt;- c(start.list, sg.dup.data[row.num, &quot;chromStart&quot;])
+    end.list &lt;- c(end.list, sg.dup.data[row.num, &quot;chromEnd&quot;])
+  }
+}</code></pre>
+</div>
+<div id="update-3" class="section level4">
+<h4>01212018 update</h4>
+<p>Check if Harpak et al removed 50bp flanking region of the introns.</p>
+<pre class="r"><code>library(biomaRt)
+Ensembl.id.list &lt;- c(&quot;ENSG00000109272&quot;, &quot;ENSG00000163737&quot;, &quot;ENSG00000136943&quot;, &quot;ENSG00000135047&quot;, 
+                     &quot;ENSG00000158485&quot;,&quot;ENSG00000158477&quot;, &quot;ENSG00000163564&quot;, &quot;ENSG00000163563&quot;, &quot;ENSG00000187626&quot;)
+#                     &quot;ENSG0000018929&quot;)  This one has trouble using getSequence()
+group.id.list &lt;- c()
+mart &lt;- useMart(&quot;ensembl&quot;, dataset=&quot;hsapiens_gene_ensembl&quot;)
+
+for(Ensembl.id in Ensembl.id.list){
+  exon.seq &lt;- getSequence(id = Ensembl.id, type = &quot;ensembl_gene_id&quot;, seqType = &quot;gene_exon&quot;, mart = mart)
+  exon.intron.seq &lt;- getSequence(id = Ensembl.id[1], type = &quot;ensembl_gene_id&quot;, seqType = &quot;gene_exon_intron&quot;, mart = mart)
+  
+  exon.pos.list &lt;- NULL
+  for(exon in exon.seq$gene_exon){
+    exon.pos.list &lt;- c(exon.pos.list, gregexpr(exon, exon.intron.seq$gene_exon_intron[1], perl = TRUE)[[1]][1])
+  }
+  intron.length.list &lt;- NULL
+  left.seq &lt;- exon.intron.seq$gene_exon_intron[1]
+  for(exon in exon.seq$gene_exon[order(exon.pos.list)]){
+    new.split &lt;- strsplit(left.seq, exon, perl = TRUE)[[1]]
+    if(length(new.split) == 1){
+      left.seq &lt;- new.split[1]
+      intron.length.list &lt;- c(intron.length.list, nchar(new.split[1]))
+    }else{
+      if(nchar(new.split[1])){
+        intron.length.list &lt;- c(intron.length.list, nchar(new.split[1]))
+      }
+      left.seq &lt;- new.split[2]
+    }
+    
+  }
+  cat(&quot;Ensembl ID: &quot;, Ensembl.id, &quot;\n&quot;, 
+      &quot;Intron lengths: &quot;, intron.length.list, &quot;\n&quot;, 
+      &quot;# Intron length &gt; 98: &quot;, sum(intron.length.list &gt; 98), &quot;\n&quot;)
+}</code></pre>
+<pre><code>## Ensembl ID:  ENSG00000109272 
+##  Intron lengths:  320 125 
+##  # Intron length &gt; 98:  2 
+## Ensembl ID:  ENSG00000163737 
+##  Intron lengths:  319 125 
+##  # Intron length &gt; 98:  2 
+## Ensembl ID:  ENSG00000136943 
+##  Intron lengths:  296 9392 522 357 302 94 7612 543 829 684 1677 2979 
+##  # Intron length &gt; 98:  11 
+## Ensembl ID:  ENSG00000135047 
+##  Intron lengths:  4995 4995 4995 4995 4995 1195 3691 324 3244 100 188 2584 2584 763 1658 645 509 509 509 509 
+##  # Intron length &gt; 98:  20 
+## Ensembl ID:  ENSG00000158485 
+##  Intron lengths:  300 2845 665 203 1584 520 663 
+##  # Intron length &gt; 98:  7 
+## Ensembl ID:  ENSG00000158477 
+##  Intron lengths:  356 653 503 356 169 
+##  # Intron length &gt; 98:  5 
+## Ensembl ID:  ENSG00000163564 
+##  Intron lengths:  563 45278 45278 45278 45278 5114 1221 38512 537 37934 282 1720 1390 896 31663 28255 2929 2929 
+##  # Intron length &gt; 98:  18 
+## Ensembl ID:  ENSG00000163563 
+##  Intron lengths:  17949 10576 7088 860 539 1464 3503 1724 1590 1273 2 
+##  # Intron length &gt; 98:  10 
+## Ensembl ID:  ENSG00000187626 
+##  Intron lengths:  1723 1537 974 993 
+##  # Intron length &gt; 98:  4</code></pre>
 </div>
 
 
