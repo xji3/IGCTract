@@ -154,10 +154,9 @@ class Run_PSJS_Harpak_all:
 
     def get_gradient_hessian(self, x, gradient_file_list, hessian_file_list):
         for i, psjsgeneconv in enumerate(self.psjsgeneconv_list):
-<<<<<<< HEAD
+
             psjsgeneconv.get_gradient_hessian(x, gradient_file_list[i], hessian_file_list[i])
-=======
->>>>>>> d3a35fbd4733e2578ee1da872cda4e739767da16
+
             if os.path.isfile(gradient_file_list[i]) and os.path.isfile(hessian_file_list[i]):
                 continue
             else:
@@ -486,8 +485,7 @@ if __name__ == '__main__':
 #######################################################################################################################################
 ###############################           IS-IGC results              #################################################################
 #######################################################################################################################################
-####
-<<<<<<< HEAD
+
     seq_file_list = np.loadtxt('missing_0_species_list.txt', dtype = str)
     alignment_file_list = ['./prepared_input/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
                            + '.fasta' for seq_file in seq_file_list]
@@ -558,7 +556,7 @@ if __name__ == '__main__':
 
 
                           
-=======
+
 ##    seq_file_list = np.loadtxt('missing_0_species_list.txt', dtype = str)
 ##    alignment_file_list = ['./prepared_input/' + seq_file.replace('.pos.seq.formatted', '').replace('.', '_') \
 ##                           + '.fasta' for seq_file in seq_file_list]
@@ -629,4 +627,3 @@ if __name__ == '__main__':
 ##
 ##
 ##                          
->>>>>>> d3a35fbd4733e2578ee1da872cda4e739767da16

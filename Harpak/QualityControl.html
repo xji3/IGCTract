@@ -656,15 +656,18 @@ for(Ensembl.id in Ensembl.id.list){
     exon.pos.list &lt;- c(exon.pos.list, gregexpr(exon, exon.intron.seq$gene_exon_intron[1], perl = TRUE)[[1]][1])
   }
   intron.length.list &lt;- NULL
+  intron.list &lt;- NULL
   left.seq &lt;- exon.intron.seq$gene_exon_intron[1]
   for(exon in exon.seq$gene_exon[order(exon.pos.list)]){
     new.split &lt;- strsplit(left.seq, exon, perl = TRUE)[[1]]
     if(length(new.split) == 1){
       left.seq &lt;- new.split[1]
       intron.length.list &lt;- c(intron.length.list, nchar(new.split[1]))
+      intron.list &lt;- c(intron.list, new.split[1])
     }else{
       if(nchar(new.split[1])){
         intron.length.list &lt;- c(intron.length.list, nchar(new.split[1]))
+        intron.list &lt;- c(intron.list, new.split[1])
       }
       left.seq &lt;- new.split[2]
     }
@@ -687,13 +690,13 @@ for(Ensembl.id in Ensembl.id.list){
 ##  Intron lengths:  4995 4995 4995 4995 4995 1195 3691 324 3244 100 188 2584 2584 763 1658 645 509 509 509 509 
 ##  # Intron length &gt; 98:  20 
 ## Ensembl ID:  ENSG00000158485 
-##  Intron lengths:  300 2845 665 203 1584 520 663 
+##  Intron lengths:  300 2845 665 203 1419 355 663 
 ##  # Intron length &gt; 98:  7 
 ## Ensembl ID:  ENSG00000158477 
 ##  Intron lengths:  356 653 503 356 169 
 ##  # Intron length &gt; 98:  5 
 ## Ensembl ID:  ENSG00000163564 
-##  Intron lengths:  563 45278 45278 45278 45278 5114 1221 38512 537 37934 282 1720 1390 896 31663 28255 2929 2929 
+##  Intron lengths:  563 45278 45278 45278 45278 5114 1221 38512 537 37807 155 1720 1390 896 32012 28604 2929 326 
 ##  # Intron length &gt; 98:  18 
 ## Ensembl ID:  ENSG00000163563 
 ##  Intron lengths:  17949 10576 7088 860 539 1464 3503 1724 1590 1273 2 
