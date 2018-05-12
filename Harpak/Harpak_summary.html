@@ -142,18 +142,18 @@ for (guess in c(1, 3)){
 }
 ll.list</code></pre>
 <pre><code>##          [,1]       [,2]       [,3]       [,4]      [,5]      [,6]
-## [1,] 68204675 -0.6335329 -0.5363740 -0.9599219 0.7569778 -6.607433
-## [2,] 68203263 -0.6333368 -0.5361947 -0.9592133 0.7570566 -6.565046
+## [1,] 68204366 -0.6335325 -0.5363737 -0.9599213 0.7569301 -6.607629
+## [2,] 68203201 -0.6333362 -0.5361942 -0.9592124 0.7569903 -6.565046
 ##           [,7]       [,8]      [,9]     [,10]     [,11]     [,12]
-## [1,] -5.960096 -0.6742345 -1.537324 -3.423576 -4.009062 -5.005923
-## [2,] -5.914711 -0.6730182 -1.537520 -3.423201 -4.008621 -5.001039
+## [1,] -5.960093 -0.6726386 -1.536764 -3.423563 -4.008957 -5.005737
+## [2,] -5.914862 -0.6723220 -1.537152 -3.423242 -4.008506 -5.001042
 ##          [,13]     [,14]     [,15]     [,16]     [,17]
-## [1,] -4.222323 -3.848466 -4.745018 -4.513104 -4.463446
-## [2,] -4.223071 -3.849641 -4.744551 -4.515574 -4.466165</code></pre>
+## [1,] -4.222480 -3.848757 -4.745029 -4.513354 -4.463534
+## [2,] -4.223208 -3.849794 -4.744534 -4.515647 -4.465988</code></pre>
 <pre class="r"><code># guess 3 has larger lnL   
 # Tau estimate
 exp(ll.list[, 6] - ll.list[, 7])</code></pre>
-<pre><code>## [1] 0.5234380 0.5218708</code></pre>
+<pre><code>## [1] 0.5233333 0.5219499</code></pre>
 <pre class="r"><code># Now calculate Godambe matrix
 Godambe.Harpak &lt;- NULL
 for(guess in c(1,3)){
@@ -242,9 +242,9 @@ rownames(show.mat) &lt;- c(&quot;tract_length&quot;, &quot;min&quot;, &quot;max&
                         &quot;IS-IGC Tau&quot;, &quot;min&quot;, &quot;max&quot;)
 round(show.mat, digits = 2)</code></pre>
 <pre><code>##              Guess 1 Guess 3
-## tract_length  387.65  370.45
-## min           374.27  357.54
-## max           401.50  383.82
+## tract_length  387.65  370.50
+## min           374.27  357.59
+## max           401.50  383.88
 ## PS-IGC Tau      0.52    0.52
 ## min             0.52    0.52
 ## max             0.52    0.52
@@ -258,6 +258,46 @@ round(show.mat, digits = 2)</code></pre>
 num.Mut &lt;- sum(rowSums(JS.HKY.results[c(31, 34:41),]))
 num.IGC/(num.IGC + num.Mut)</code></pre>
 <pre><code>## [1] 0.09328172</code></pre>
+</div>
+<div id="update-1" class="section level4">
+<h4>02202018 update</h4>
+<p>summarize estimated average tract length from individual datasets of Harpak’s</p>
+<pre class="r"><code>group.summary.files &lt;- c(&quot;group_317&quot;, &quot;group_542&quot;, 
+                         &quot;group_693&quot;, &quot;group_737&quot;, 
+                         &quot;group_972&quot;)
+group.introns &lt;- list(
+  group_317 = c(1, 2), 
+  group_542 = c(1, 2, 3, 4, 6), 
+  group_693 = c(2, 3, 4, 5), 
+  group_737 = c(2, 3, 4, 5, 6), 
+  group_972 = c(2, 3, 4, 5))
+for(group in group.summary.files){
+  for(guess in 1:3){
+    lnL &lt;- 0.0
+    for(intron in get(group, group.introns)){
+      log.file &lt;- paste(&quot;./log/PSJS_&quot;, group, &quot;_intron&quot;, intron, &quot;_guess_&quot;, guess, &quot;_IndGroup_log.txt&quot;, sep = &quot;&quot;)
+      
+      logs &lt;- as.matrix(read.table(log.file))
+      lnL &lt;- lnL - logs[dim(logs)[1], 1]
+    }
+    cat(group, &quot;  estimated tract length = &quot;, exp(-logs[dim(logs)[1], 7]), &quot;for guess &quot;, guess, &quot;  lnL = &quot;, lnL,  &quot;\n&quot;)
+  }
+}</code></pre>
+<pre><code>## group_317   estimated tract length =  5.126164 for guess  1   lnL =  -194676.1 
+## group_317   estimated tract length =  5.974503 for guess  2   lnL =  -194676.1 
+## group_317   estimated tract length =  5.135007 for guess  3   lnL =  -194676.1 
+## group_542   estimated tract length =  20.89197 for guess  1   lnL =  -14946519 
+## group_542   estimated tract length =  133.3235 for guess  2   lnL =  -14944723 
+## group_542   estimated tract length =  288.4821 for guess  3   lnL =  -14944805 
+## group_693   estimated tract length =  26962.29 for guess  1   lnL =  -4155580 
+## group_693   estimated tract length =  36686.7 for guess  2   lnL =  -4155570 
+## group_693   estimated tract length =  102912.7 for guess  3   lnL =  -4155559 
+## group_737   estimated tract length =  11.21503 for guess  1   lnL =  -25439811 
+## group_737   estimated tract length =  70.73369 for guess  2   lnL =  -25440090 
+## group_737   estimated tract length =  143.3529 for guess  3   lnL =  -25440391 
+## group_972   estimated tract length =  14.40534 for guess  1   lnL =  -21486036 
+## group_972   estimated tract length =  96.39853 for guess  2   lnL =  -21486082 
+## group_972   estimated tract length =  235.4708 for guess  3   lnL =  -21486223</code></pre>
 <p>Now save workspace.</p>
 <pre class="r"><code>save.image(&quot;./Harpak_Summary.RData&quot;)</code></pre>
 </div>

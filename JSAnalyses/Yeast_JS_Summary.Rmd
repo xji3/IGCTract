@@ -1,0 +1,76 @@
+---
+title: "Yeast_JS_Summary"
+author: "Xiang Ji"
+date: "04/21/2018"
+output: html_document
+---
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 200)
+```
+
+This R markdown file summarizes the PSJS analysis results. 
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/JSAnalyses/")
+filtered.pairs <- readLines('../Filtered_pairs.txt')
+
+# Now read in individual summary of gene pairs
+JS.HKY.rv.nonclock.summary <- NULL
+Force.JS.HKY.rv.nonclock.summary <- NULL
+
+PSJS.HKY.rv.nonclock.summary.dim.1 <- NULL
+for (pair in filtered.pairs){
+  summary.file.name <- paste("JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)  
+    
+  summary.file.name <- paste("Force_JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  Force.JS.HKY.rv.nonclock.summary <- cbind(Force.JS.HKY.rv.nonclock.summary, summary_mat)  
+}
+```
+
+Table 1
+
+
+```{r}
+show.diff <- cbind(lnL = round(JS.HKY.rv.nonclock.summary["ll", ], 2), 
+                   Diff = round(JS.HKY.rv.nonclock.summary["ll", ] - Force.JS.HKY.rv.nonclock.summary["ll", ], 2), 
+                   Tau = round(JS.HKY.rv.nonclock.summary["Tau", ] * 3.0 / (1.0 + colSums(JS.HKY.rv.nonclock.summary[c("r2", "r3"), ])), 2), 
+                   r2 = round(JS.HKY.rv.nonclock.summary["r2", ], 2), 
+                   r3 = round(JS.HKY.rv.nonclock.summary["r3", ], 2), 
+                   HKY_Prop = round(colSums(JS.HKY.rv.nonclock.summary[24:36, ]) / colSums(JS.HKY.rv.nonclock.summary[c(24:37, 40:49), ]), 2))
+show.diff
+```
+
+Show the difference in estimated total branch lengths
+
+```{r}
+IS.IGC.total.branchlengths <- 2 * colSums(JS.HKY.rv.nonclock.summary[c(11, 14:23), ]) + colSums(JS.HKY.rv.nonclock.summary[12:13, ])
+Force.IS.IGC.total.branchlengths <- 2 * colSums(Force.JS.HKY.rv.nonclock.summary[c(11, 14:23), ]) + colSums(Force.JS.HKY.rv.nonclock.summary[12:13, ])
+
+show.diff <- cbind(show.diff, 
+                   IGC.blen = IS.IGC.total.branchlengths,
+                   Force.blen = Force.IS.IGC.total.branchlengths,
+                   blenRatio = IS.IGC.total.branchlengths / Force.IS.IGC.total.branchlengths)
+show.diff
+```
+
+Now save workspace.
+
+```{r}
+save.image("./Yeast_JS_Summary.RData")
+```

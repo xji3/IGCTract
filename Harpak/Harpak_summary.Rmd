@@ -130,6 +130,35 @@ num.Mut <- sum(rowSums(JS.HKY.results[c(31, 34:41),]))
 num.IGC/(num.IGC + num.Mut)
 ```
 
+
+#### 02202018 update
+summarize estimated average tract length from individual datasets of Harpak's
+```{r}
+group.summary.files <- c("group_317", "group_542", 
+                         "group_693", "group_737", 
+                         "group_972")
+group.introns <- list(
+  group_317 = c(1, 2), 
+  group_542 = c(1, 2, 3, 4, 6), 
+  group_693 = c(2, 3, 4, 5), 
+  group_737 = c(2, 3, 4, 5, 6), 
+  group_972 = c(2, 3, 4, 5))
+for(group in group.summary.files){
+  for(guess in 1:3){
+    lnL <- 0.0
+    for(intron in get(group, group.introns)){
+      log.file <- paste("./log/PSJS_", group, "_intron", intron, "_guess_", guess, "_IndGroup_log.txt", sep = "")
+      
+      logs <- as.matrix(read.table(log.file))
+      lnL <- lnL - logs[dim(logs)[1], 1]
+    }
+    cat(group, "  estimated tract length = ", exp(-logs[dim(logs)[1], 7]), "for guess ", guess, "  lnL = ", lnL,  "\n")
+  }
+}
+
+
+```
+
 Now save workspace.
 
 ```{r}
