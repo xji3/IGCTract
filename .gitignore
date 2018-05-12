@@ -1,3 +1,14 @@
+# optimization logs
+*log.txt
+
+# mac sys and R sys
+*.DS_Store
+*.Rhistory
+
+# Godambe related
+*essian.txt
+*gradient.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
