@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
             print simulator_JS
             simulator_JS.sim(display = display)
-            simulator_JS.output_seq()
+            simulator_JS.output_seq(new_format = True)
 
 
             guess_list = [2, 1, 2, 2, 1, 2, 2, 1, 2, 1, 2, 1, 1, 1]
@@ -120,4 +120,4 @@ if __name__ == '__main__':
 
             print simulator_PSJS
             simulator_PSJS.sim(display = display)
-            simulator_PSJS.output_seq()        
+            simulator_PSJS.output_seq(new_format = True)        
