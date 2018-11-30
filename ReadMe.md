@@ -4,4 +4,6 @@ To run any of the analyses in this repository, you'll need to install python 2.7
 
 After installing all necessary python packages, you could reproduce any of the analyses in each folder. Usually, the python script (.py files) for running the analysis starts with 'Run' inside the folder.
 
+Analyses on EDN_ECP genes are stored in this [repository](https://github.com/xji3/EDN_ECP).
+
 Please contact me by xji3 _ at _ ucla.edu if you have any questions.
