@@ -1,0 +1,8 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+D1_N1	0.00174010931269	2	1	1	24	24	0	G	G
+D1_N1	0.0499614384913	1	2	1	2	2	0	T	T
+D1_N1	0.129183775138	1	2	1	13	13	0	A	A
+D1_N1	0.13886168392	1	2	1	16	16	0	T	T
+N4_Human	0.00614288275902	1	2	1	9	9	0	G	G
+N2_Orang	0.00898418196511	2	1	1	9	9	0	G	G
+N1_Macaq	0.0226157425079	1	2	1	1	1	0	T	T

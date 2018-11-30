@@ -60,6 +60,13 @@ def main(args):
 
     test_JS = JSGeneconv(alignment_file, gene_to_orlg_file, True, newicktree, DupLosList, x_js, pm_model, IGC_pm,
                          rate_variation, node_to_pos, terminal_node_list, save_file)
+
+    if not os.path.isfile(save_file):
+	print 'Did not find save file to start, set parameters at their true values.'
+        true_x_file = './trueValues/PSJS_HKY_' + '_'.join(paralog) + '_One_rate_rv_SCOK_nonclock_save.txt'
+        x = np.loadtxt(true_x_file)
+        test_JS.unpack_x(np.concatenate((x_js, x[(len(x_js) + 1):])))
+        
     test_JS.get_mle()
     test_JS.get_individual_summary(summary_file)
 
@@ -81,12 +88,15 @@ def main(args):
     PSJS_IGC = PSJSGeneconv(alignment_file, gene_to_orlg_file, seq_index_file, True, True, newicktree, DupLosList, x_js, pm_model, IGC_pm,
                       rate_variation, node_to_pos, terminal_node_list, save_file, log_file)
 
-    x = np.concatenate((test_JS.jsmodel.x_js[:-1], \
-                           [ test_JS.jsmodel.x_js[-1] - np.log(guess_tract), - np.log(guess_tract) ],
-                           test_JS.x[len(test_JS.jsmodel.x_js):]))
+    # x = np.concatenate((test_JS.jsmodel.x_js[:-1], \
+    #                        [ test_JS.jsmodel.x_js[-1] - np.log(guess_tract), - np.log(guess_tract) ],
+    #                        test_JS.x[len(test_JS.jsmodel.x_js):]))
 
-    x = np.loadtxt()
-    PSJS_IGC.unpack_x(x)
+    if not os.path.isfile(save_file):
+	print 'Did not find save file to start, set parameters at their true values.'
+        true_x_file = './trueValues/PSJS_HKY_' + '_'.join(paralog) + '_One_rate_rv_SCOK_nonclock_save.txt'
+        x = np.loadtxt(true_x_file)
+        PSJS_IGC.unpack_x(x)
 
     
     PSJS_IGC.optimize_x_IGC()

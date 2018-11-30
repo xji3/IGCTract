@@ -1,0 +1,2 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+N3_Goril	0.00586452773909	1	2	39	381	419	17	TAACTTGTAGCCTAATCTTAAGGATGGGAAAAAGAGAAA	CAACTAATTGTGTAAATTTATGGAAACGATATTGACAAT

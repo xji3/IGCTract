@@ -1,0 +1,227 @@
+---
+title: "Yeast_ParametricBootstrap_Summary"
+author: "Xiang Ji"
+date: "05/29/2018"
+output: html_document
+---
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 200)
+```
+
+This R markdown file summarizes the PSJS analysis results. 
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/ParametricBootstrap/")
+filtered.pairs <- readLines('../Filtered_pairs.txt')
+
+# Now read in individual summary of gene pairs
+
+
+for (pair in filtered.pairs){
+  JS.HKY.rv.nonclock.summary <- NULL
+  PSJS.HKY.rv.nonclock.summary <- NULL
+  for (sim.num in 1:100){
+    summary.file.name <- paste("JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/PSJSAnalyses/", pair, "/sim_", sim.num, "/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    col.names <- paste("sim_", sim.num, sep = "")
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file, 
+                                        row.names = row.names, 
+                                        col.names = col.names))
+    JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)  
+    
+    summary.file.name <- paste("PSJS_HKY_rv_sim", sim.num, "guess_30.0_nt_summary.txt", sep = "_")
+    summary_file <- paste("./summary/PSJSAnalyses/", pair, "/sim_", sim.num, "/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    col.names <- pair
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file, 
+                                        row.names = row.names, 
+                                        col.names = col.names))  
+    PSJS.HKY.rv.nonclock.summary <- cbind(PSJS.HKY.rv.nonclock.summary, summary_mat)
+  }
+  assign(paste(pair, "PSJS_Analyses_PSJS", "rv_nonclock_summary", sep = "_"), PSJS.HKY.rv.nonclock.summary)
+  assign(paste(pair, "PSJS_Analyses_JS", "rv_nonclock_summary", sep = "_"), JS.HKY.rv.nonclock.summary)
+  
+  JS.HKY.rv.nonclock.summary <- NULL
+  PSJS.HKY.rv.nonclock.summary <- NULL
+  for (sim.num in 1:100){
+    summary.file.name <- paste("JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/JSAnalyses/", pair, "/sim_", sim.num, "/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    col.names <- paste("sim_", sim.num, sep = "")
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file, 
+                                        row.names = row.names, 
+                                        col.names = col.names))
+    JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)  
+    
+    summary.file.name <- paste("PSJS_HKY_rv_sim", sim.num, "guess_30.0_nt_summary.txt", sep = "_")
+    summary_file <- paste("./summary/JSAnalyses/", pair, "/sim_", sim.num, "/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    col.names <- paste("sim_", sim.num, sep = "")
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file, 
+                                        row.names = row.names, 
+                                        col.names = col.names))  
+    PSJS.HKY.rv.nonclock.summary <- cbind(PSJS.HKY.rv.nonclock.summary, summary_mat)
+  }
+  assign(paste(pair, "JS_Analyses_PSJS", "rv_nonclock_summary", sep = "_"), PSJS.HKY.rv.nonclock.summary)
+  assign(paste(pair, "JS_Analyses_JS", "rv_nonclock_summary", sep = "_"), JS.HKY.rv.nonclock.summary)
+}
+
+JS.HKY.rv.nonclock.summary <- NULL
+PSJS.HKY.rv.nonclock.summary <- NULL
+for (pair in filtered.pairs){
+  summary.file.name <- paste("JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("../JSAnalyses/summary/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)  
+  
+  summary.file.name <- paste("PSJS_HKY", pair, "One_rate_rv_SCOK_nonclock_summary.txt", sep = "_")
+  summary_file <- paste("./trueValues/", summary.file.name, sep = "")
+  all <- readLines(summary_file, n = -1)
+  col.names <- pair
+  row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+  summary_mat <- as.matrix(read.table(summary_file, 
+                                      row.names = row.names, 
+                                      col.names = col.names))
+  PSJS.HKY.rv.nonclock.summary <- cbind(PSJS.HKY.rv.nonclock.summary, summary_mat)  
+}
+
+
+```
+
+Now show parametric bootstrap results of the PSJS analyses
+
+```{r}
+for(pair in filtered.pairs){
+  PSJS.bootstrap.summary <- get(paste(pair, "PSJS_Analyses_PSJS", "rv_nonclock_summary", sep = "_"))
+  cat("Now plot histogram of tract length in", pair, "\n")
+  hist(PSJS.bootstrap.summary["tract_length", ], breaks = 45,
+       main = paste("tract length of", pair, "truth=",round(PSJS.HKY.rv.nonclock.summary["tract_length", pair], digits = 3)))
+  abline(v = PSJS.HKY.rv.nonclock.summary["tract_length", pair], col="red")
+  cat("MLE = ", PSJS.HKY.rv.nonclock.summary["tract_length", pair], "\n")
+  cat("Mean = ", mean(PSJS.bootstrap.summary["tract_length", ]), "s.d. = ", sd(PSJS.bootstrap.summary["tract_length", ]), "\n")
+  # cat("95% C.I. = (", PSJS.HKY.rv.nonclock.summary["tract_length", pair] - 1.96 * sd(PSJS.bootstrap.summary["tract_length", ]), ", ", PSJS.HKY.rv.nonclock.summary["tract_length", pair] + 1.96 * sd(PSJS.bootstrap.summary["tract_length", ]), ")\n")
+  cat("Inter quartiles: ", quantile(PSJS.bootstrap.summary["tract_length", ], 0.25), ", ", quantile(PSJS.bootstrap.summary["tract_length", ], 0.75), "\n")
+}
+```
+
+```{r}
+# The parametric bootstrap analyses had all parameters but tract_length fixed at their MCLE values...
+# for(pair in filtered.pairs){
+#   PSJS.bootstrap.summary <- get(paste(pair, "PSJS_Analyses_PSJS", "rv_nonclock_summary", sep = "_"))
+#   cat("Now plot histogram of Tau in", pair, "\n")
+#   normalizingConstant <- 3.0 / (1.0 + sum(PSJS.HKY.rv.nonclock.summary[c("r2", "r3"), pair]))
+#   target <- PSJS.bootstrap.summary["init_rate", ]*PSJS.bootstrap.summary["tract_length", ] * normalizingConstant
+#   truth <- PSJS.HKY.rv.nonclock.summary["init_rate", pair] * PSJS.HKY.rv.nonclock.summary["tract_length", pair] * normalizingConstant
+#   hist(target, breaks = 45,
+#        main = paste("tract length of", pair, "truth=",round(truth, digits = 3)))
+#   abline(v = truth, col="red")
+#   cat("MLE = ", truth, "\n")
+#   cat("Mean = ", mean(target), "s.d. = ", sd(target), "\n")
+#   # cat("95% C.I. = (", PSJS.HKY.rv.nonclock.summary["Tau", pair] - 1.96 * sd(target), ", ", PSJS.HKY.rv.nonclock.summary["Tau", pair] + 1.96 * sd(target), ")\n")
+#   cat("Inter quartiles: ", quantile(target, 0.25), ", ", quantile(target, 0.75), "\n")
+# }
+```
+
+Now show parametric bootstrap results of the JS analyses
+
+```{r}
+for(pair in filtered.pairs){
+  JS.bootstrap.summary <- get(paste(pair, "JS_Analyses_JS", "rv_nonclock_summary", sep = "_"))
+  cat("Now plot histogram of tract length in", pair, "\n")
+  normalizingConstant <- 3.0 / (1.0 + sum(JS.HKY.rv.nonclock.summary[c("r2", "r3"), pair]))
+  hist(JS.bootstrap.summary["Tau", ] * normalizingConstant, breaks = 45,
+       main = paste("Tau of ", pair, " truth=", JS.HKY.rv.nonclock.summary["Tau", pair] * normalizingConstant))
+  abline(v = JS.HKY.rv.nonclock.summary["Tau", pair] * normalizingConstant, col="red")
+  cat("MLE = ", JS.HKY.rv.nonclock.summary["Tau", pair] * normalizingConstant, "\n")
+  cat("Mean = ", mean(JS.bootstrap.summary["Tau", ] * normalizingConstant), "s.d. = ", sd(JS.bootstrap.summary["Tau", ] * normalizingConstant), "\n")
+  cat("Inter quartiles: ", quantile(JS.bootstrap.summary["Tau", ] * normalizingConstant, 0.25), ", ", quantile(JS.bootstrap.summary["Tau", ] * normalizingConstant, 0.75), "\n")
+}
+```
+
+```{r}
+
+pair <- "EDN_ECP"
+  JS.HKY.rv.nonclock.summary <- NULL
+  PSJS.HKY.rv.nonclock.summary <- NULL
+  for (sim.num in 1:100){
+    summary.file.name <- paste("JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/PSJSAnalyses/", pair, "/sim_", sim.num, "/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    col.names <- paste("sim_", sim.num, sep = "")
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file,
+                                        row.names = row.names,
+                                        col.names = col.names))
+    JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)
+
+    summary.file.name <- paste("PSJS_HKY_rv_sim", sim.num, "guess_30.0_nt_summary.txt", sep = "_")
+    summary_file <- paste("./summary/PSJSAnalyses/", pair, "/sim_", sim.num, "/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    col.names <- pair
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file,
+                                        row.names = row.names,
+                                        col.names = col.names))
+    PSJS.HKY.rv.nonclock.summary <- cbind(PSJS.HKY.rv.nonclock.summary, summary_mat)
+  }
+  assign(paste(pair, "PSJS_Analyses_PSJS", "rv_nonclock_summary", sep = "_"), PSJS.HKY.rv.nonclock.summary)
+  assign(paste(pair, "PSJS_Analyses_JS", "rv_nonclock_summary", sep = "_"), JS.HKY.rv.nonclock.summary)
+
+  JS.HKY.rv.nonclock.summary <- NULL
+  PSJS.HKY.rv.nonclock.summary <- NULL
+  for (sim.num in 1:100){
+    summary.file.name <- paste("JS_HKY", pair, "One_rate_rv_nonclock_summary.txt", sep = "_")
+    summary_file <- paste("./summary/JSAnalyses/", pair, "/sim_", sim.num, "/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    col.names <- paste("sim_", sim.num, sep = "")
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file,
+                                        row.names = row.names,
+                                        col.names = col.names))
+    JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)
+
+    summary.file.name <- paste("PSJS_HKY_rv_sim", sim.num, "guess_30.0_nt_summary.txt", sep = "_")
+    summary_file <- paste("./summary/JSAnalyses/", pair, "/sim_", sim.num, "/", summary.file.name, sep = "")
+    all <- readLines(summary_file, n = -1)
+    col.names <- paste("sim_", sim.num, sep = "")
+    row.names <- strsplit(all[length(all)], ' ')[[1]][-1]
+    summary_mat <- as.matrix(read.table(summary_file,
+                                        row.names = row.names,
+                                        col.names = col.names))
+    PSJS.HKY.rv.nonclock.summary <- cbind(PSJS.HKY.rv.nonclock.summary, summary_mat)
+  }
+  assign(paste(pair, "JS_Analyses_PSJS", "rv_nonclock_summary", sep = "_"), PSJS.HKY.rv.nonclock.summary)
+  assign(paste(pair, "JS_Analyses_JS", "rv_nonclock_summary", sep = "_"), JS.HKY.rv.nonclock.summary)
+  
+    PSJS.bootstrap.summary <- get(paste(pair, "PSJS_Analyses_PSJS", "rv_nonclock_summary", sep = "_"))
+  cat("Now plot histogram of tract length in", pair, "\n")
+  hist(PSJS.bootstrap.summary["tract_length", PSJS.bootstrap.summary["tract_length", ] < 200], breaks = 45,
+       main = paste("tract length of", pair, "truth=",6.896))
+  abline(v = 6.896, col="red")
+  cat("MLE = ", 6.896, "\n")
+  cat("Mean = ", mean(PSJS.bootstrap.summary["tract_length", ]), "s.d. = ", sd(PSJS.bootstrap.summary["tract_length", ]), "\n")
+  # cat("95% C.I. = (", PSJS.HKY.rv.nonclock.summary["tract_length", pair] - 1.96 * sd(PSJS.bootstrap.summary["tract_length", ]), ", ", PSJS.HKY.rv.nonclock.summary["tract_length", pair] + 1.96 * sd(PSJS.bootstrap.summary["tract_length", ]), ")\n")
+  cat("Inter quartiles: ", quantile(PSJS.bootstrap.summary["tract_length", ], 0.25), ", ", quantile(PSJS.bootstrap.summary["tract_length", ], 0.75), "\n")
+  
+    JS.bootstrap.summary <- get(paste(pair, "JS_Analyses_JS", "rv_nonclock_summary", sep = "_"))
+  cat("Now plot histogram of tract length in", pair, "\n")
+  normalizingConstant <- 3.0 / (1.0 + sum(c(1.519417, 1.558265)))
+  hist(JS.bootstrap.summary["Tau", ] * normalizingConstant, breaks = 45,
+       main = paste("Tau of ", pair, " truth=", 2.431497 * normalizingConstant))
+  abline(v = 2.431497 * normalizingConstant, col="red")
+  cat("MLE = ", 2.431497 * normalizingConstant, "\n")
+  cat("Mean = ", mean(JS.bootstrap.summary["Tau", ] * normalizingConstant), "s.d. = ", sd(JS.bootstrap.summary["Tau", ] * normalizingConstant), "\n")
+  cat("Inter quartiles: ", quantile(JS.bootstrap.summary["Tau", ] * normalizingConstant, 0.25), ", ", quantile(JS.bootstrap.summary["Tau", ] * normalizingConstant, 0.75), "\n")
+```
+

@@ -206,6 +206,37 @@ class Run_PSJS_Harpak_all:
         print(result)
         return result
 
+    def objective_tract_p(self, display, log_tract_p):
+    	f = 0.0
+    	for psjsgeneconv in self.psjsgeneconv_list:
+            f_inc, g_inc = psjsgeneconv.objective_tract_p(False, log_tract_p)
+            f += f_inc
+
+        if display:
+            print('log likelihhood = ' ,f)
+            print('exp x = ',  np.exp(self.x))
+
+    def optimize_x_IGC(self, display = True, dimension = 1, method = 'L-BFGS-B'):
+
+        f = partial(self.objective_tract_p, display)
+        guess_x = self.psjsmodel.x_IGC[1]
+        if method == 'L-BFGS-B':
+            bnds = [(None, 0.0)]
+        elif method == 'BasinHopping':
+            bnds = [(-20.0, 0.0)]
+        elif method == 'DifferentialEvolution':
+            bnds = [(-20.0, 0.0)]
+        else:
+            sys.exit('Optimization method is not implemented!')
+
+        if method == 'L-BFGS-B':
+            result = scipy.optimize.minimize(f, guess_x, jac = False, method = method, bounds = bnds)
+        else:
+            sys.exit('Not implemented yet!')
+            
+        self.save_x()
+        print (result)
+        return result
 
 class Run_JS_Harpak_all:
     auto_save_step = 2

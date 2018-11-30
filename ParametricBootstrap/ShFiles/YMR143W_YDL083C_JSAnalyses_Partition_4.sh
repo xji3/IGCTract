@@ -1,0 +1,26 @@
+#!/bin/bash
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 76 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 77 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 78 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 79 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 80 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 81 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 82 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 83 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 84 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 85 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 86 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 87 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 88 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 89 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 90 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 91 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 92 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 93 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 94 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 95 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 96 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 97 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 98 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 99 --heterogeneity --case JSAnalyses 
+python Run_HKY_PSJS.py --paralog1 YMR143W --paralog2 YDL083C --sim_num 100 --heterogeneity --case JSAnalyses 

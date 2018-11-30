@@ -1,0 +1,62 @@
+---
+title: "Harpak_summary"
+author: "Xiang Ji"
+date: "10/2/2018"
+output: html_document
+---
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 200)
+```
+
+This R markdown file summarizes the PSJS analysis results. 
+
+```{r}
+rm(list=ls())  # clean up workspace
+setwd("/Users/xji3/GitFolders/YeastIGCTract/ParametricBootstrap/")
+
+pair <- ""
+PSJS.HKY.rv.nonclock.summary <- NULL
+for (sim.num in 1:100){
+  save.file.name <- paste("./save/PSJSAnalyses/PSJSAnalyses/PSJS_Grand_save_sim_", sim.num, ".txt", sep="")
+  if (file.exists(save.file.name)){
+    all <- readLines(save.file.name, n = -1)
+    col.names <- paste("sim_", sim.num, sep = "")
+    summary_mat <- as.matrix(read.table(save.file.name, 
+                                        col.names = col.names))
+    PSJS.HKY.rv.nonclock.summary <- cbind(PSJS.HKY.rv.nonclock.summary, summary_mat)       
+  } 
+}
+
+cat("Total number of pairs in s.d. calculation: ", sum(PSJS.HKY.rv.nonclock.summary[6, ] > -10), 
+    " out of ", dim(PSJS.HKY.rv.nonclock.summary)[2], " finished replicates.\n")
+cat("MLE:", exp(5.914710672723017204), "\n")
+cat("Mean: ", mean(exp(-PSJS.HKY.rv.nonclock.summary[6, PSJS.HKY.rv.nonclock.summary[6, ] > -10])), "\n")
+cat("s.d. ", sd(exp(-PSJS.HKY.rv.nonclock.summary[6, PSJS.HKY.rv.nonclock.summary[6, ] > -10])))
+cat("Inter quartiles: ", quantile(exp(-PSJS.HKY.rv.nonclock.summary[6, ]), 0.25), ", ", quantile(exp(-PSJS.HKY.rv.nonclock.summary[6, ]), 0.75), "\n")
+
+hist(exp(-PSJS.HKY.rv.nonclock.summary[6, PSJS.HKY.rv.nonclock.summary[6, ] > -8]), breaks =50, 
+     main = "inferred tract length")
+
+
+pair <- ""
+JS.HKY.rv.nonclock.summary <- NULL
+for (sim.num in 1:100){
+  save.file.name <- paste("./save/JSAnalyses/JSAnalyses/JS_Grand_save_sim_", sim.num, ".txt", sep="")
+  if (file.exists(save.file.name)){
+    all <- readLines(save.file.name, n = -1)
+    col.names <- paste("sim_", sim.num, sep = "")
+    summary_mat <- as.matrix(read.table(save.file.name, 
+                                        col.names = col.names))
+    JS.HKY.rv.nonclock.summary <- cbind(JS.HKY.rv.nonclock.summary, summary_mat)       
+  } 
+}
+    JS.bootstrap.summary <- exp(JS.HKY.rv.nonclock.summary)
+  cat("Now plot histogram of tract length in", pair, "\n")
+  normalizingConstant <- 1.0
+  hist(JS.bootstrap.summary[5, ] * normalizingConstant, breaks = 45,
+       main = paste("Tau of ", pair, " truth=", exp(-0.8290124233927760322) * normalizingConstant))
+  abline(v = exp(-0.8290124233927760322) * normalizingConstant, col="red")
+  cat("MLE = ", exp(-0.8290124233927760322) * normalizingConstant, "\n")
+  cat("Mean = ", mean(JS.bootstrap.summary[5, ] * normalizingConstant), "s.d. = ", sd(JS.bootstrap.summary[5, ] * normalizingConstant), "\n")
+  cat("Inter quartiles: ", quantile(JS.bootstrap.summary[5, ] * normalizingConstant, 0.25), ", ", quantile(JS.bootstrap.summary[5, ] * normalizingConstant, 0.75), "\n")
+```

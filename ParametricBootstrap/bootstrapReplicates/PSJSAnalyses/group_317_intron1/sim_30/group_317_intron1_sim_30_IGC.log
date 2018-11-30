@@ -1,0 +1,2 @@
+edge	time	orlg_from	orlg_to	tract_length	start_pos	stop_pos	num_diff	template_seq	overide_seq
+N4_Human	5.45379528586e-05	2	1	434	0	26	7	ACAAAGTACATCTACAATAGTATTTAA	ACAGTGTAAAACTACTGTAGTATTTAG
