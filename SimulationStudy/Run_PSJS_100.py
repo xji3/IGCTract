@@ -1,5 +1,4 @@
 from IGCexpansion.IndCodonGeneconv import IndCodonGeneconv
-from IGCexpansion.HMMJSGeneconv import HMMJSGeneconv
 from IGCexpansion.PSJSGeneconv import PSJSGeneconv
 from IGCexpansion.JSGeneconv import JSGeneconv
 import argparse, os
@@ -8,7 +7,7 @@ import numpy as np
 def main(args):
     paralog = ['YDR418W', 'YEL054C']
     div = int(args.div)
-    for sim_num in range(div*10 + 1, (div+1)*10):
+    for sim_num in range(div*10 + 1, (div+1)*10 + 1):
         geo = 100.0
         rate_variation = True
         case = '/Tract_'
